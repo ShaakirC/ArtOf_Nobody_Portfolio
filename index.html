@@ -9,6 +9,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Roboto:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"
+    }
+  }
+</script>
 <style>
   :root{
     --bg: #0b0e12;
@@ -263,13 +271,7 @@
     aspect-ratio:1/1;
     margin:0 auto;
   }
-  .shape-stage svg{ width:100%; height:100%; overflow:visible; }
-  #morphPoly{
-    fill:var(--accent-dim);
-    stroke:var(--accent);
-    stroke-width:1.6;
-    vector-effect:non-scaling-stroke;
-  }
+  .shape-stage canvas{ width:100%; height:100%; display:block; }
 
   .text-col{
     flex:1;
@@ -477,15 +479,13 @@
     </div>
     <div class="shape-col">
       <div class="shape-stage">
-        <svg viewBox="-110 -110 220 220">
-          <polygon id="morphPoly" points=""></polygon>
-        </svg>
+          <canvas id="vfxModel" aria-label="Animated VFX model"></canvas>
       </div>
     </div>
     <div class="text-col">
       <div class="panels">
         <div class="panel" data-i="0">
-          <p class="tag">01 — VFX Compositing</p>
+          <p class="tag">VFX &amp; Compositing</p>
           <h2>Visual effects that hold up frame by frame.</h2>
           <p>Rotoscoping, tracking, keying and cleanup, plus seamless integration of CG elements into live-action plates. I work in Nuke and After Effects to match grain, light and lens so the fix is invisible.</p>
           <ul>
@@ -496,7 +496,7 @@
           </ul>
         </div>
         <div class="panel" data-i="1">
-          <p class="tag">02 — CGI &amp; 3D</p>
+          <p class="tag">CGI &amp; 3D</p>
           <h2>Full CG assets, built and lit from scratch.</h2>
           <p>Modeling, texturing, lighting and rendering for product shots, hero assets and environments. Every asset is built to survive a close-up, with render times kept honest for real production schedules.</p>
           <ul>
@@ -507,7 +507,7 @@
           </ul>
         </div>
         <div class="panel" data-i="2">
-          <p class="tag">03 — Motion Graphics</p>
+          <p class="tag">Motion Graphics</p>
           <h2>Graphics that carry a brand in motion.</h2>
           <p>Title sequences, kinetic type and broadcast packages designed to read at a glance and hold up on a loop. Built modular, so a system scales from a 6-second bumper to a full open.</p>
           <ul>
@@ -518,7 +518,7 @@
           </ul>
         </div>
         <div class="panel" data-i="3">
-          <p class="tag">04 — Virtual Tours</p>
+          <p class="tag">Virtual Tours</p>
           <h2>Spaces you can walk before they're built.</h2>
           <p>360° walkthroughs and architectural visualization for real estate and development — from floor plans to fully lit, interactive tours that let a client stand in a room that doesn't exist yet.</p>
           <ul>
@@ -618,74 +618,82 @@
   });
   updateThemeToggle();
 
-  // ---------- shape morph engine ----------
-  var NUM_POINTS = 60;
-  var RADIUS = 90;
+  // ---------- VFX model playback ----------
+  var modelCanvas = document.getElementById('vfxModel');
+  var modelScene;
+  var modelCamera;
+  var modelRenderer;
+  var modelMixer;
+  var modelDuration = 0;
+  var modelProgress = 0;
 
-  // shape defs: [sides, rotationDegrees, label]
-  var SHAPES = [
-    { sides: NUM_POINTS, rot: 0,   circle: true, label: 'NODE_01 · VFX' },
-    { sides: 3,          rot: -90, label: 'NODE_02 · CGI' },
-    { sides: 4,          rot: -135, label: 'NODE_03 · MOGRAPH' },
-    { sides: 5,          rot: -90, label: 'NODE_04 · TOURS' }
-  ];
-
-  function cornerPos(sides, rot, k){
-    var angle = (rot + k * (360 / sides)) * Math.PI / 180;
-    return [ RADIUS * Math.cos(angle), RADIUS * Math.sin(angle) ];
+  function setModelProgress(progress){
+    modelProgress = Math.max(0, Math.min(1, progress));
+    if (modelMixer) modelMixer.setTime(modelProgress * modelDuration);
   }
 
-  function buildShapePoints(shape){
-    var pts = [];
-    var sides = shape.sides;
-    for (var i = 0; i < NUM_POINTS; i++){
-      if (shape.circle){
-        var angle = (-135 + (i / NUM_POINTS) * 360) * Math.PI / 180;
-        pts.push([
-          RADIUS * Math.cos(angle),
-          RADIUS * Math.sin(angle)
-        ]);
-      } else {
-        var t = (i / NUM_POINTS) * sides;
-        var sideIndex = Math.floor(t);
-        var frac = t - sideIndex;
-        var a = cornerPos(sides, shape.rot, sideIndex);
-        var b = cornerPos(sides, shape.rot, sideIndex + 1);
-        pts.push([
-          a[0] + (b[0] - a[0]) * frac,
-          a[1] + (b[1] - a[1]) * frac
-        ]);
-      }
+  function resizeModel(){
+    if (!modelRenderer) return;
+    var rect = modelCanvas.getBoundingClientRect();
+    modelRenderer.setSize(rect.width, rect.height, false);
+    modelCamera.aspect = rect.width / rect.height;
+    modelCamera.updateProjectionMatrix();
+  }
+
+  function frameModel(model){
+    var bounds = new THREE.Box3().setFromObject(model);
+    var center = bounds.getCenter(new THREE.Vector3());
+    var size = bounds.getSize(new THREE.Vector3());
+    var maxSize = Math.max(size.x, size.y, size.z);
+    model.position.sub(center);
+    model.scale.setScalar(2.1 / maxSize);
+  }
+
+  async function loadVfxModel(){
+    var THREE_MODULE = await import('three');
+    var loaderModule = await import('three/addons/loaders/GLTFLoader.js');
+    window.THREE = THREE_MODULE;
+    modelScene = new THREE_MODULE.Scene();
+    modelCamera = new THREE_MODULE.PerspectiveCamera(28, 1, 0.01, 100);
+    modelCamera.position.set(0, 0, 5);
+    modelRenderer = new THREE_MODULE.WebGLRenderer({ canvas:modelCanvas, alpha:true, antialias:true });
+    modelRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    modelRenderer.outputColorSpace = THREE_MODULE.SRGBColorSpace;
+    modelScene.add(new THREE_MODULE.HemisphereLight(0xffffff, 0x20252d, 2.2));
+    var keyLight = new THREE_MODULE.DirectionalLight(0xffffff, 3.5);
+    keyLight.position.set(3, 4, 5);
+    modelScene.add(keyLight);
+
+    var gltf = await new loaderModule.GLTFLoader().loadAsync('3D_Icon_VFX_COMP.glb');
+    frameModel(gltf.scene);
+    modelScene.add(gltf.scene);
+    modelDuration = gltf.animations.reduce(function(duration, clip){
+      return Math.max(duration, clip.duration);
+    }, 0);
+    if (gltf.animations.length && modelDuration){
+      modelMixer = new THREE_MODULE.AnimationMixer(gltf.scene);
+      gltf.animations.forEach(function(clip){ modelMixer.clipAction(clip).play(); });
+      setModelProgress(modelProgress);
     }
-    return pts;
+    resizeModel();
+    requestAnimationFrame(renderModel);
   }
 
-  var shapePointSets = SHAPES.map(buildShapePoints);
+  function renderModel(){
+    if (modelRenderer) modelRenderer.render(modelScene, modelCamera);
+    requestAnimationFrame(renderModel);
+  }
 
-  var poly = document.getElementById('morphPoly');
+  loadVfxModel().catch(function(error){
+    console.error('Unable to load VFX model:', error);
+    modelCanvas.setAttribute('aria-label', 'VFX model unavailable');
+  });
+
   var panels = Array.prototype.slice.call(document.querySelectorAll('.panel'));
   var progressBar = document.getElementById('servicesProgress');
   var progressFill = document.getElementById('servicesProgressFill');
   var progressSteps = Array.prototype.slice.call(document.querySelectorAll('.services-progress-step'));
   var wrap = document.querySelector('.services-wrap');
-
-  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  function setPolygon(points){
-    var str = points.map(function(p){ return p[0].toFixed(2) + ',' + p[1].toFixed(2); }).join(' ');
-    poly.setAttribute('points', str);
-  }
-
-  function lerpShapes(a, b, t){
-    var out = [];
-    for (var i = 0; i < NUM_POINTS; i++){
-      out.push([
-        a[i][0] + (b[i][0] - a[i][0]) * t,
-        a[i][1] + (b[i][1] - a[i][1]) * t
-      ]);
-    }
-    return out;
-  }
 
   var ticking = false;
 
@@ -701,7 +709,7 @@
     progressFill.style.height = (progress * 100) + '%';
     progressBar.setAttribute('aria-valuenow', Math.round(progress * 100));
 
-    var segments = SHAPES.length - 1; // 3 transitions across 4 states
+    var segments = panels.length - 1;
     var scaled = progress * segments;
     var idx = Math.floor(scaled);
     if (idx >= segments) idx = segments - 1;
@@ -709,15 +717,9 @@
     if (progress >= 1) { idx = segments - 1; localT = 1; }
     if (progress <= 0) { idx = 0; localT = 0; }
 
-    var iconTransitionT = localT < 0.5 ? 0 : (localT - 0.5) / 0.5;
     var textTransitionT = localT < 0.75 ? 0 : (localT - 0.75) / 0.25;
-
-    var shapeA = shapePointSets[idx];
-    var shapeB = shapePointSets[idx + 1];
-    var blended = reduceMotion
-      ? (iconTransitionT < 0.5 ? shapeA : shapeB)
-      : lerpShapes(shapeA, shapeB, iconTransitionT);
-    setPolygon(blended);
+    modelCanvas.style.visibility = idx === 0 ? 'visible' : 'hidden';
+    setModelProgress(idx === 0 ? localT : 0);
 
     var activeIndex = idx + (localT >= 0.85 ? 1 : 0);
     if (activeIndex > segments) activeIndex = segments;
@@ -743,7 +745,10 @@
   }
 
   window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll);
+  window.addEventListener('resize', function(){
+    resizeModel();
+    onScroll();
+  });
   update();
 
   // ---------- header background on scroll ----------

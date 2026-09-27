@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ArtOf_Nobody — VFX &amp; CGI Freelance Artist</title>
+<meta name="description" content="Freelance VFX, CGI, motion graphics and virtual tour artist. Compositing, 3D rendering, broadcast graphics and immersive walkthroughs.">
+<link id="site-favicon" rel="icon" type="image/png" href="logo_bl_LR.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Roboto:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0b0e12;
+    --bg-alt: #10141a;
+    --panel: #12161d;
+    --ink: #e9ebee;
+    --ink-dim: #9aa5b1;
+    --ink-faint: #5b6470;
+    --line: rgba(255,255,255,0.09);
+    --line-bright: rgba(255,255,255,0.18);
+    --accent: #ff7a45;
+    --accent-dim: rgba(255,122,69,0.16);
+    --header-solid: rgba(11,14,18,0.85);
+    --header-gradient: linear-gradient(to bottom, rgba(11,14,18,0.9), rgba(11,14,18,0));
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Roboto', sans-serif;
+    --disp: 'Archivo', sans-serif;
+  }
+
+  html[data-theme="light"]{
+    --bg: #f5f3ef;
+    --bg-alt: #ebe7e1;
+    --panel: #fffdfa;
+    --ink: #17191c;
+    --ink-dim: #59616a;
+    --ink-faint: #7b828a;
+    --line: rgba(23,25,28,0.14);
+    --line-bright: rgba(23,25,28,0.26);
+    --accent: #d9532b;
+    --accent-dim: rgba(217,83,43,0.14);
+    --header-solid: rgba(245,243,239,0.88);
+    --header-gradient: linear-gradient(to bottom, rgba(245,243,239,0.94), rgba(245,243,239,0));
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; background:var(--bg); }
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+  }
+
+  a{ color:inherit; }
+  img,svg{ display:block; max-width:100%; }
+
+  ::selection{ background:var(--accent); color:#0b0e12; }
+
+  /* faint viewport grid texture on the whole page */
+  .grid-bg{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 64px 64px;
+    opacity:0.35;
+    mask-image: radial-gradient(ellipse at 20% 10%, black, transparent 75%);
+  }
+
+  /* ---------- header ---------- */
+  header{
+    position:fixed; top:0; left:0; right:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px clamp(20px,5vw,56px);
+    font-family:var(--mono);
+    font-size:13px;
+    letter-spacing:0.02em;
+    background:var(--header-gradient);
+    backdrop-filter: blur(2px);
+  }
+  header .logo{
+    text-decoration:none;
+    display:flex;
+    align-items:center;
+    height:32px;
+  }
+  header .logo img{
+    width:auto;
+    height:28px;
+    max-width:180px;
+    object-fit:contain;
+  }
+  header .logo .logo-light{ display:none; }
+  html[data-theme="light"] header .logo .logo-dark{ display:none; }
+  html[data-theme="light"] header .logo .logo-light{ display:block; }
+  header nav{ display:flex; gap:clamp(16px,3vw,34px); }
+  header nav a{
+    text-decoration:none;
+    color:var(--ink-dim);
+    transition:color 0.2s ease;
+    position:relative;
+  }
+  header nav a:hover{ color:var(--ink); }
+  .header-actions{ display:flex; align-items:center; gap:clamp(16px,3vw,34px); }
+  .theme-toggle{
+    width:32px; height:32px; padding:0;
+    display:grid; place-items:center;
+    color:var(--ink-dim);
+    background:transparent;
+    border:1px solid var(--line-bright);
+    border-radius:50%;
+    cursor:pointer;
+    transition:color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  }
+  .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); transform:rotate(12deg); }
+  .theme-toggle svg{ width:15px; height:15px; }
+  .theme-toggle .sun{ display:none; }
+  html[data-theme="light"] .theme-toggle .moon{ display:none; }
+  html[data-theme="light"] .theme-toggle .sun{ display:block; }
+  .theme-toggle:hover .moon{ display:none; }
+  .theme-toggle:hover .sun{ display:block; }
+  html[data-theme="light"] .theme-toggle:hover .moon{ display:block; }
+  html[data-theme="light"] .theme-toggle:hover .sun{ display:none; }
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative; z-index:2;
+    min-height:100vh;
+    display:flex; flex-direction:column; justify-content:center;
+    padding:0 clamp(20px,5vw,56px);
+    background:var(--bg);
+    border-bottom:1px solid var(--line);
+  }
+  .hero::before{
+    content:"";
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:64px 64px;
+    opacity:0.35;
+    mask-image:radial-gradient(ellipse at 20% 10%, black, transparent 75%);
+  }
+  .hero-eyebrow{
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--accent);
+    margin:0 0 22px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .hero-eyebrow::before{
+    display:none;
+  }
+  .hero h1{
+    font-family:var(--disp);
+    font-weight:600;
+    font-size:clamp(2.4rem, 6vw, 5.2rem);
+    line-height:1.02;
+    letter-spacing:-0.02em;
+    margin:0 0 28px;
+    max-width:16ch;
+  }
+  .hero p{
+    font-size:clamp(1.02rem,1.6vw,1.2rem);
+    color:var(--ink-dim);
+    max-width:52ch;
+    margin:0 0 40px;
+  }
+  .hero-actions{ display:flex; gap:16px; flex-wrap:wrap; align-items:center; }
+  .btn{
+    font-family:var(--mono);
+    font-size:13px;
+    padding:13px 22px;
+    border-radius:2px;
+    text-decoration:none;
+    display:inline-flex; align-items:center; gap:10px;
+    transition:transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  }
+  .btn-primary{ background:var(--accent); color:#12100e; font-weight:500; }
+  .btn-primary:hover{ transform:translateY(-1px); }
+  .btn-ghost{ border:1px solid var(--line-bright); color:var(--ink); }
+  .btn-ghost:hover{ border-color:var(--accent); color:var(--accent); }
+
+  .hero-scroll-cue{
+    position:absolute; left:clamp(20px,5vw,56px); bottom:36px;
+    font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+    display:flex; align-items:center; gap:10px;
+  }
+  .hero-scroll-cue .line{ width:26px; height:1px; background:var(--ink-faint); }
+
+  /* ---------- services (sticky morph) ---------- */
+  .services-wrap{
+    position:relative; z-index:1;
+    height:557.5vh; /* scroll distance across all 4 states plus a 37.5% final buffer */
+    margin-top:-100vh;
+  }
+  .services-sticky{
+    position:sticky; top:0;
+    height:100vh;
+    display:flex;
+    border-bottom:1px solid var(--line);
+  }
+  .services-progress{
+    position:absolute;
+    z-index:3;
+    top:50%; left:clamp(10px,2vw,24px);
+    width:28px; height:min(56vh,520px);
+    min-height:260px;
+    transform:translateY(-50%);
+  }
+  .services-progress-track,
+  .services-progress-fill{
+    position:absolute;
+    top:0; bottom:0; left:12px;
+    width:1px;
+  }
+  .services-progress-track{ background:var(--line-bright); }
+  .services-progress-fill{
+    bottom:auto;
+    height:0;
+    width:3px;
+    left:11px;
+    background:var(--accent);
+    transition:height 0.15s linear;
+  }
+  .services-progress-steps{
+    position:relative;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .services-progress-step{
+    padding:2px 3px;
+    background:var(--bg);
+    color:var(--ink-faint);
+    font-family:var(--mono);
+    font-size:9px;
+    line-height:1.2;
+    transition:color 0.2s ease;
+  }
+  .services-progress-step.active{ color:var(--accent); }
+  .shape-col{
+    width:25%;
+    width:round(nearest, 25vw, 64px);
+    min-width:0;
+    display:flex; flex-direction:column;
+    justify-content:center;
+    padding:0 clamp(24px,4vw,64px);
+    position:relative;
+  }
+  .shape-stage{
+    width:100%;
+    max-width:340px;
+    aspect-ratio:1/1;
+    margin:0 auto;
+  }
+  .shape-stage svg{ width:100%; height:100%; overflow:visible; }
+  #morphPoly{
+    fill:var(--accent-dim);
+    stroke:var(--accent);
+    stroke-width:1.6;
+    vector-effect:non-scaling-stroke;
+  }
+
+  .text-col{
+    flex:1;
+    display:flex; align-items:center;
+    padding:0 clamp(24px,6vw,90px);
+    position:relative;
+  }
+  .panels{ position:relative; width:100%; max-width:560px; }
+  .panel{
+    position:absolute;
+    top:50%; left:0; right:0;
+    transform:translateY(-50%);
+    opacity:0;
+    pointer-events:none;
+  }
+  .panel .tag{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--accent);
+    margin-bottom:16px;
+  }
+  .panel h2{
+    font-family:var(--disp);
+    font-weight:600;
+    font-size:clamp(1.7rem,3vw,2.5rem);
+    letter-spacing:-0.01em;
+    margin:0 0 18px;
+  }
+  .panel p{
+    color:var(--ink-dim);
+    font-size:1.02rem;
+    max-width:48ch;
+    margin:0 0 14px;
+  }
+  .panel ul{
+    margin:18px 0 0; padding:0; list-style:none;
+    display:grid; gap:8px;
+  }
+  .panel ul li{
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:var(--ink-faint);
+    display:flex; gap:10px; align-items:baseline;
+  }
+  .panel ul li::before{ content:"·"; color:var(--accent); }
+
+  /* ---------- about ---------- */
+  .about{
+    position:relative; z-index:2;
+    margin-top:-100vh;
+    padding:clamp(90px,14vh,150px) clamp(20px,5vw,56px);
+    background:var(--bg);
+    display:grid;
+    grid-template-columns: 1fr 1.3fr;
+    gap:clamp(40px,6vw,90px);
+    border-bottom:1px solid var(--line);
+    align-items:start;
+  }
+  .about::before{
+    content:"";
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:64px 64px;
+    opacity:0.35;
+    mask-image:radial-gradient(ellipse at 20% 10%, black, transparent 75%);
+  }
+  .about > *{ position:relative; z-index:1; }
+  .about-figure{
+    width:100%;
+    aspect-ratio:1/1;
+    max-width:340px;
+    position:relative;
+  }
+  .about-figure svg{ width:100%; height:100%; }
+  .section-label{
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--accent);
+    margin:0 0 20px;
+  }
+  .about h2{
+    font-family:var(--disp);
+    font-weight:600;
+    font-size:clamp(1.8rem,3.4vw,2.7rem);
+    letter-spacing:-0.01em;
+    margin:0 0 22px;
+    max-width:14ch;
+  }
+  .about p{ color:var(--ink-dim); max-width:60ch; margin:0 0 16px; }
+  .about-stats{
+    margin-top:32px;
+    display:grid; grid-template-columns:repeat(3,auto);
+    gap:clamp(20px,4vw,50px);
+  }
+  .about-stats div b{
+    display:block; font-family:var(--disp); font-size:1.8rem; font-weight:600;
+  }
+  .about-stats div span{
+    font-family:var(--mono); font-size:11.5px; color:var(--ink-faint);
+  }
+
+  /* ---------- contact ---------- */
+  .contact{
+    position:relative; z-index:1;
+    padding:clamp(100px,16vh,170px) clamp(20px,5vw,56px) 90px;
+  }
+  .contact h2{
+    font-family:var(--disp);
+    font-weight:600;
+    font-size:clamp(2.1rem,5vw,3.6rem);
+    letter-spacing:-0.02em;
+    max-width:14ch;
+    margin:0 0 30px;
+  }
+  .contact-grid{
+    display:grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap:clamp(30px,6vw,80px);
+    margin-top:50px;
+  }
+  .contact-email{
+    font-family:var(--disp);
+    font-size:clamp(1.4rem,3vw,2.1rem);
+    text-decoration:none;
+    border-bottom:1px solid var(--line-bright);
+    padding-bottom:8px;
+    display:inline-block;
+    transition:border-color 0.2s ease, color 0.2s ease;
+  }
+  .contact-email:hover{ color:var(--accent); border-color:var(--accent); }
+  .contact-list{ list-style:none; margin:0; padding:0; display:grid; gap:16px; }
+  .contact-list li{ display:flex; justify-content:space-between; border-bottom:1px solid var(--line); padding-bottom:14px; }
+  .contact-list .k{ font-family:var(--mono); font-size:12px; color:var(--ink-faint); }
+  .contact-list .v{ text-decoration:none; font-size:14px; }
+  .contact-list .v:hover{ color:var(--accent); }
+
+  footer{
+    position:relative; z-index:1;
+    padding:26px clamp(20px,5vw,56px);
+    border-top:1px solid var(--line);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;
+    font-family:var(--mono); font-size:11.5px; color:var(--ink-faint);
+  }
+
+  @media (max-width: 860px){
+    .services-sticky{ flex-direction:column; }
+    .shape-col{ width:100%; min-width:0; border:none; padding:20px clamp(20px,5vw,40px); justify-content:flex-start; }
+    .shape-stage{ max-width:180px; }
+    .text-col{ padding:20px clamp(20px,5vw,40px); align-items:flex-start; }
+    .panels{ position:relative; }
+    .panel{ position:absolute; }
+    .services-wrap{ height:502.5vh; }
+    .about{ grid-template-columns:1fr; }
+    .about-figure{ max-width:220px; }
+    .contact-grid{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<header>
+  <a href="#top" class="logo" aria-label="ArtOf_Nobody home">
+    <img class="logo-dark" src="logo_wh_LR.png" alt="ArtOf_Nobody">
+    <img class="logo-light" src="logo_bl_LR.png" alt="ArtOf_Nobody">
+  </a>
+  <div class="header-actions">
+    <nav>
+    <button class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M20.5 15.4A8.5 8.5 0 0 1 8.6 3.5 8.5 8.5 0 1 0 20.5 15.4Z"></path>
+      </svg>
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <circle cx="12" cy="12" r="3.5"></circle>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<section class="hero" id="top">
+  <p class="hero-eyebrow">Freelance VFX &amp; CGI Artist</p>
+  <h1>ArtOf_Nobody</h1>
+  <div class="hero-actions">
+    <a href="#contact" class="btn btn-primary">Start a project</a>
+    <a href="#work" class="btn btn-ghost">See the work</a>
+  </div>
+  <div class="hero-scroll-cue"><span class="line"></span> Scroll to explore</div>
+</section>
+
+<section class="services-wrap" id="work">
+  <div class="services-sticky">
+    <div class="services-progress" id="servicesProgress" role="progressbar" aria-label="Services progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="services-progress-track"></div>
+      <div class="services-progress-fill" id="servicesProgressFill"></div>
+      <div class="services-progress-steps">
+        <span class="services-progress-step active" data-i="0">01</span>
+        <span class="services-progress-step" data-i="1">02</span>
+        <span class="services-progress-step" data-i="2">03</span>
+        <span class="services-progress-step" data-i="3">04</span>
+      </div>
+    </div>
+    <div class="shape-col">
+      <div class="shape-stage">
+        <svg viewBox="-110 -110 220 220">
+          <polygon id="morphPoly" points=""></polygon>
+        </svg>
+      </div>
+    </div>
+    <div class="text-col">
+      <div class="panels">
+        <div class="panel" data-i="0">
+          <p class="tag">01 — VFX Compositing</p>
+          <h2>Visual effects that hold up frame by frame.</h2>
+          <p>Rotoscoping, tracking, keying and cleanup, plus seamless integration of CG elements into live-action plates. I work in Nuke and After Effects to match grain, light and lens so the fix is invisible.</p>
+          <ul>
+            <li>Roto &amp; paint</li>
+            <li>Match-move &amp; tracking</li>
+            <li>Green-screen keying</li>
+            <li>Set extension &amp; cleanup</li>
+          </ul>
+        </div>
+        <div class="panel" data-i="1">
+          <p class="tag">02 — CGI &amp; 3D</p>
+          <h2>Full CG assets, built and lit from scratch.</h2>
+          <p>Modeling, texturing, lighting and rendering for product shots, hero assets and environments. Every asset is built to survive a close-up, with render times kept honest for real production schedules.</p>
+          <ul>
+            <li>Hard-surface &amp; organic modeling</li>
+            <li>PBR texturing</li>
+            <li>Lookdev &amp; lighting</li>
+            <li>Render optimization</li>
+          </ul>
+        </div>
+        <div class="panel" data-i="2">
+          <p class="tag">03 — Motion Graphics</p>
+          <h2>Graphics that carry a brand in motion.</h2>
+          <p>Title sequences, kinetic type and broadcast packages designed to read at a glance and hold up on a loop. Built modular, so a system scales from a 6-second bumper to a full open.</p>
+          <ul>
+            <li>Title sequences &amp; opens</li>
+            <li>Kinetic typography</li>
+            <li>Broadcast &amp; lower-thirds</li>
+            <li>Animated logos</li>
+          </ul>
+        </div>
+        <div class="panel" data-i="3">
+          <p class="tag">04 — Virtual Tours</p>
+          <h2>Spaces you can walk before they're built.</h2>
+          <p>360° walkthroughs and architectural visualization for real estate and development — from floor plans to fully lit, interactive tours that let a client stand in a room that doesn't exist yet.</p>
+          <ul>
+            <li>360° interactive walkthroughs</li>
+            <li>Architectural visualization</li>
+            <li>Pre-construction renders</li>
+            <li>Web-embeddable tours</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="about" id="about">
+  <div class="about-figure">
+    <svg viewBox="-110 -110 220 220">
+      <polygon points="0,-90 85.6,-27.8 52.9,72.8 -52.9,72.8 -85.6,-27.8"
+        fill="none" stroke="var(--line-bright)" stroke-width="1"></polygon>
+      <polygon points="0,-62 59,-19 36.5,50 -36.5,50 -59,-19"
+        fill="var(--accent-dim)" stroke="var(--accent)" stroke-width="1.4"></polygon>
+      <circle cx="0" cy="-6" r="2.4" fill="var(--accent)"></circle>
+    </svg>
+  </div>
+  <div>
+    <p class="section-label">About</p>
+    <h2>Ten years of making things that aren't there look like they always were.</h2>
+    <p>I'm ArtOf_Nobody, a freelance VFX and CGI artist working with production companies, agencies and real estate developers who need a shot fixed, an asset built, or a space imagined before it's poured in concrete.</p>
+    <p>My background is in compositing, which means every discipline I've picked up since — 3D, motion graphics, virtual tours — gets judged by the same standard: does it sit believably in the frame. I run projects solo end-to-end, or slot into a larger pipeline as one more artist on the crew.</p>
+    <div class="about-stats">
+      <div><b>10+</b><span>YEARS IN PRODUCTION</span></div>
+      <div><b>140</b><span>PROJECTS DELIVERED</span></div>
+      <div><b>4</b><span>DISCIPLINES</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="contact" id="contact">
+  <p class="section-label">Contact</p>
+  <h2>Have a plate to fix, an asset to build, or a space to visualize?</h2>
+  <div class="contact-grid">
+    <div>
+      <a href="mailto:hello@artofnobody.work" class="contact-email">hello@artofnobody.work</a>
+      <p style="color:var(--ink-dim); max-width:44ch; margin-top:22px;">Tell me a bit about the project — footage or plans if you have them, rough timeline, and where it needs to end up. I'll reply within a day or two with scope and a quote.</p>
+    </div>
+    <ul class="contact-list">
+      <li><span class="k">EMAIL</span><a class="v" href="mailto:hello@artofnobody.work">hello@artofnobody.work</a></li>
+      <li><span class="k">PHONE</span><a class="v" href="tel:+10000000000">+1 (000) 000-0000</a></li>
+      <li><span class="k">LOCATION</span><span class="v">Remote — worldwide</span></li>
+      <li><span class="k">REEL</span><a class="v" href="#" target="_blank" rel="noopener">vimeo.com/artofnobody</a></li>
+      <li><span class="k">LINKEDIN</span><a class="v" href="#" target="_blank" rel="noopener">linkedin.com/in/artofnobody</a></li>
+      <li><span class="k">INSTAGRAM</span><a class="v" href="#" target="_blank" rel="noopener">@artofnobody.vfx</a></li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <span>© <span id="year"></span> ArtOf_Nobody. All rights reserved.</span>
+  <span>Compositing · CGI · Motion Graphics · Virtual Tours</span>
+</footer>
+
+<script>
+(function(){
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // ---------- selected-tab favicon ----------
+  var favicon = document.getElementById('site-favicon');
+  function updateFavicon(){
+    favicon.href = document.visibilityState === 'visible' ? 'logo_wh_LR.png' : 'logo_bl_LR.png';
+  }
+  document.addEventListener('visibilitychange', updateFavicon);
+  updateFavicon();
+
+  // ---------- theme toggle ----------
+  var root = document.documentElement;
+  var themeToggle = document.querySelector('.theme-toggle');
+  var savedTheme = localStorage.getItem('artofnobody-theme');
+  if (savedTheme === 'light') root.setAttribute('data-theme', 'light');
+
+  function updateThemeToggle(){
+    var isLight = root.getAttribute('data-theme') === 'light';
+    themeToggle.setAttribute('aria-pressed', String(isLight));
+    themeToggle.setAttribute('aria-label', isLight ? 'Switch to dark theme' : 'Switch to light theme');
+  }
+
+  themeToggle.addEventListener('click', function(){
+    var isLight = root.getAttribute('data-theme') === 'light';
+    if (isLight){
+      root.removeAttribute('data-theme');
+      localStorage.setItem('artofnobody-theme', 'dark');
+    } else {
+      root.setAttribute('data-theme', 'light');
+      localStorage.setItem('artofnobody-theme', 'light');
+    }
+    updateThemeToggle();
+    onHeaderScroll();
+  });
+  updateThemeToggle();
+
+  // ---------- shape morph engine ----------
+  var NUM_POINTS = 60;
+  var RADIUS = 90;
+
+  // shape defs: [sides, rotationDegrees, label]
+  var SHAPES = [
+    { sides: NUM_POINTS, rot: 0,   circle: true, label: 'NODE_01 · VFX' },
+    { sides: 3,          rot: -90, label: 'NODE_02 · CGI' },
+    { sides: 4,          rot: -135, label: 'NODE_03 · MOGRAPH' },
+    { sides: 5,          rot: -90, label: 'NODE_04 · TOURS' }
+  ];
+
+  function cornerPos(sides, rot, k){
+    var angle = (rot + k * (360 / sides)) * Math.PI / 180;
+    return [ RADIUS * Math.cos(angle), RADIUS * Math.sin(angle) ];
+  }
+
+  function buildShapePoints(shape){
+    var pts = [];
+    var sides = shape.sides;
+    for (var i = 0; i < NUM_POINTS; i++){
+      if (shape.circle){
+        var angle = (-135 + (i / NUM_POINTS) * 360) * Math.PI / 180;
+        pts.push([
+          RADIUS * Math.cos(angle),
+          RADIUS * Math.sin(angle)
+        ]);
+      } else {
+        var t = (i / NUM_POINTS) * sides;
+        var sideIndex = Math.floor(t);
+        var frac = t - sideIndex;
+        var a = cornerPos(sides, shape.rot, sideIndex);
+        var b = cornerPos(sides, shape.rot, sideIndex + 1);
+        pts.push([
+          a[0] + (b[0] - a[0]) * frac,
+          a[1] + (b[1] - a[1]) * frac
+        ]);
+      }
+    }
+    return pts;
+  }
+
+  var shapePointSets = SHAPES.map(buildShapePoints);
+
+  var poly = document.getElementById('morphPoly');
+  var panels = Array.prototype.slice.call(document.querySelectorAll('.panel'));
+  var progressBar = document.getElementById('servicesProgress');
+  var progressFill = document.getElementById('servicesProgressFill');
+  var progressSteps = Array.prototype.slice.call(document.querySelectorAll('.services-progress-step'));
+  var wrap = document.querySelector('.services-wrap');
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function setPolygon(points){
+    var str = points.map(function(p){ return p[0].toFixed(2) + ',' + p[1].toFixed(2); }).join(' ');
+    poly.setAttribute('points', str);
+  }
+
+  function lerpShapes(a, b, t){
+    var out = [];
+    for (var i = 0; i < NUM_POINTS; i++){
+      out.push([
+        a[i][0] + (b[i][0] - a[i][0]) * t,
+        a[i][1] + (b[i][1] - a[i][1]) * t
+      ]);
+    }
+    return out;
+  }
+
+  var ticking = false;
+
+  function update(){
+    ticking = false;
+    var rect = wrap.getBoundingClientRect();
+    var vh = window.innerHeight;
+    var buffer = (rect.height - (vh * 2)) * (3 / 11);
+    var total = rect.height - (vh * 2) - buffer;
+    var scrolled = -rect.top - vh;
+    var progress = total > 0 ? scrolled / total : 0;
+    progress = Math.max(0, Math.min(1, progress));
+    progressFill.style.height = (progress * 100) + '%';
+    progressBar.setAttribute('aria-valuenow', Math.round(progress * 100));
+
+    var segments = SHAPES.length - 1; // 3 transitions across 4 states
+    var scaled = progress * segments;
+    var idx = Math.floor(scaled);
+    if (idx >= segments) idx = segments - 1;
+    var localT = scaled - idx;
+    if (progress >= 1) { idx = segments - 1; localT = 1; }
+    if (progress <= 0) { idx = 0; localT = 0; }
+
+    var iconTransitionT = localT < 0.5 ? 0 : (localT - 0.5) / 0.5;
+    var textTransitionT = localT < 0.75 ? 0 : (localT - 0.75) / 0.25;
+
+    var shapeA = shapePointSets[idx];
+    var shapeB = shapePointSets[idx + 1];
+    var blended = reduceMotion
+      ? (iconTransitionT < 0.5 ? shapeA : shapeB)
+      : lerpShapes(shapeA, shapeB, iconTransitionT);
+    setPolygon(blended);
+
+    var activeIndex = idx + (localT >= 0.85 ? 1 : 0);
+    if (activeIndex > segments) activeIndex = segments;
+    progressSteps.forEach(function(step){
+      var i = parseInt(step.dataset.i, 10);
+      step.classList.toggle('active', i === activeIndex);
+    });
+
+    panels.forEach(function(panel){
+      var i = parseInt(panel.dataset.i, 10);
+      var opacity = i === idx ? 1 - textTransitionT : (i === idx + 1 ? textTransitionT : 0);
+      panel.style.opacity = opacity;
+      panel.style.pointerEvents = opacity > 0.6 ? 'auto' : 'none';
+      panel.setAttribute('aria-hidden', opacity < 0.4 ? 'true' : 'false');
+    });
+  }
+
+  function onScroll(){
+    if (!ticking){
+      ticking = true;
+      requestAnimationFrame(update);
+    }
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  update();
+
+  // ---------- header background on scroll ----------
+  var header = document.querySelector('header');
+  function onHeaderScroll(){
+    if (window.scrollY > 40){
+      header.style.background = 'var(--header-solid)';
+      header.style.borderBottom = '1px solid var(--line)';
+    } else {
+      header.style.background = 'var(--header-gradient)';
+      header.style.borderBottom = '1px solid transparent';
+    }
+  }
+  window.addEventListener('scroll', onHeaderScroll, { passive: true });
+  onHeaderScroll();
+})();
+</script>
+
+</body>
+</html>

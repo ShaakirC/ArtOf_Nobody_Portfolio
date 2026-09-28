@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ArtOf_Nobody — VFX &amp; CGI Freelance Artist</title>
 <meta name="description" content="Freelance VFX, CGI, motion graphics and virtual tour artist. Compositing, 3D rendering, broadcast graphics and immersive walkthroughs.">
-<link id="site-favicon" rel="icon" type="image/png" href="logo_bl_LR.png">
+<link id="site-favicon" rel="icon" type="image/png" href="assets/images/logo_bl_LR.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Roboto:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -447,8 +447,8 @@
 
 <header>
   <a href="#top" class="logo" aria-label="ArtOf_Nobody home">
-    <img class="logo-dark" src="logo_wh_LR.png" alt="ArtOf_Nobody">
-    <img class="logo-light" src="logo_bl_LR.png" alt="ArtOf_Nobody">
+    <img class="logo-dark" src="assets/images/logo_wh_LR.png" alt="ArtOf_Nobody">
+    <img class="logo-light" src="assets/images/logo_bl_LR.png" alt="ArtOf_Nobody">
   </a>
   <div class="header-actions">
     <nav>
@@ -578,7 +578,7 @@
   // ---------- selected-tab favicon ----------
   var favicon = document.getElementById('site-favicon');
   function updateFavicon(){
-    favicon.href = document.visibilityState === 'visible' ? 'logo_wh_LR.png' : 'logo_bl_LR.png';
+    favicon.href = document.visibilityState === 'visible' ? 'assets/images/logo_wh_LR.png' : 'assets/images/logo_bl_LR.png';
   }
   document.addEventListener('visibilitychange', updateFavicon);
   updateFavicon();
@@ -741,9 +741,9 @@
     modelScene.add(keyLight);
     modelScene.add(keyLight.target);
 
-    await loadServiceModel('3D_Icon_VFX_COMP.glb', 0, loader, THREE_MODULE);
-    await loadServiceModel('3D_Icon_3D_CGI.glb', 1, loader, THREE_MODULE);
-    await loadServiceModel('3D_Icon_MoGraph.glb', 2, loader, THREE_MODULE);
+    await loadServiceModel('assets/models/3D_Icon_VFX_COMP.glb', 0, loader, THREE_MODULE);
+    await loadServiceModel('assets/models/3D_Icon_3D_CGI.glb', 1, loader, THREE_MODULE);
+    await loadServiceModel('assets/models/3D_Icon_MoGraph.glb', 2, loader, THREE_MODULE);
     resizeModel();
     requestAnimationFrame(renderModel);
   }

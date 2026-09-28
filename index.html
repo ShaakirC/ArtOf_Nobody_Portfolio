@@ -29,6 +29,8 @@
     --line-bright: rgba(255,255,255,0.18);
     --accent: #ff7a45;
     --accent-dim: rgba(255,122,69,0.16);
+    --model-dark: #ffffff;
+    --model-light: #37393b;
     --header-solid: rgba(11,14,18,0.85);
     --header-gradient: linear-gradient(to bottom, rgba(11,14,18,0.9), rgba(11,14,18,0));
     --mono: 'IBM Plex Mono', monospace;
@@ -206,7 +208,7 @@
   /* ---------- services (sticky morph) ---------- */
   .services-wrap{
     position:relative; z-index:1;
-    height:557.5vh; /* scroll distance across all 4 states plus a 37.5% final buffer */
+    height:406vh; /* fallback height; JavaScript sizes this from the service count */
     margin-top:-100vh;
   }
   .services-sticky{
@@ -223,28 +225,35 @@
     min-height:260px;
     transform:translateY(-50%);
   }
-  .services-progress-track,
-  .services-progress-fill{
-    position:absolute;
-    top:0; bottom:0; left:12px;
-    width:1px;
-  }
-  .services-progress-track{ background:var(--line-bright); }
-  .services-progress-fill{
-    bottom:auto;
-    height:0;
-    width:3px;
-    left:11px;
-    background:var(--accent);
-    transition:height 0.15s linear;
-  }
   .services-progress-steps{
     position:relative;
     height:100%;
     display:flex;
     flex-direction:column;
-    justify-content:space-between;
     align-items:center;
+  }
+  .services-progress-item{
+    width:100%;
+    min-height:0;
+    display:flex;
+    flex:1;
+    flex-direction:column;
+    align-items:center;
+  }
+  .services-progress-segment{
+    position:relative;
+    width:1px;
+    min-height:12px;
+    flex:1;
+    margin-top:4px;
+    background:var(--line-bright);
+  }
+  .services-progress-segment-fill{
+    position:absolute;
+    top:0; left:-1px;
+    width:3px; height:0;
+    background:var(--accent);
+    transition:height 0.15s linear;
   }
   .services-progress-step{
     padding:2px 3px;
@@ -321,7 +330,7 @@
   /* ---------- about ---------- */
   .about{
     position:relative; z-index:2;
-    margin-top:-100vh;
+    margin-top:0;
     padding:clamp(90px,14vh,150px) clamp(20px,5vw,56px);
     background:var(--bg);
     display:grid;
@@ -425,7 +434,7 @@
     .text-col{ padding:20px clamp(20px,5vw,40px); align-items:flex-start; }
     .panels{ position:relative; }
     .panel{ position:absolute; }
-    .services-wrap{ height:502.5vh; }
+    .services-wrap{ height:366vh; }
     .about{ grid-template-columns:1fr; }
     .about-figure{ max-width:220px; }
     .contact-grid{ grid-template-columns:1fr; }
@@ -468,14 +477,7 @@
 <section class="services-wrap" id="work">
   <div class="services-sticky">
     <div class="services-progress" id="servicesProgress" role="progressbar" aria-label="Services progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-      <div class="services-progress-track"></div>
-      <div class="services-progress-fill" id="servicesProgressFill"></div>
-      <div class="services-progress-steps">
-        <span class="services-progress-step active" data-i="0">01</span>
-        <span class="services-progress-step" data-i="1">02</span>
-        <span class="services-progress-step" data-i="2">03</span>
-        <span class="services-progress-step" data-i="3">04</span>
-      </div>
+      <div class="services-progress-steps" id="servicesProgressSteps"></div>
     </div>
     <div class="shape-col">
       <div class="shape-stage">
@@ -517,17 +519,6 @@
             <li>Animated logos</li>
           </ul>
         </div>
-        <div class="panel" data-i="3">
-          <p class="tag">Virtual Tours</p>
-          <h2>Spaces you can walk before they're built.</h2>
-          <p>360° walkthroughs and architectural visualization for real estate and development — from floor plans to fully lit, interactive tours that let a client stand in a room that doesn't exist yet.</p>
-          <ul>
-            <li>360° interactive walkthroughs</li>
-            <li>Architectural visualization</li>
-            <li>Pre-construction renders</li>
-            <li>Web-embeddable tours</li>
-          </ul>
-        </div>
       </div>
     </div>
   </div>
@@ -547,11 +538,11 @@
     <p class="section-label">About</p>
     <h2>Ten years of making things that aren't there look like they always were.</h2>
     <p>I'm ArtOf_Nobody, a freelance VFX and CGI artist working with production companies, agencies and real estate developers who need a shot fixed, an asset built, or a space imagined before it's poured in concrete.</p>
-    <p>My background is in compositing, which means every discipline I've picked up since — 3D, motion graphics, virtual tours — gets judged by the same standard: does it sit believably in the frame. I run projects solo end-to-end, or slot into a larger pipeline as one more artist on the crew.</p>
+    <p>My background is in compositing, which means every discipline I've picked up since — 3D and motion graphics — gets judged by the same standard: does it sit believably in the frame. I run projects solo end-to-end, or slot into a larger pipeline as one more artist on the crew.</p>
     <div class="about-stats">
       <div><b>10+</b><span>YEARS IN PRODUCTION</span></div>
       <div><b>140</b><span>PROJECTS DELIVERED</span></div>
-      <div><b>4</b><span>DISCIPLINES</span></div>
+      <div><b>3</b><span>DISCIPLINES</span></div>
     </div>
   </div>
 </section>
@@ -577,7 +568,7 @@
 
 <footer>
   <span>© <span id="year"></span> ArtOf_Nobody. All rights reserved.</span>
-  <span>Compositing · CGI · Motion Graphics · Virtual Tours</span>
+  <span>Compositing · CGI · Motion Graphics</span>
 </footer>
 
 <script>
@@ -614,6 +605,7 @@
       localStorage.setItem('artofnobody-theme', 'light');
     }
     updateThemeToggle();
+    updateModelMaterials();
     onHeaderScroll();
   });
   updateThemeToggle();
@@ -623,20 +615,46 @@
   var modelScene;
   var modelCamera;
   var modelRenderer;
-  var modelMixer;
-  var modelDuration = 0;
-  var modelProgress = 0;
+  var modelViewSize = 3.6;
+  var modelMaterials = [];
+  var modelEntries = [];
+  var modelScrollProgress = 0;
+  var modelOverlap = 0.25;
 
-  function setModelProgress(progress){
-    modelProgress = Math.max(0, Math.min(1, progress));
-    if (modelMixer) modelMixer.setTime(modelProgress * modelDuration);
+  function getModelMaterialColor(){
+    var variable = root.getAttribute('data-theme') === 'light' ? '--model-light' : '--model-dark';
+    return getComputedStyle(root).getPropertyValue(variable).trim();
+  }
+
+  function updateModelMaterials(){
+    var color = getModelMaterialColor();
+    modelMaterials.forEach(function(material){
+      material.color.set(color);
+      material.needsUpdate = true;
+    });
+  }
+
+  function setModelTimelineProgress(progress){
+    modelScrollProgress = Math.max(0, Math.min(1, progress));
+    var timelineLength = 1 + (serviceSections - 1) * (1 - modelOverlap);
+    var timelinePosition = modelScrollProgress * timelineLength;
+    modelEntries.forEach(function(entry){
+      var entryProgress = timelinePosition - entry.serviceIndex * (1 - modelOverlap);
+      var isActive = entryProgress >= 0 && entryProgress <= 1;
+      entry.root.visible = isActive;
+      if (entry.mixer) entry.mixer.setTime(Math.max(0, Math.min(1, entryProgress)) * entry.duration);
+    });
   }
 
   function resizeModel(){
     if (!modelRenderer) return;
     var rect = modelCanvas.getBoundingClientRect();
     modelRenderer.setSize(rect.width, rect.height, false);
-    modelCamera.aspect = rect.width / rect.height;
+    var aspect = rect.width / rect.height;
+    modelCamera.left = -modelViewSize * aspect / 2;
+    modelCamera.right = modelViewSize * aspect / 2;
+    modelCamera.top = modelViewSize / 2;
+    modelCamera.bottom = -modelViewSize / 2;
     modelCamera.updateProjectionMatrix();
   }
 
@@ -649,32 +667,83 @@
     model.scale.setScalar(2.1 / maxSize);
   }
 
+  async function loadServiceModel(path, serviceIndex, loaderModule, THREE_MODULE){
+    var gltf = await loaderModule.loadAsync(path);
+    gltf.scene.traverse(function(object){
+      if (!object.isMesh) return;
+      var hasMaterialArray = Array.isArray(object.material);
+      var materials = hasMaterialArray ? object.material : [object.material];
+      var lambertMaterials = materials.map(function(material){
+        var lambertMaterial = new THREE_MODULE.MeshLambertMaterial({
+          color: getModelMaterialColor(),
+          map: material.map || null,
+          vertexColors: material.vertexColors,
+          transparent: material.transparent,
+          opacity: material.opacity,
+          side: material.side
+        });
+        modelMaterials.push(lambertMaterial);
+        return lambertMaterial;
+      });
+      object.material = hasMaterialArray ? lambertMaterials : lambertMaterials[0];
+    });
+    frameModel(gltf.scene);
+    gltf.scene.scale.multiplyScalar(0.7);
+    gltf.scene.visible = false;
+    modelScene.add(gltf.scene);
+
+    var duration = gltf.animations.reduce(function(maxDuration, clip){
+      return Math.max(maxDuration, clip.duration);
+    }, 0);
+    var entry = {
+      serviceIndex: serviceIndex,
+      root: gltf.scene,
+      mixer: duration ? new THREE_MODULE.AnimationMixer(gltf.scene) : null,
+      duration: duration
+    };
+    if (entry.mixer){
+      gltf.animations.forEach(function(clip){ entry.mixer.clipAction(clip).play(); });
+    }
+    modelEntries.push(entry);
+    setModelTimelineProgress(modelScrollProgress);
+  }
+
   async function loadVfxModel(){
     var THREE_MODULE = await import('three');
     var loaderModule = await import('three/addons/loaders/GLTFLoader.js');
+    var loader = new loaderModule.GLTFLoader();
     window.THREE = THREE_MODULE;
     modelScene = new THREE_MODULE.Scene();
-    modelCamera = new THREE_MODULE.PerspectiveCamera(28, 1, 0.01, 100);
-    modelCamera.position.set(0, 0, 5);
+    modelCamera = new THREE_MODULE.OrthographicCamera(-1, 1, 1, -1, 0.01, 100);
+    modelCamera.position.set(0, 5, 0);
+    modelCamera.up.set(0, 0, -1);
+    modelCamera.lookAt(0, 0, 0);
     modelRenderer = new THREE_MODULE.WebGLRenderer({ canvas:modelCanvas, alpha:true, antialias:true });
     modelRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     modelRenderer.outputColorSpace = THREE_MODULE.SRGBColorSpace;
-    modelScene.add(new THREE_MODULE.HemisphereLight(0xffffff, 0x20252d, 2.2));
-    var keyLight = new THREE_MODULE.DirectionalLight(0xffffff, 3.5);
-    keyLight.position.set(3, 4, 5);
+    var ambientLight = new THREE_MODULE.AmbientLight(0xffffff, 0.2);
+    ambientLight.position.set(-1.3, -1, 1);
+    ambientLight.rotation.set(
+      THREE_MODULE.MathUtils.degToRad(0),
+      THREE_MODULE.MathUtils.degToRad(-58),
+      THREE_MODULE.MathUtils.degToRad(35)
+    );
+    modelScene.add(ambientLight);
+    var keyLight = new THREE_MODULE.DirectionalLight(0xffffff, 3);
+    keyLight.position.set(1.75, 1.5, 1.9);
+    keyLight.rotation.set(
+      THREE_MODULE.MathUtils.degToRad(-50),
+      THREE_MODULE.MathUtils.degToRad(0),
+      THREE_MODULE.MathUtils.degToRad(-50)
+    );
+    var keyDirection = new THREE_MODULE.Vector3(0, 0, -1).applyEuler(keyLight.rotation);
+    keyLight.target.position.copy(keyLight.position).add(keyDirection);
     modelScene.add(keyLight);
+    modelScene.add(keyLight.target);
 
-    var gltf = await new loaderModule.GLTFLoader().loadAsync('3D_Icon_VFX_COMP.glb');
-    frameModel(gltf.scene);
-    modelScene.add(gltf.scene);
-    modelDuration = gltf.animations.reduce(function(duration, clip){
-      return Math.max(duration, clip.duration);
-    }, 0);
-    if (gltf.animations.length && modelDuration){
-      modelMixer = new THREE_MODULE.AnimationMixer(gltf.scene);
-      gltf.animations.forEach(function(clip){ modelMixer.clipAction(clip).play(); });
-      setModelProgress(modelProgress);
-    }
+    await loadServiceModel('3D_Icon_VFX_COMP.glb', 0, loader, THREE_MODULE);
+    await loadServiceModel('3D_Icon_3D_CGI.glb', 1, loader, THREE_MODULE);
+    await loadServiceModel('3D_Icon_MoGraph.glb', 2, loader, THREE_MODULE);
     resizeModel();
     requestAnimationFrame(renderModel);
   }
@@ -691,9 +760,37 @@
 
   var panels = Array.prototype.slice.call(document.querySelectorAll('.panel'));
   var progressBar = document.getElementById('servicesProgress');
-  var progressFill = document.getElementById('servicesProgressFill');
-  var progressSteps = Array.prototype.slice.call(document.querySelectorAll('.services-progress-step'));
+  var progressStepsContainer = document.getElementById('servicesProgressSteps');
+  var progressSteps = [];
+  var progressSegments = [];
   var wrap = document.querySelector('.services-wrap');
+  var serviceSections = Math.max(1, panels.length);
+
+  panels.forEach(function(panel, index){
+    var item = document.createElement('div');
+    item.className = 'services-progress-item';
+    var step = document.createElement('span');
+    step.className = 'services-progress-step' + (index === 0 ? ' active' : '');
+    step.dataset.i = index;
+    step.textContent = (index + 1 < 10 ? '0' : '') + (index + 1);
+    item.appendChild(step);
+    var segment = document.createElement('div');
+    segment.className = 'services-progress-segment';
+    var segmentFill = document.createElement('div');
+    segmentFill.className = 'services-progress-segment-fill';
+    segment.appendChild(segmentFill);
+    item.appendChild(segment);
+    progressStepsContainer.appendChild(item);
+    progressSteps.push(step);
+    progressSegments.push(segmentFill);
+  });
+
+  function sizeServices(){
+    var segmentHeight = window.innerWidth <= 860 ? 121.3333 : 134.6667;
+    var bufferRatio = 0;
+    wrap.style.height = (2 + serviceSections * segmentHeight * (1 + bufferRatio)) + 'vh';
+  }
+  sizeServices();
 
   var ticking = false;
 
@@ -701,15 +798,14 @@
     ticking = false;
     var rect = wrap.getBoundingClientRect();
     var vh = window.innerHeight;
-    var buffer = (rect.height - (vh * 2)) * (3 / 11);
+    var buffer = 0;
     var total = rect.height - (vh * 2) - buffer;
     var scrolled = -rect.top - vh;
     var progress = total > 0 ? scrolled / total : 0;
     progress = Math.max(0, Math.min(1, progress));
-    progressFill.style.height = (progress * 100) + '%';
     progressBar.setAttribute('aria-valuenow', Math.round(progress * 100));
 
-    var segments = panels.length - 1;
+    var segments = serviceSections;
     var scaled = progress * segments;
     var idx = Math.floor(scaled);
     if (idx >= segments) idx = segments - 1;
@@ -717,20 +813,29 @@
     if (progress >= 1) { idx = segments - 1; localT = 1; }
     if (progress <= 0) { idx = 0; localT = 0; }
 
+    progressSegments.forEach(function(segmentFill, index){
+      var segmentProgress = index < idx ? 1 : (index === idx ? localT : 0);
+      segmentFill.style.height = (segmentProgress * 100) + '%';
+    });
+
     var textTransitionT = localT < 0.75 ? 0 : (localT - 0.75) / 0.25;
-    modelCanvas.style.visibility = idx === 0 ? 'visible' : 'hidden';
-    setModelProgress(idx === 0 ? localT : 0);
+  setModelTimelineProgress(progress);
+    modelCanvas.style.visibility = modelEntries.some(function(entry){ return entry.root.visible; })
+      ? 'visible'
+      : 'hidden';
 
     var activeIndex = idx + (localT >= 0.85 ? 1 : 0);
-    if (activeIndex > segments) activeIndex = segments;
+    if (activeIndex >= segments) activeIndex = segments - 1;
     progressSteps.forEach(function(step){
       var i = parseInt(step.dataset.i, 10);
       step.classList.toggle('active', i === activeIndex);
     });
 
-    panels.forEach(function(panel){
-      var i = parseInt(panel.dataset.i, 10);
-      var opacity = i === idx ? 1 - textTransitionT : (i === idx + 1 ? textTransitionT : 0);
+    panels.forEach(function(panel, index){
+      var i = index;
+      var opacity = idx === segments - 1
+        ? (i === idx ? 1 : 0)
+        : (i === idx ? 1 - textTransitionT : (i === idx + 1 ? textTransitionT : 0));
       panel.style.opacity = opacity;
       panel.style.pointerEvents = opacity > 0.6 ? 'auto' : 'none';
       panel.setAttribute('aria-hidden', opacity < 0.4 ? 'true' : 'false');
@@ -746,6 +851,7 @@
 
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', function(){
+    sizeServices();
     resizeModel();
     onScroll();
   });

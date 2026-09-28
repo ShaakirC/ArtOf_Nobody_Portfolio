@@ -11,8 +11,9 @@
 
     var stage = ModelStage.create(canvas, {
       viewSize: 4.2,          // world units visible vertically, or function(aspect){ return units; }
-      pointerTarget: element  // where pointer events are read (defaults to the canvas);
+      pointerTarget: element, // where pointer events are read (defaults to the canvas);
                               // use a covering element when the canvas sits behind content
+      lights: function(scene, THREE){} // replaces the default ambient + key light
     });
     stage.load('assets/models/thing.glb', {
       behavior: 'spin',       // registered behavior name
@@ -111,6 +112,7 @@ export function create(canvas, options){
   options = options || {};
   var viewSize = options.viewSize || 4.2;
   var pointerTarget = options.pointerTarget || canvas;
+  var addLights = options.lights || addDefaultLights;
   var themedMaterials = [];
   var loopOwners = new Set();
   var dirty = true;
@@ -414,7 +416,7 @@ export function create(canvas, options){
     stage.renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
     stage.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     stage.renderer.outputColorSpace = THREE.SRGBColorSpace;
-    addDefaultLights(stage.scene, THREE);
+    addLights(stage.scene, THREE);
     raycaster = new THREE.Raycaster();
     pointerCoords = new THREE.Vector2();
     projected = new THREE.Vector3();

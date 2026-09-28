@@ -31,11 +31,59 @@ var SAMPLE_STEP = 4;
 
 var AVOID_SELECTOR = '.hero-eyebrow, .hero h1, .hero-scroll-cue';
 
+// Lighting, per theme. The logo's edges only show as it tilts, so the rim comes from how
+// its side walls are lit compared with its front face:
+//   dark:  strong back lights make the walls brighter than the front (a light rim).
+//   light: a low ambient leaves the walls in shadow, and a front light (from the camera)
+//          lifts only the front face back up, so the walls read darker (a dark rim).
+// The front face gets ambient + front, and the walls get ambient + back.
+var LIGHTING = {
+  dark: { ambient: 1, front: 0, back: 10 },
+  light: { ambient: 0.4, front: 0.6, back: 0 }
+};
+// The camera looks down from +Y, so -Y is behind the logo; -Z points to the top of the
+// screen and +Z to the bottom, so each back light rims one set of faces.
+var FRONT_LIGHT_POSITION = [0, 5, 0];
+var BACK_LIGHT_POSITIONS = [
+  [0, -3, -2], // rims the faces toward the top of the screen
+  [0, -3, 2]   // rims the faces toward the bottom of the screen
+];
+
+var heroLights = null;
+
+function addHeroLights(scene, THREE){
+  heroLights = {
+    ambient: new THREE.AmbientLight(0xffffff, 0),
+    front: new THREE.DirectionalLight(0xffffff, 0),
+    back: BACK_LIGHT_POSITIONS.map(function(position){
+      var light = new THREE.DirectionalLight(0xffffff, 0);
+      light.position.fromArray(position);
+      return light;
+    })
+  };
+  heroLights.front.position.fromArray(FRONT_LIGHT_POSITION);
+  scene.add(heroLights.ambient, heroLights.front);
+  heroLights.back.forEach(function(light){ scene.add(light); });
+  applyThemeLighting();
+}
+
+function applyThemeLighting(){
+  if (!heroLights) return;
+  var settings = LIGHTING[document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'];
+  heroLights.ambient.intensity = settings.ambient;
+  heroLights.front.intensity = settings.front;
+  heroLights.back.forEach(function(light){ light.intensity = settings.back; });
+}
+
 export function initHero(){
   var hero = document.querySelector('.hero');
   var canvas = document.getElementById('heroModel');
   // The canvas sits behind the text, so pointer events are read from the whole hero.
-  var stage = ModelStage.create(canvas, { pointerTarget: hero });
+  var stage = ModelStage.create(canvas, { pointerTarget: hero, lights: addHeroLights });
+  new MutationObserver(function(){
+    applyThemeLighting();
+    stage.requestRender();
+  }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
   stage.ready.catch(function(error){
     console.error('Unable to start the hero model stage:', error);

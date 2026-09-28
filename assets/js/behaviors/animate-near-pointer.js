@@ -15,7 +15,7 @@ var RADIUS = 90;
 var LINGER = 0.3;
 // Playback speed multipliers for the forward and reverse directions.
 var FORWARD_SPEED = 1;
-var REVERSE_SPEED = 1;
+var REVERSE_SPEED = .4;
 
 registerBehavior('animate-near-pointer', {
   setup: function(entry, stage){

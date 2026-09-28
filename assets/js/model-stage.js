@@ -1,0 +1,386 @@
+/*
+  ModelStage: one WebGL canvas that shows any number of glTF models.
+
+  Rendering is on demand. A frame is drawn only after something changes
+  (requestRender) or while a behavior holds a continuous loop
+  (startLoop/stopLoop). Nothing is drawn while the canvas is off screen or the
+  tab is hidden. Three.js is imported lazily, so if the CDN fails only the
+  models are missing and the rest of the page keeps working.
+
+    import * as ModelStage from './model-stage.js';
+
+    var stage = ModelStage.create(canvas, { viewSize: 4.2 });
+    stage.load('assets/models/thing.glb', { behavior: 'spin' }).then(function(entry){ ... });
+    stage.setEntryVisible(entry, true);
+    stage.setEntryProgress(entry, 0.5);   // scrub the model's animation, 0..1
+
+  Behaviors add interactivity. Give each one its own file in js/behaviors/,
+  import that file from js/behaviors/index.js, and register it by name. Every
+  hook is optional:
+
+    import { registerBehavior } from '../model-stage.js';
+
+    registerBehavior('spin', {
+      cursor: 'grab',                                  // cursor while hovering the model
+      setup: function(entry, stage){},                 // once, after the model loads
+      update: function(entry, dt, stage){},            // each frame while a loop is running
+      onPointerEnter: function(entry, pointer, stage){},
+      onPointerMove: function(entry, pointer, stage){},
+      onPointerLeave: function(entry, pointer, stage){},
+      onPointerDown: function(entry, pointer, stage){}, // captures the pointer until onPointerUp
+      onPointerUp: function(entry, pointer, stage){}
+    });
+
+  pointer is { event, intersection }, where intersection is the Three.js
+  raycast hit or null. entry.state is scratch space for the behavior, and
+  entry.data holds the options.data passed to load().
+*/
+var behaviors = {};
+var threePromise = null;
+var POINTER_HOOKS = ['onPointerEnter', 'onPointerMove', 'onPointerLeave', 'onPointerDown', 'onPointerUp'];
+
+// Every stage shares a single Three.js download.
+function loadThree(){
+  if (!threePromise){
+    threePromise = Promise.all([
+      import('three'),
+      import('three/addons/loaders/GLTFLoader.js')
+    ]).then(function(modules){
+      return { THREE: modules[0], loader: new modules[1].GLTFLoader() };
+    });
+  }
+  return threePromise;
+}
+
+function getThemeModelColor(){
+  var root = document.documentElement;
+  var variable = root.getAttribute('data-theme') === 'light' ? '--model-light' : '--model-dark';
+  return getComputedStyle(root).getPropertyValue(variable).trim();
+}
+
+function addDefaultLights(scene, THREE){
+  scene.add(new THREE.AmbientLight(0xffffff, 0.2));
+  var keyLight = new THREE.DirectionalLight(0xffffff, 3);
+  keyLight.position.set(1.76, 1.9, 1.5);
+  var keyRotation = new THREE.Euler(THREE.MathUtils.degToRad(-50), 0, THREE.MathUtils.degToRad(-50));
+  var keyDirection = new THREE.Vector3(0, 0, -1).applyEuler(keyRotation);
+  keyLight.target.position.copy(keyLight.position).add(keyDirection);
+  scene.add(keyLight);
+  scene.add(keyLight.target);
+}
+
+function hasPointerHooks(behavior){
+  return POINTER_HOOKS.some(function(name){ return typeof behavior[name] === 'function'; });
+}
+
+function findEntry(object){
+  while (object){
+    if (object.userData.modelEntry) return object.userData.modelEntry;
+    object = object.parent;
+  }
+  return null;
+}
+
+export function create(canvas, options){
+  options = options || {};
+  var viewSize = options.viewSize || 4.2;
+  var themedMaterials = [];
+  var loopOwners = new Set();
+  var dirty = true;
+  var frameId = 0;
+  var lastFrameTime = 0;
+  var onScreen = false;
+  var pageVisible = document.visibilityState === 'visible';
+  var raycaster = null;
+  var pointerCoords = null;
+  var hoveredEntry = null;
+  var capturedEntry = null;
+
+  var stage = {
+    canvas: canvas,
+    entries: [],
+    THREE: null,
+    scene: null,
+    camera: null,
+    renderer: null,
+    ready: null,
+    load: load,
+    requestRender: requestRender,
+    startLoop: startLoop,
+    stopLoop: stopLoop,
+    setEntryVisible: setEntryVisible,
+    setEntryProgress: setEntryProgress
+  };
+
+  // ---------- frame scheduling ----------
+  function canDraw(){
+    return !!stage.renderer && onScreen && pageVisible;
+  }
+
+  function scheduleFrame(){
+    if (!frameId && canDraw() && (dirty || loopOwners.size)){
+      frameId = window.requestAnimationFrame(frame);
+    }
+  }
+
+  function pause(){
+    if (frameId){
+      window.cancelAnimationFrame(frameId);
+      frameId = 0;
+    }
+    lastFrameTime = 0;
+  }
+
+  function frame(time){
+    frameId = 0;
+    dirty = false;
+    if (loopOwners.size){
+      var dt = lastFrameTime ? Math.min(0.1, (time - lastFrameTime) / 1000) : 0;
+      lastFrameTime = time;
+      stage.entries.forEach(function(entry){
+        if (entry.root.visible && entry.behavior.update) entry.behavior.update(entry, dt, stage);
+      });
+    } else {
+      lastFrameTime = 0;
+    }
+    stage.renderer.render(stage.scene, stage.camera);
+    scheduleFrame();
+  }
+
+  function requestRender(){
+    dirty = true;
+    scheduleFrame();
+  }
+
+  // Owners are any value (a string, an entry) so separate interactions can overlap.
+  function startLoop(owner){
+    loopOwners.add(owner);
+    scheduleFrame();
+  }
+
+  function stopLoop(owner){
+    loopOwners.delete(owner);
+  }
+
+  function updateActivity(){
+    if (canDraw()) scheduleFrame();
+    else pause();
+  }
+
+  // ---------- sizing & theme ----------
+  function resize(){
+    var width = canvas.clientWidth;
+    var height = canvas.clientHeight;
+    if (!width || !height) return;
+    stage.renderer.setSize(width, height, false);
+    var aspect = width / height;
+    stage.camera.left = -viewSize * aspect / 2;
+    stage.camera.right = viewSize * aspect / 2;
+    stage.camera.top = viewSize / 2;
+    stage.camera.bottom = -viewSize / 2;
+    stage.camera.updateProjectionMatrix();
+    requestRender();
+  }
+
+  function refreshThemedMaterials(){
+    var color = getThemeModelColor();
+    themedMaterials.forEach(function(material){ material.color.set(color); });
+    requestRender();
+  }
+
+  function applyThemedMaterials(root){
+    var THREE = stage.THREE;
+    root.traverse(function(object){
+      if (!object.isMesh) return;
+      var hasMaterialArray = Array.isArray(object.material);
+      var materials = hasMaterialArray ? object.material : [object.material];
+      var lambertMaterials = materials.map(function(material){
+        var lambertMaterial = new THREE.MeshLambertMaterial({
+          color: getThemeModelColor(),
+          map: material.map || null,
+          vertexColors: material.vertexColors,
+          transparent: material.transparent,
+          opacity: material.opacity,
+          side: material.side
+        });
+        themedMaterials.push(lambertMaterial);
+        return lambertMaterial;
+      });
+      object.material = hasMaterialArray ? lambertMaterials : lambertMaterials[0];
+    });
+  }
+
+  // ---------- entries ----------
+  function load(src, loadOptions){
+    loadOptions = loadOptions || {};
+    return stage.ready.then(function(){
+      return stage.loader.loadAsync(src);
+    }).then(function(gltf){
+      var behavior = {};
+      if (loadOptions.behavior){
+        behavior = behaviors[loadOptions.behavior];
+        if (!behavior){
+          console.warn('Unknown model behavior "' + loadOptions.behavior + '" for ' + src);
+          behavior = {};
+        }
+      }
+      var duration = gltf.animations.reduce(function(maxDuration, clip){
+        return Math.max(maxDuration, clip.duration);
+      }, 0);
+      var entry = {
+        src: src,
+        root: gltf.scene,
+        animations: gltf.animations,
+        mixer: duration ? new stage.THREE.AnimationMixer(gltf.scene) : null,
+        duration: duration,
+        progress: -1,
+        behavior: behavior,
+        interactive: hasPointerHooks(behavior),
+        data: loadOptions.data || {},
+        state: {}
+      };
+      if (entry.mixer){
+        gltf.animations.forEach(function(clip){ entry.mixer.clipAction(clip).play(); });
+      }
+      if (loadOptions.themed !== false) applyThemedMaterials(entry.root);
+      entry.root.visible = false;
+      entry.root.userData.modelEntry = entry;
+      stage.scene.add(entry.root);
+      stage.entries.push(entry);
+      if (behavior.setup) behavior.setup(entry, stage);
+      requestRender();
+      return entry;
+    });
+  }
+
+  function setEntryVisible(entry, visible){
+    if (entry.root.visible === visible) return;
+    entry.root.visible = visible;
+    if (!visible) releaseEntry(entry);
+    requestRender();
+  }
+
+  function setEntryProgress(entry, progress){
+    progress = Math.max(0, Math.min(1, progress));
+    if (!entry.mixer || entry.progress === progress) return;
+    entry.progress = progress;
+    entry.mixer.setTime(progress * entry.duration);
+    requestRender();
+  }
+
+  // ---------- pointer interaction ----------
+  function callHook(entry, name, event, intersection){
+    var hook = entry && entry.behavior[name];
+    if (hook) hook(entry, { event: event, intersection: intersection || null }, stage);
+  }
+
+  function hitTest(event){
+    var roots = [];
+    stage.entries.forEach(function(entry){
+      if (entry.interactive && entry.root.visible) roots.push(entry.root);
+    });
+    if (!roots.length) return null;
+    var rect = canvas.getBoundingClientRect();
+    pointerCoords.set(
+      (event.clientX - rect.left) / rect.width * 2 - 1,
+      -((event.clientY - rect.top) / rect.height) * 2 + 1
+    );
+    raycaster.setFromCamera(pointerCoords, stage.camera);
+    var hits = raycaster.intersectObjects(roots, true);
+    return hits.length ? { entry: findEntry(hits[0].object), intersection: hits[0] } : null;
+  }
+
+  function setHovered(entry, event, hit){
+    if (entry === hoveredEntry) return;
+    callHook(hoveredEntry, 'onPointerLeave', event, null);
+    hoveredEntry = entry;
+    callHook(entry, 'onPointerEnter', event, hit && hit.intersection);
+    canvas.style.cursor = entry && entry.behavior.cursor ? entry.behavior.cursor : '';
+  }
+
+  // Ends hover and capture when an entry is hidden mid-interaction.
+  function releaseEntry(entry){
+    if (capturedEntry === entry){
+      callHook(entry, 'onPointerUp', null, null);
+      capturedEntry = null;
+    }
+    if (hoveredEntry === entry) setHovered(null, null, null);
+  }
+
+  function onPointerMove(event){
+    if (!stage.renderer) return;
+    var hit = hitTest(event);
+    if (capturedEntry){
+      callHook(capturedEntry, 'onPointerMove', event, hit && hit.entry === capturedEntry ? hit.intersection : null);
+      return;
+    }
+    setHovered(hit ? hit.entry : null, event, hit);
+    if (hit) callHook(hit.entry, 'onPointerMove', event, hit.intersection);
+  }
+
+  function onPointerDown(event){
+    if (!stage.renderer) return;
+    var hit = hitTest(event);
+    if (!hit || !hit.entry.behavior.onPointerDown) return;
+    capturedEntry = hit.entry;
+    canvas.setPointerCapture(event.pointerId);
+    callHook(capturedEntry, 'onPointerDown', event, hit.intersection);
+  }
+
+  function onPointerUp(event){
+    if (!capturedEntry) return;
+    var entry = capturedEntry;
+    capturedEntry = null;
+    if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
+    callHook(entry, 'onPointerUp', event, null);
+  }
+
+  function onPointerLeave(event){
+    if (!capturedEntry) setHovered(null, event, null);
+  }
+
+  // ---------- setup ----------
+  stage.ready = loadThree().then(function(three){
+    var THREE = three.THREE;
+    stage.THREE = THREE;
+    stage.loader = three.loader;
+    stage.scene = new THREE.Scene();
+    stage.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 100);
+    stage.camera.position.set(0, 5, 0);
+    stage.camera.up.set(0, 0, -1);
+    stage.camera.lookAt(0, 0, 0);
+    stage.renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+    stage.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    stage.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    addDefaultLights(stage.scene, THREE);
+    raycaster = new THREE.Raycaster();
+    pointerCoords = new THREE.Vector2();
+
+    new ResizeObserver(resize).observe(canvas);
+    new IntersectionObserver(function(records){
+      onScreen = records[records.length - 1].isIntersecting;
+      updateActivity();
+    }).observe(canvas);
+    document.addEventListener('visibilitychange', function(){
+      pageVisible = document.visibilityState === 'visible';
+      updateActivity();
+    });
+    new MutationObserver(refreshThemedMaterials)
+      .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+    canvas.addEventListener('pointermove', onPointerMove);
+    canvas.addEventListener('pointerdown', onPointerDown);
+    canvas.addEventListener('pointerup', onPointerUp);
+    canvas.addEventListener('pointercancel', onPointerUp);
+    canvas.addEventListener('pointerleave', onPointerLeave);
+
+    resize();
+    return stage;
+  });
+
+  return stage;
+}
+
+export function registerBehavior(name, behavior){
+  behaviors[name] = behavior;
+}

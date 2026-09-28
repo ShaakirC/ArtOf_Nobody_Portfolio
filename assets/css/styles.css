@@ -17,8 +17,7 @@
   --split-blend-mode: screen;
   --split-opacity-scale: 1;
   --split-offset-scale: 1;
-  --model-dark: #ffffff;
-  --model-light: #37393b;
+  --model-color: #ffffff;
   --header-solid: rgba(11,14,18,0.85);
   --header-gradient: linear-gradient(to bottom, rgba(11,14,18,0.9), rgba(11,14,18,0));
   --mono: 'IBM Plex Mono', monospace;
@@ -27,6 +26,7 @@
 }
 
 html[data-theme="light"]{
+  --model-color: #37393b;
   --bg: #f5f3ef;
   --bg-alt: #ebe7e1;
   --panel: #fffdfa;
@@ -114,6 +114,13 @@ header .logo .logo-light{ display:none; }
 html[data-theme="light"] header .logo .logo-dark{ display:none; }
 html[data-theme="light"] header .logo .logo-light{ display:block; }
 .header-actions{ display:flex; align-items:center; gap:clamp(16px,3vw,34px); }
+.header-nav{ display:flex; gap:clamp(16px,3vw,34px); }
+.header-nav a{
+  color:var(--ink-dim);
+  text-decoration:none;
+  transition:color 0.2s ease;
+}
+.header-nav a:hover{ color:var(--ink); }
 .theme-toggle{
   width:32px; height:32px; padding:0;
   display:grid; place-items:center;
@@ -138,11 +145,23 @@ html[data-theme="light"] .theme-toggle:hover .sun{ display:none; }
 .hero{
   position:relative; z-index:2;
   min-height:100vh;
-  display:flex; flex-direction:column; justify-content:center;
-  padding:0 clamp(20px,5vw,56px);
+  display:flex; flex-direction:column; justify-content:flex-start;
+  /* Text sits top-left, in the open space beside the logo's upper-left arm. */
+  --hero-text-top:clamp(96px, 14vh, 150px);
+  padding:var(--hero-text-top) clamp(20px,5vw,56px) 0;
   background:var(--hero-bg);
   border-bottom:1px solid var(--line);
 }
+.hero-model{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+}
+.hero-eyebrow,
+.hero h1{ position:relative; z-index:1; }
 .hero-eyebrow{
   font-family:var(--mono);
   font-size:13px;
@@ -156,29 +175,14 @@ html[data-theme="light"] .theme-toggle:hover .sun{ display:none; }
   font-size:clamp(2.4rem, 6vw, 5.2rem);
   line-height:1.02;
   letter-spacing:-0.02em;
-  margin:0 0 28px;
+  margin:0;
   max-width:16ch;
 }
-.hero-actions{ display:flex; gap:16px; flex-wrap:wrap; align-items:center; }
-.btn{
-  font-family:var(--mono);
-  font-size:13px;
-  padding:13px 22px;
-  border-radius:2px;
-  text-decoration:none;
-  display:inline-flex; align-items:center; gap:10px;
-  transition:transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
-}
-.btn-primary{ background:var(--ink); color:var(--bg); font-weight:500; }
-.btn-primary:hover{ transform:translateY(-1px); }
-.btn-ghost{ border:1px solid var(--line-bright); color:var(--ink); }
-.btn-ghost:hover{ border-color:var(--ink); color:var(--ink); }
-.btn:active{ transform:translateY(1px); }
 .theme-toggle:active{ transform:scale(0.92); }
 a:active{ opacity:0.72; }
 
 .hero-scroll-cue{
-  position:absolute; left:clamp(20px,5vw,56px); bottom:36px;
+  position:absolute; left:clamp(20px,5vw,56px); bottom:36px; z-index:1;
   font-family:var(--mono); font-size:12px; color:var(--ink-faint);
   display:flex; align-items:center; gap:10px;
 }
@@ -189,6 +193,12 @@ a:active{ opacity:0.72; }
   position:relative; z-index:1;
   height:406vh; /* fallback height; JavaScript sizes this from the service count */
   margin-top:-100vh;
+}
+/* The section starts behind the hero, so #work marks where the first service is fully in view. */
+.services-anchor{
+  position:absolute;
+  top:100vh; left:0;
+  width:1px; height:1px;
 }
 .services-sticky{
   position:sticky; top:0;

@@ -3,10 +3,11 @@ import './behaviors/index.js';
 import { initSite } from './site.js';
 import { initGrid } from './grid.js';
 import { initSplitText } from './split-text.js';
+import { initHero } from './hero.js';
 import { initServices } from './services.js';
 
 // Each feature starts independently so one failure doesn't take down the rest.
-[initSite, initGrid, initSplitText, initServices].forEach(function(init){
+[initSite, initGrid, initSplitText, initHero, initServices].forEach(function(init){
   try {
     init();
   } catch (error) {

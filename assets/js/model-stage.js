@@ -9,10 +9,19 @@
 
     import * as ModelStage from './model-stage.js';
 
-    var stage = ModelStage.create(canvas, { viewSize: 4.2 });
-    stage.load('assets/models/thing.glb', { behavior: 'spin' }).then(function(entry){ ... });
+    var stage = ModelStage.create(canvas, {
+      viewSize: 4.2,          // world units visible vertically, or function(aspect){ return units; }
+      pointerTarget: element  // where pointer events are read (defaults to the canvas);
+                              // use a covering element when the canvas sits behind content
+    });
+    stage.load('assets/models/thing.glb', {
+      behavior: 'spin',       // registered behavior name
+      colorVar: '--model-color' // CSS custom property for the theme-aware color (the default);
+                              // pass themed: false to keep the file's own materials
+    }).then(function(entry){ ... });
     stage.setEntryVisible(entry, true);
     stage.setEntryProgress(entry, 0.5);   // scrub the model's animation, 0..1
+    stage.setViewSize(value);             // reframe the camera, e.g. to fit a loaded model
 
   Behaviors add interactivity. Give each one its own file in js/behaviors/,
   import that file from js/behaviors/index.js, and register it by name. Every
@@ -52,10 +61,9 @@ function loadThree(){
   return threePromise;
 }
 
-function getThemeModelColor(){
-  var root = document.documentElement;
-  var variable = root.getAttribute('data-theme') === 'light' ? '--model-light' : '--model-dark';
-  return getComputedStyle(root).getPropertyValue(variable).trim();
+// Colors come from CSS custom properties, which the stylesheet redefines per theme.
+function getThemeColor(colorVar){
+  return getComputedStyle(document.documentElement).getPropertyValue(colorVar).trim();
 }
 
 function addDefaultLights(scene, THREE){
@@ -84,6 +92,7 @@ function findEntry(object){
 export function create(canvas, options){
   options = options || {};
   var viewSize = options.viewSize || 4.2;
+  var pointerTarget = options.pointerTarget || canvas;
   var themedMaterials = [];
   var loopOwners = new Set();
   var dirty = true;
@@ -109,7 +118,8 @@ export function create(canvas, options){
     startLoop: startLoop,
     stopLoop: stopLoop,
     setEntryVisible: setEntryVisible,
-    setEntryProgress: setEntryProgress
+    setEntryProgress: setEntryProgress,
+    setViewSize: setViewSize
   };
 
   // ---------- frame scheduling ----------
@@ -174,21 +184,26 @@ export function create(canvas, options){
     if (!width || !height) return;
     stage.renderer.setSize(width, height, false);
     var aspect = width / height;
-    stage.camera.left = -viewSize * aspect / 2;
-    stage.camera.right = viewSize * aspect / 2;
-    stage.camera.top = viewSize / 2;
-    stage.camera.bottom = -viewSize / 2;
+    var size = typeof viewSize === 'function' ? viewSize(aspect) : viewSize;
+    stage.camera.left = -size * aspect / 2;
+    stage.camera.right = size * aspect / 2;
+    stage.camera.top = size / 2;
+    stage.camera.bottom = -size / 2;
     stage.camera.updateProjectionMatrix();
     requestRender();
   }
 
+  function setViewSize(value){
+    viewSize = value;
+    if (stage.renderer) resize();
+  }
+
   function refreshThemedMaterials(){
-    var color = getThemeModelColor();
-    themedMaterials.forEach(function(material){ material.color.set(color); });
+    themedMaterials.forEach(function(themed){ themed.material.color.set(getThemeColor(themed.colorVar)); });
     requestRender();
   }
 
-  function applyThemedMaterials(root){
+  function applyThemedMaterials(root, colorVar){
     var THREE = stage.THREE;
     root.traverse(function(object){
       if (!object.isMesh) return;
@@ -196,14 +211,14 @@ export function create(canvas, options){
       var materials = hasMaterialArray ? object.material : [object.material];
       var lambertMaterials = materials.map(function(material){
         var lambertMaterial = new THREE.MeshLambertMaterial({
-          color: getThemeModelColor(),
+          color: getThemeColor(colorVar),
           map: material.map || null,
           vertexColors: material.vertexColors,
           transparent: material.transparent,
           opacity: material.opacity,
           side: material.side
         });
-        themedMaterials.push(lambertMaterial);
+        themedMaterials.push({ material: lambertMaterial, colorVar: colorVar });
         return lambertMaterial;
       });
       object.material = hasMaterialArray ? lambertMaterials : lambertMaterials[0];
@@ -242,7 +257,7 @@ export function create(canvas, options){
       if (entry.mixer){
         gltf.animations.forEach(function(clip){ entry.mixer.clipAction(clip).play(); });
       }
-      if (loadOptions.themed !== false) applyThemedMaterials(entry.root);
+      if (loadOptions.themed !== false) applyThemedMaterials(entry.root, loadOptions.colorVar || '--model-color');
       entry.root.visible = false;
       entry.root.userData.modelEntry = entry;
       stage.scene.add(entry.root);
@@ -295,7 +310,7 @@ export function create(canvas, options){
     callHook(hoveredEntry, 'onPointerLeave', event, null);
     hoveredEntry = entry;
     callHook(entry, 'onPointerEnter', event, hit && hit.intersection);
-    canvas.style.cursor = entry && entry.behavior.cursor ? entry.behavior.cursor : '';
+    pointerTarget.style.cursor = entry && entry.behavior.cursor ? entry.behavior.cursor : '';
   }
 
   // Ends hover and capture when an entry is hidden mid-interaction.
@@ -323,7 +338,7 @@ export function create(canvas, options){
     var hit = hitTest(event);
     if (!hit || !hit.entry.behavior.onPointerDown) return;
     capturedEntry = hit.entry;
-    canvas.setPointerCapture(event.pointerId);
+    pointerTarget.setPointerCapture(event.pointerId);
     callHook(capturedEntry, 'onPointerDown', event, hit.intersection);
   }
 
@@ -331,7 +346,7 @@ export function create(canvas, options){
     if (!capturedEntry) return;
     var entry = capturedEntry;
     capturedEntry = null;
-    if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
+    if (pointerTarget.hasPointerCapture(event.pointerId)) pointerTarget.releasePointerCapture(event.pointerId);
     callHook(entry, 'onPointerUp', event, null);
   }
 
@@ -368,11 +383,11 @@ export function create(canvas, options){
     new MutationObserver(refreshThemedMaterials)
       .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
-    canvas.addEventListener('pointermove', onPointerMove);
-    canvas.addEventListener('pointerdown', onPointerDown);
-    canvas.addEventListener('pointerup', onPointerUp);
-    canvas.addEventListener('pointercancel', onPointerUp);
-    canvas.addEventListener('pointerleave', onPointerLeave);
+    pointerTarget.addEventListener('pointermove', onPointerMove);
+    pointerTarget.addEventListener('pointerdown', onPointerDown);
+    pointerTarget.addEventListener('pointerup', onPointerUp);
+    pointerTarget.addEventListener('pointercancel', onPointerUp);
+    pointerTarget.addEventListener('pointerleave', onPointerLeave);
 
     resize();
     return stage;

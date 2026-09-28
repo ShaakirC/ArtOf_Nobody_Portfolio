@@ -35,6 +35,10 @@
     <img class="logo-light" src="assets/images/logo_bl_LR.png" alt="ArtOf_Nobody">
   </a>
   <div class="header-actions">
+    <nav class="header-nav" aria-label="Main">
+      <a href="#work">Work</a>
+      <a href="#contact">Contact</a>
+    </nav>
     <button class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">
       <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
         <path d="M20.5 15.4A8.5 8.5 0 0 1 8.6 3.5 8.5 8.5 0 1 0 20.5 15.4Z"></path>
@@ -48,16 +52,14 @@
 </header>
 
 <section class="hero" id="top">
+  <canvas class="hero-model" id="heroModel" aria-hidden="true"></canvas>
   <p class="hero-eyebrow">Freelance VFX &amp; CGI Artist</p>
   <h1 data-split aria-label="ArtOf_Nobody">ArtOf_Nobody</h1>
-  <div class="hero-actions">
-    <a href="#contact" class="btn btn-primary">Start a project</a>
-    <a href="#work" class="btn btn-ghost">See the work</a>
-  </div>
   <div class="hero-scroll-cue"><span class="line"></span> Scroll to explore</div>
 </section>
 
-<section class="services-wrap" id="work">
+<section class="services-wrap">
+  <span class="services-anchor" id="work" aria-hidden="true"></span>
   <div class="services-sticky">
     <div class="services-progress" id="servicesProgress" role="progressbar" aria-label="Services progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
       <div class="services-progress-steps" id="servicesProgressSteps"></div>

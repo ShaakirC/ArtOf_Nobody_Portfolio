@@ -1,9 +1,16 @@
-// Hero backdrop: the logo model behind the hero text, tilting with the mouse.
+// Hero backdrop: the logo model behind the hero text, tilting with the mouse, with
+// scattered pieces on its surface that grow near the pointer.
 // The logo is centered, then nudged down (and only if needed, shrunk) until it
 // clears the text, so the heading never sits on top of it at any screen size.
 import * as ModelStage from './model-stage.js';
 
 var LOGO_SRC = 'assets/models/3D_Icon_Logo.glb';
+// Pieces authored in the logo's coordinates; attached to the logo so they follow it.
+var PIECES_SRC = 'assets/models/3D_Icon_Logo_Inst.glb';
+// How the pieces react to the cursor: 'grow-near-pointer' scales static pieces up,
+// 'animate-near-pointer' plays each piece's own animation forward and back,
+// 'morph-near-pointer' plays each piece's shape keys down from last to first.
+var PIECES_BEHAVIOR = 'morph-near-pointer';
 // Share of the hero height the logo fills.
 var LOGO_HEIGHT_SHARE = 0.6;
 // Largest share of the hero width the logo may take; narrow screens shrink it to fit.
@@ -33,7 +40,10 @@ export function initHero(){
   stage.ready.catch(function(error){
     console.error('Unable to start the hero model stage:', error);
   });
-  stage.load(LOGO_SRC, { behavior: 'tilt' }).then(function(entry){
+  var logoLoaded = stage.load(LOGO_SRC, { behavior: 'tilt' });
+  var piecesLoaded = stage.load(PIECES_SRC, { behavior: PIECES_BEHAVIOR, colorVar: '--hero-pieces-color' });
+
+  logoLoaded.then(function(entry){
     var THREE = stage.THREE;
     var box = new THREE.Box3().setFromObject(entry.root);
     var size = box.getSize(new THREE.Vector3());
@@ -59,6 +69,13 @@ export function initHero(){
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(requestFit);
   }, function(error){
     console.error('Unable to load model ' + LOGO_SRC + ':', error);
+  });
+
+  Promise.all([logoLoaded, piecesLoaded]).then(function(entries){
+    entries[0].root.add(entries[1].root);
+    stage.setEntryVisible(entries[1], true);
+  }, function(error){
+    console.error('Unable to load model ' + PIECES_SRC + ':', error);
   });
 }
 

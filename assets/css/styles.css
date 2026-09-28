@@ -18,6 +18,7 @@
   --split-opacity-scale: 1;
   --split-offset-scale: 1;
   --model-color: #ffffff;
+  --hero-pieces-color: #c9ccd1; /* a step off the logo so the pieces read as separate */
   --header-solid: rgba(11,14,18,0.85);
   --header-gradient: linear-gradient(to bottom, rgba(11,14,18,0.9), rgba(11,14,18,0));
   --mono: 'IBM Plex Mono', monospace;
@@ -27,6 +28,7 @@
 
 html[data-theme="light"]{
   --model-color: #37393b;
+  --hero-pieces-color: #5f6266;
   --bg: #f5f3ef;
   --bg-alt: #ebe7e1;
   --panel: #fffdfa;

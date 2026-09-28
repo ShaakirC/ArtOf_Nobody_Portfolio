@@ -37,12 +37,20 @@
       onPointerMove: function(entry, pointer, stage){},
       onPointerLeave: function(entry, pointer, stage){},
       onPointerDown: function(entry, pointer, stage){}, // captures the pointer until onPointerUp
-      onPointerUp: function(entry, pointer, stage){}
+      onPointerUp: function(entry, pointer, stage){},
+      onStagePointerMove: function(entry, pointer, stage){},  // any pointer move over the target,
+      onStagePointerLeave: function(entry, pointer, stage){}  // hit or not (e.g. proximity effects)
     });
 
-  pointer is { event, intersection }, where intersection is the Three.js
-  raycast hit or null. entry.state is scratch space for the behavior, and
-  entry.data holds the options.data passed to load().
+  pointer is { event, intersection, x, y }: intersection is the Three.js raycast
+  hit or null, and x/y are the pointer position in canvas pixels.
+  stage.projectToCanvas(worldPoint, out) gives a 3D point's canvas pixel position.
+  entry.state is scratch space for the behavior, and entry.data holds the
+  options.data passed to load().
+
+  A model loaded as its own entry can be attached to another with
+  other.root.add(entry.root) to inherit that model's movement. Pointer hits on
+  it count for the nearest interactive ancestor.
 */
 var behaviors = {};
 var threePromise = null;
@@ -81,12 +89,22 @@ function hasPointerHooks(behavior){
   return POINTER_HOOKS.some(function(name){ return typeof behavior[name] === 'function'; });
 }
 
+// Hits resolve to the nearest interactive entry, so attached models count as their parent.
 function findEntry(object){
   while (object){
-    if (object.userData.modelEntry) return object.userData.modelEntry;
+    var entry = object.userData.modelEntry;
+    if (entry && entry.interactive) return entry;
     object = object.parent;
   }
   return null;
+}
+
+function isShown(object){
+  while (object){
+    if (!object.visible) return false;
+    object = object.parent;
+  }
+  return true;
 }
 
 export function create(canvas, options){
@@ -102,6 +120,7 @@ export function create(canvas, options){
   var pageVisible = document.visibilityState === 'visible';
   var raycaster = null;
   var pointerCoords = null;
+  var projected = null;
   var hoveredEntry = null;
   var capturedEntry = null;
 
@@ -119,7 +138,8 @@ export function create(canvas, options){
     stopLoop: stopLoop,
     setEntryVisible: setEntryVisible,
     setEntryProgress: setEntryProgress,
-    setViewSize: setViewSize
+    setViewSize: setViewSize,
+    projectToCanvas: projectToCanvas
   };
 
   // ---------- frame scheduling ----------
@@ -205,11 +225,14 @@ export function create(canvas, options){
 
   function applyThemedMaterials(root, colorVar){
     var THREE = stage.THREE;
+    // Meshes that shared a material keep sharing one, so they can still be batched.
+    var replacements = new Map();
     root.traverse(function(object){
       if (!object.isMesh) return;
       var hasMaterialArray = Array.isArray(object.material);
       var materials = hasMaterialArray ? object.material : [object.material];
       var lambertMaterials = materials.map(function(material){
+        if (replacements.has(material)) return replacements.get(material);
         var lambertMaterial = new THREE.MeshLambertMaterial({
           color: getThemeColor(colorVar),
           map: material.map || null,
@@ -219,6 +242,7 @@ export function create(canvas, options){
           side: material.side
         });
         themedMaterials.push({ material: lambertMaterial, colorVar: colorVar });
+        replacements.set(material, lambertMaterial);
         return lambertMaterial;
       });
       object.material = hasMaterialArray ? lambertMaterials : lambertMaterials[0];
@@ -286,7 +310,28 @@ export function create(canvas, options){
   // ---------- pointer interaction ----------
   function callHook(entry, name, event, intersection){
     var hook = entry && entry.behavior[name];
-    if (hook) hook(entry, { event: event, intersection: intersection || null }, stage);
+    if (!hook) return;
+    var pointer = { event: event, intersection: intersection || null, x: NaN, y: NaN };
+    if (event){
+      var rect = canvas.getBoundingClientRect();
+      pointer.x = event.clientX - rect.left;
+      pointer.y = event.clientY - rect.top;
+    }
+    hook(entry, pointer, stage);
+  }
+
+  function notifyStagePointer(name, event){
+    stage.entries.forEach(function(entry){
+      if (entry.behavior[name] && isShown(entry.root)) callHook(entry, name, event, null);
+    });
+  }
+
+  function projectToCanvas(point, out){
+    projected.copy(point).project(stage.camera);
+    out = out || {};
+    out.x = (projected.x + 1) / 2 * canvas.clientWidth;
+    out.y = (1 - projected.y) / 2 * canvas.clientHeight;
+    return out;
   }
 
   function hitTest(event){
@@ -324,6 +369,7 @@ export function create(canvas, options){
 
   function onPointerMove(event){
     if (!stage.renderer) return;
+    notifyStagePointer('onStagePointerMove', event);
     var hit = hitTest(event);
     if (capturedEntry){
       callHook(capturedEntry, 'onPointerMove', event, hit && hit.entry === capturedEntry ? hit.intersection : null);
@@ -351,6 +397,7 @@ export function create(canvas, options){
   }
 
   function onPointerLeave(event){
+    notifyStagePointer('onStagePointerLeave', event);
     if (!capturedEntry) setHovered(null, event, null);
   }
 
@@ -370,6 +417,7 @@ export function create(canvas, options){
     addDefaultLights(stage.scene, THREE);
     raycaster = new THREE.Raycaster();
     pointerCoords = new THREE.Vector2();
+    projected = new THREE.Vector3();
 
     new ResizeObserver(resize).observe(canvas);
     new IntersectionObserver(function(records){

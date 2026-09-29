@@ -125,6 +125,9 @@ export function create(canvas, options){
   var raycaster = null;
   var pointerCoords = null;
   var projected = null;
+  // Canvas size in CSS px, kept by resize so per-vertex projection never reads layout.
+  var canvasWidth = 0;
+  var canvasHeight = 0;
   var hoveredEntry = null;
   var capturedEntry = null;
 
@@ -206,6 +209,8 @@ export function create(canvas, options){
     var width = canvas.clientWidth;
     var height = canvas.clientHeight;
     if (!width || !height) return;
+    canvasWidth = width;
+    canvasHeight = height;
     stage.renderer.setSize(width, height, false);
     var aspect = width / height;
     var size = typeof viewSize === 'function' ? viewSize(aspect) : viewSize;
@@ -333,8 +338,8 @@ export function create(canvas, options){
   function projectToCanvas(point, out){
     projected.copy(point).project(stage.camera);
     out = out || {};
-    out.x = (projected.x + 1) / 2 * canvas.clientWidth;
-    out.y = (1 - projected.y) / 2 * canvas.clientHeight;
+    out.x = (projected.x + 1) / 2 * canvasWidth;
+    out.y = (1 - projected.y) / 2 * canvasHeight;
     return out;
   }
 

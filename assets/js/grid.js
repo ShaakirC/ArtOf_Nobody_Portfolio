@@ -32,6 +32,8 @@ export function initGrid(){
   var rows = 0;
   var growth = new Float32Array(0);
   var activeIntersections = new Set();
+  // Intersections whose cross changed since the last frame; only their cells are repainted.
+  var dirtyIntersections = new Set();
   var gridColor = '255,255,255';
   var heroBottom = 0;
   var frameId = 0;
@@ -94,29 +96,70 @@ export function initGrid(){
     restingContext.fill(restingPath);
   }
 
+  // Repaints the whole canvas: after a resize, a theme change or a motion preference change.
   function drawGrid(){
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(restingCanvas, 0, 0);
+    activeIntersections.forEach(repaintCell);
+    dirtyIntersections.clear();
+  }
+
+  function drawDirtyCells(){
+    dirtyIntersections.forEach(repaintCell);
+    dirtyIntersections.clear();
+  }
+
+  function fillCross(index, arm, alpha){
+    var row = Math.floor(index / columns);
+    var column = index - row * columns;
+    context.beginPath();
+    appendCross(context, column * GRID_SIZE, row * GRID_SIZE, arm);
+    context.fillStyle = 'rgba(' + gridColor + ',' + alpha + ')';
+    context.fill();
+  }
+
+  function fillActiveCross(index){
+    var value = growth[index];
+    if (!(value > 0)) return;
+    var progress = 1 - Math.pow(1 - value, 3);
+    fillCross(index, REST_ARM + progress * (GRID_SIZE / 2 - REST_ARM), REST_ALPHA + (ACTIVE_ALPHA - REST_ALPHA) * value);
+  }
+
+  // Repaints the cell around one intersection: the square its arms can reach, plus a pixel so
+  // stroke edges are covered. Neighbouring arms reach at most the cell edge, so only this
+  // cross and the tips of its four neighbours can land inside it.
+  function repaintCell(index){
+    var row = Math.floor(index / columns);
+    var column = index - row * columns;
+    var reach = GRID_SIZE / 2 + 1;
+    // Device pixels, so the resting grid is copied back 1:1 without resampling.
+    var left = Math.max(0, Math.floor((column * GRID_SIZE - reach) * pixelRatio));
+    var top = Math.max(0, Math.floor((row * GRID_SIZE - reach) * pixelRatio));
+    var right = Math.min(canvas.width, Math.ceil((column * GRID_SIZE + reach) * pixelRatio));
+    var bottom = Math.min(canvas.height, Math.ceil((row * GRID_SIZE + reach) * pixelRatio));
+    if (right <= left || bottom <= top) return;
+
+    context.save();
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.beginPath();
+    context.rect(left, top, right - left, bottom - top);
+    context.clip();
+    context.clearRect(left, top, right - left, bottom - top);
+    context.drawImage(restingCanvas, left, top, right - left, bottom - top, left, top, right - left, bottom - top);
     context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-    context.clearRect(0, 0, viewportWidth, viewportHeight);
-    context.drawImage(restingCanvas, 0, 0, viewportWidth, viewportHeight);
-    activeIntersections.forEach(function(index){
-      var value = growth[index];
-      var row = Math.floor(index / columns);
-      var column = index - row * columns;
-      var progress = 1 - Math.pow(1 - value, 3);
-      var arm = REST_ARM + progress * (GRID_SIZE / 2 - REST_ARM);
-      var alpha = REST_ALPHA + (ACTIVE_ALPHA - REST_ALPHA) * value;
-      var restPath = new Path2D();
-      appendCross(restPath, column * GRID_SIZE, row * GRID_SIZE, REST_ARM);
-      context.save();
+    if (growth[index] > 0){
+      // An active cross replaces its resting one.
       context.globalCompositeOperation = 'destination-out';
-      context.fillStyle = 'rgba(0,0,0,1)';
-      context.fill(restPath);
-      context.restore();
-      var activePath = new Path2D();
-      appendCross(activePath, column * GRID_SIZE, row * GRID_SIZE, arm);
-      context.fillStyle = 'rgba(' + gridColor + ',' + alpha + ')';
-      context.fill(activePath);
-    });
+      fillCross(index, REST_ARM, 1);
+      context.globalCompositeOperation = 'source-over';
+      fillActiveCross(index);
+    }
+    if (column > 0) fillActiveCross(index - 1);
+    if (column < columns - 1) fillActiveCross(index + 1);
+    if (row > 0) fillActiveCross(index - columns);
+    if (row < rows - 1) fillActiveCross(index + columns);
+    context.restore();
   }
 
   function stopAnimation(){
@@ -137,21 +180,8 @@ export function initGrid(){
     return 1 - smooth;
   }
 
-  function hasChangingIntersections(){
-    var changing = false;
-    activeIntersections.forEach(function(index){
-      if (changing) return;
-      var target = getHoldTarget(index);
-      if (target !== null ? growth[index] < target : growth[index] > 0){
-        changing = true;
-      }
-    });
-    return changing;
-  }
-
   function animate(){
     frameId = 0;
-    var changed = false;
     var changing = false;
     activeIntersections.forEach(function(index){
       var value = growth[index];
@@ -162,7 +192,7 @@ export function initGrid(){
           if (target - nextValue < 0.01) nextValue = target;
           if (nextValue !== value){
             growth[index] = nextValue;
-            changed = true;
+            dirtyIntersections.add(index);
           }
           if (nextValue < target) changing = true;
         }
@@ -171,7 +201,7 @@ export function initGrid(){
         if (decayedValue < 0.01) decayedValue = 0;
         if (decayedValue !== value){
           growth[index] = decayedValue;
-          changed = true;
+          dirtyIntersections.add(index);
         }
         if (decayedValue > 0){
           changing = true;
@@ -180,25 +210,21 @@ export function initGrid(){
         }
       }
     });
-    if (changed) drawGrid();
-    if (changing) frameId = window.requestAnimationFrame(animate);
+    drawDirtyCells();
+    if (changing) scheduleFrame();
   }
 
-  function startAnimation(){
-    if (!frameId && !reducedMotion.matches && hasChangingIntersections()){
+  // All drawing happens in animate, once per frame; it stops when nothing is changing.
+  function scheduleFrame(){
+    if (!frameId && !reducedMotion.matches && activeIntersections.size){
       frameId = window.requestAnimationFrame(animate);
     }
-  }
-
-  function restartAnimation(){
-    stopAnimation();
-    startAnimation();
   }
 
   function setPointerInactive(){
     if (!lastPointer.active) return;
     lastPointer.active = false;
-    restartAnimation();
+    scheduleFrame();
   }
 
   function resizeCanvas(){
@@ -212,6 +238,7 @@ export function initGrid(){
     rows = Math.ceil(viewportHeight / GRID_SIZE) + 1;
     growth = new Float32Array(columns * rows);
     activeIntersections.clear();
+    dirtyIntersections.clear();
     updateHeroBottom();
     if (lastPointer.y < heroBottom) lastPointer.active = false;
     rebuildRestingGrid();
@@ -239,7 +266,7 @@ export function initGrid(){
     lastPointer.y = event.clientY;
     lastPointer.active = event.pointerType === 'mouse' && !reducedMotion.matches && event.clientY >= heroBottom;
     if (!lastPointer.active){
-      restartAnimation();
+      scheduleFrame();
       return;
     }
 
@@ -248,7 +275,6 @@ export function initGrid(){
     var maxColumn = Math.min(columns - 1, Math.floor((event.clientX + POINTER_RADIUS) / GRID_SIZE));
     var minRow = Math.max(0, Math.ceil((event.clientY - POINTER_RADIUS) / GRID_SIZE));
     var maxRow = Math.min(rows - 1, Math.floor((event.clientY + POINTER_RADIUS) / GRID_SIZE));
-    var pointerChanged = false;
 
     for (var row = minRow; row <= maxRow; row++){
       for (var column = minColumn; column <= maxColumn; column++){
@@ -262,14 +288,13 @@ export function initGrid(){
         var nextGrowth = Math.max(growth[index], strength * (1 - smooth));
         if (nextGrowth !== growth[index]){
           growth[index] = nextGrowth;
-          pointerChanged = true;
+          dirtyIntersections.add(index);
         }
         activeIntersections.add(index);
       }
     }
 
-    if (pointerChanged) drawGrid();
-    restartAnimation();
+    scheduleFrame();
   }
 
   function onScroll(){
@@ -280,6 +305,7 @@ export function initGrid(){
   function onMotionPreferenceChange(){
     stopAnimation();
     activeIntersections.clear();
+    dirtyIntersections.clear();
     growth.fill(0);
     rebuildRestingGrid();
     drawGrid();

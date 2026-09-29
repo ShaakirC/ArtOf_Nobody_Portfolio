@@ -10,7 +10,9 @@ export function initSplitText(){
   var states = Array.prototype.map.call(document.querySelectorAll('[data-split]'), function(heading){
     var text = heading.textContent;
     heading.setAttribute('aria-label', text);
-    return { element:heading, text:text, letters:[], positionsValid:false };
+    // bounds: the heading's viewport rect, cached until the next scroll or resize.
+    // Letter x/y are relative to it, so scrolling doesn't invalidate them.
+    return { element:heading, panel:heading.closest('.panel'), text:text, letters:[], positionsValid:false, bounds:null };
   });
   if (!states.length) return;
 
@@ -62,7 +64,24 @@ export function initSplitText(){
   }
 
   function invalidatePositions(){
-    states.forEach(function(state){ state.positionsValid = false; });
+    states.forEach(function(state){
+      state.positionsValid = false;
+      state.bounds = null;
+    });
+  }
+
+  function invalidateBounds(){
+    states.forEach(function(state){ state.bounds = null; });
+  }
+
+  // The red/cyan copies only exist while a letter is split (.is-split in the stylesheet),
+  // so resting letters cost no blended layers.
+  function setSplit(letter, split){
+    var offset = split.toFixed(2) + 'px';
+    letter.element.style.setProperty('--split-red-x', '-' + offset);
+    letter.element.style.setProperty('--split-cyan-x', offset);
+    letter.element.style.setProperty('--split-opacity', Math.min(1, split / MAX_SPLIT_PX).toFixed(3));
+    letter.element.classList.toggle('is-split', split > 0);
   }
 
   function scheduleFrame(){
@@ -77,10 +96,7 @@ export function initSplitText(){
         letter.split = 0;
         activeLetters.delete(letter);
       }
-      var offset = letter.split.toFixed(2) + 'px';
-      letter.element.style.setProperty('--split-red-x', '-' + offset);
-      letter.element.style.setProperty('--split-cyan-x', offset);
-      letter.element.style.setProperty('--split-opacity', Math.min(1, letter.split / MAX_SPLIT_PX).toFixed(3));
+      setSplit(letter, letter.split);
     });
     if (activeLetters.size) scheduleFrame();
   }
@@ -102,9 +118,11 @@ export function initSplitText(){
     if (!speedFactor) return;
 
     states.forEach(function(state){
-      var bounds = state.element.getBoundingClientRect();
-      var panel = state.element.closest('.panel');
-      if (panel && parseFloat(getComputedStyle(panel).opacity) <= 0.05) return;
+      // Service panels fade through an inline opacity set by services.js; reading the inline
+      // value avoids forcing a style recalculation on every mouse move.
+      if (state.panel && !(parseFloat(state.panel.style.opacity) > 0.05)) return;
+      if (!state.bounds) state.bounds = state.element.getBoundingClientRect();
+      var bounds = state.bounds;
       if (event.clientX < bounds.left - SPLIT_RADIUS || event.clientX > bounds.right + SPLIT_RADIUS ||
           event.clientY < bounds.top - SPLIT_RADIUS || event.clientY > bounds.bottom + SPLIT_RADIUS) return;
 
@@ -112,16 +130,16 @@ export function initSplitText(){
         var wordBounds = new Map();
         var range = document.createRange();
         var measuredLetters = state.letters.map(function(letter){
-          var bounds = wordBounds.get(letter.word);
-          if (!bounds){
-            bounds = letter.word.getBoundingClientRect();
-            wordBounds.set(letter.word, bounds);
+          var word = wordBounds.get(letter.word);
+          if (!word){
+            word = letter.word.getBoundingClientRect();
+            wordBounds.set(letter.word, word);
           }
           range.setStart(letter.textNode, letter.offset);
           range.setEnd(letter.textNode, letter.offset + letter.element.dataset.letter.length);
           var rect = range.getBoundingClientRect();
-          return { letter:letter, left:rect.left - bounds.left,
-            x:rect.left + rect.width / 2, y:rect.top + rect.height / 2 };
+          return { letter:letter, left:rect.left - word.left,
+            x:rect.left + rect.width / 2 - bounds.left, y:rect.top + rect.height / 2 - bounds.top };
         });
         measuredLetters.forEach(function(position){
           position.letter.x = position.x;
@@ -133,15 +151,12 @@ export function initSplitText(){
       }
 
       state.letters.forEach(function(letter){
-        var distance = Math.hypot(event.clientX - letter.x, event.clientY - letter.y);
+        var distance = Math.hypot(event.clientX - bounds.left - letter.x, event.clientY - bounds.top - letter.y);
         var split = MAX_SPLIT_PX * speedFactor * smoothFalloff(distance);
         if (split > letter.split){
           letter.split = split;
           activeLetters.add(letter);
-          var offset = split.toFixed(2) + 'px';
-          letter.element.style.setProperty('--split-red-x', '-' + offset);
-          letter.element.style.setProperty('--split-cyan-x', offset);
-          letter.element.style.setProperty('--split-opacity', Math.min(1, split / MAX_SPLIT_PX).toFixed(3));
+          setSplit(letter, split);
         }
       });
     });
@@ -166,6 +181,6 @@ export function initSplitText(){
   reducedMotion.addEventListener('change', applyMotionPreference);
   document.addEventListener('pointermove', onPointerMove, { passive:true });
   window.addEventListener('resize', invalidatePositions, { passive:true });
-  window.addEventListener('scroll', invalidatePositions, { passive:true });
+  window.addEventListener('scroll', invalidateBounds, { passive:true });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(invalidatePositions);
 }

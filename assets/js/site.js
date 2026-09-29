@@ -6,7 +6,7 @@ export function initSite(){
   // ---------- selected-tab favicon ----------
   var favicon = document.getElementById('site-favicon');
   function updateFavicon(){
-    favicon.href = document.visibilityState === 'visible' ? 'assets/images/logo_wh_LR.png' : 'assets/images/logo_bl_LR.png';
+    favicon.href = document.visibilityState === 'visible' ? 'assets/images/logo_wh_96.png' : 'assets/images/logo_bl_96.png';
   }
   document.addEventListener('visibilitychange', updateFavicon);
   updateFavicon();

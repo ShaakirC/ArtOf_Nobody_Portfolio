@@ -22,7 +22,8 @@ Suggested order: #1, #3 and #4 first (small code changes, biggest smoothness gai
 ## Biggest costs
 
 ### 1. Every mouse move over the hero raycasts the full logo mesh
-- [ ] Done
+- [x] Done (2026-09-29): hits now go to a hidden low-poly proxy, `3D_Icon_Logo_LP.glb`
+  (188 triangles, 7.6 KB). The pieces still raycast themselves.
 
 Update 2026-09-29: the re-exported logo is 11.8k triangles (was 38k), so this is about 3× cheaper
 already. A proxy mesh would still cut it to almost nothing.
@@ -69,7 +70,9 @@ cause of scroll jank on low-end GPUs, and 2px is barely visible behind the gradi
 **Fix:** remove it, or apply it only in `header.scrolled`.
 
 ### 5. Split-text effect
-- [ ] Done
+- [x] Done (2026-09-29): the red/cyan pseudo-elements exist only on `.is-split` letters. Heading
+  bounds are cached until scroll or resize, and letter positions are stored relative to them, so
+  scrolling no longer forces re-measuring every letter. The panel check reads the inline opacity.
 
 About 220 letters across 6 `[data-split]` headings, each with `::before` and `::after` using
 `mix-blend-mode`, so about 440 blended layers, even at opacity 0. Every mouse move also calls
@@ -83,33 +86,33 @@ this way).
 
 ## Smaller costs
 
-- [ ] **Grid canvas redraws the whole screen** ([grid.js](../assets/js/grid.js), `drawGrid`). Each
+- [x] *(Done 2026-09-29: repaints only changed cells, once per frame, no per-frame `Path2D`. The CSS mask is kept.)* **Grid canvas redraws the whole screen** ([grid.js](../assets/js/grid.js), `drawGrid`). Each
   update clears and redraws the full-viewport canvas at up to 2× density when only the crosses
   near the cursor changed. It allocates 2 `Path2D` per active cross per frame, and `pointermove`
   draws immediately as well as in `animate`, so some frames draw twice. The canvas also has a CSS
   `mask-image` on a fixed full-screen layer. Fix: redraw only the areas around changed crosses,
   and draw once per frame.
-- [ ] **Header logo images:** `logo_wh_LR.png` (61 KB) and `logo_bl_LR.png` (63 KB) are shown at
+- [x] *(Done 2026-09-29: 96px PNGs, about 3 KB each, used for the header and favicon. The `_LR` originals are kept but no longer loaded.)* **Header logo images:** `logo_wh_LR.png` (61 KB) and `logo_bl_LR.png` (63 KB) are shown at
   28px tall. Both download, even the one hidden with `display:none`, and the favicon uses the same
   files. Fix: SVG, or small WebP/PNG at display size (2–5 KB each).
-- [ ] **Service models load at page start**
+- [x] *(Done 2026-09-29: they wait for the hero logo, or load on the first scroll, whichever comes first.)* **Service models load at page start**
   ([services.js](../assets/js/services.js)), competing with the hero logo for bandwidth. Fix: load
   them when the services section is near the viewport (IntersectionObserver with a `rootMargin`).
-- [ ] **The load starts late.** three.js is only requested after `main.js` runs, and the logo only
+- [x] *(Done 2026-09-29: modulepreload for three.js, GLTFLoader and BufferGeometryUtils, and preload for both hero `.glb` files.)* **The load starts late.** three.js is only requested after `main.js` runs, and the logo only
   after three.js arrives. Fix: add `<link rel="modulepreload">` for three.js and `GLTFLoader.js`,
   and `<link rel="preload" as="fetch" crossorigin>` for `3D_Icon_Logo.glb`, in `index.html`.
-- [ ] **`fitLogo` can be expensive on resize** ([hero.js](../assets/js/hero.js)). The search tries
+- [x] *(Done 2026-09-29: rather than scanning offsets, it works out the offset ranges where each text point hits the logo. Cross-checked against the old brute force.)* **`fitLogo` can be expensive on resize** ([hero.js](../assets/js/hero.js)). The search tries
   up to 21 scales, and at each scale up to one offset per 4px of free height, sampling the text
   every 4px each time. It exits early when nothing overlaps, but on narrow screens where the text
   covers the logo it can do millions of checks per resize frame. Fix: a coarse first pass (larger
   sample and offset steps), then refine.
-- [ ] **Morph pieces read layout per vertex**
+- [x] *(Done 2026-09-29: the canvas size is cached in `resize`.)* **Morph pieces read layout per vertex**
   ([proximity.js](../assets/js/behaviors/shared/proximity.js) via `projectToCanvas`). They
   re-project all 882 vertices every animated frame, and `projectToCanvas` reads
   `canvas.clientWidth`/`clientHeight` for each one. Fix: cache the canvas size in the stage's
   `resize`.
-- [ ] **Two WebGL contexts** (hero and services). Fine as is; noted only for memory.
-- [ ] **Unused model:** `assets/models/3D_Icon_MoGraph2.glb` isn't referenced. It isn't
+- [x] *(No change needed.)* **Two WebGL contexts** (hero and services). Fine as is; noted only for memory.
+- [x] *(Removed 2026-09-29.)* **Unused model:** `assets/models/3D_Icon_MoGraph2.glb` isn't referenced. It isn't
   downloaded by the site; it only sits in the repo.
 
 ## Already efficient (keep it this way)

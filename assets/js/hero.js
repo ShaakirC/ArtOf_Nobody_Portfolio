@@ -5,6 +5,10 @@
 import * as ModelStage from './model-stage.js';
 
 var LOGO_SRC = 'assets/models/3D_Icon_Logo.glb';
+// Low-poly stand-in for pointer hits, in the logo's coordinates: every mouse move over the
+// hero raycasts about 200 triangles instead of the logo's 12k. It's hidden; three.js
+// raycasts hidden meshes.
+var HIT_SRC = 'assets/models/3D_Icon_Logo_LP.glb';
 // Pieces authored in the logo's coordinates; attached to the logo so they follow it.
 var PIECES_SRC = 'assets/models/3D_Icon_Logo_Inst.glb';
 // How the pieces react to the cursor: 'grow-near-pointer' scales static pieces up,
@@ -24,8 +28,7 @@ var TEXT_CLEARANCE = 14;
 var BOTTOM_CLEARANCE = 24;
 // The logo never shrinks below this share of its full size.
 var MIN_SCALE = 0.6;
-// Search steps: px moved down per try, and scale removed per try.
-var OFFSET_STEP = 4;
+// Scale removed per try when the logo has to shrink.
 var SCALE_STEP = 0.02;
 // Silhouette resolution across the logo's width.
 var FOOTPRINT_WIDTH = 256;
@@ -91,6 +94,7 @@ function applyThemeLighting(){
   });
 }
 
+// Returns a promise that settles once the logo has loaded or failed.
 export function initHero(){
   var hero = document.querySelector('.hero');
   var canvas = document.getElementById('heroModel');
@@ -136,12 +140,34 @@ export function initHero(){
     console.error('Unable to load model ' + LOGO_SRC + ':', error);
   });
 
+  var hitLoaded = stage.ready.then(function(){ return stage.loader.loadAsync(HIT_SRC); });
+  Promise.all([logoLoaded, hitLoaded]).then(function(results){
+    useHitProxy(results[0].root, results[1].scene);
+  }, function(error){
+    // The logo keeps answering raycasts itself.
+    console.error('Unable to load hit mesh ' + HIT_SRC + ':', error);
+  });
+
   Promise.all([logoLoaded, piecesLoaded]).then(function(entries){
     entries[0].root.add(entries[1].root);
     stage.setEntryVisible(entries[1], true);
   }, function(error){
     console.error('Unable to load model ' + PIECES_SRC + ':', error);
   });
+
+  return logoLoaded.catch(function(){});
+}
+
+// Hands the logo's pointer hits to the hidden proxy. Attached models (the pieces) keep their own.
+function useHitProxy(root, proxy){
+  (function stopRaycasts(object){
+    if (object.isMesh) object.raycast = function(){};
+    object.children.forEach(function(child){
+      if (!child.userData.modelEntry) stopRaycasts(child);
+    });
+  })(root);
+  proxy.visible = false;
+  root.add(proxy);
 }
 
 // Renders the resting logo straight down into a small offscreen image and keeps
@@ -175,7 +201,26 @@ function captureFootprint(stage, entry, box, size){
       covered[row * width + column] = pixels[((height - 1 - row) * width + column) * 4 + 3] > 0 ? 1 : 0;
     }
   }
-  return { width: width, height: height, covered: covered };
+  return { width: width, height: height, covered: covered, runs: columnRuns(covered, width, height) };
+}
+
+// For each column, the covered rows as flat [firstRow, lastRow, ...] runs, top-down.
+function columnRuns(covered, width, height){
+  var runs = [];
+  for (var column = 0; column < width; column++){
+    var columnRuns = [];
+    var start = -1;
+    for (var row = 0; row <= height; row++){
+      var isCovered = row < height && covered[row * width + column];
+      if (isCovered && start < 0) start = row;
+      if (!isCovered && start >= 0){
+        columnRuns.push(start, row - 1);
+        start = -1;
+      }
+    }
+    runs.push(columnRuns);
+  }
+  return runs;
 }
 
 function getAvoidRects(canvasRect){
@@ -193,43 +238,77 @@ function getAvoidRects(canvasRect){
   });
 }
 
+// Text sample points in canvas px, as a flat [x, y, ...] array.
+function sampleRects(rects){
+  var samples = [];
+  rects.forEach(function(rect){
+    for (var y = rect.top; y <= rect.bottom; y += SAMPLE_STEP){
+      for (var x = rect.left; x <= rect.right; x += SAMPLE_STEP) samples.push(x, y);
+    }
+  });
+  return samples;
+}
+
 function fitLogo(stage, entry, canvas, footprint, box, size, viewSize){
   var canvasRect = canvas.getBoundingClientRect();
   var width = canvasRect.width;
   var height = canvasRect.height;
   if (!width || !height) return;
   var unitsPerPx = viewSize(width / height) / height;
-  var rects = getAvoidRects(canvasRect);
+  var samples = sampleRects(getAvoidRects(canvasRect));
   var boxCenterZ = (box.min.z + box.max.z) / 2;
+  var rowDepth = size.z / footprint.height;
 
-  // Counts sampled text points that land on the logo at a given scale and downward offset.
-  function overlap(scale, offsetPx){
-    var hits = 0;
-    rects.forEach(function(rect){
-      for (var y = rect.top; y <= rect.bottom; y += SAMPLE_STEP){
-        for (var x = rect.left; x <= rect.right; x += SAMPLE_STEP){
-          var modelX = (x - width / 2) * unitsPerPx / scale;
-          var modelZ = ((y - height / 2 - offsetPx) * unitsPerPx - boxCenterZ * (1 - scale)) / scale;
-          var column = Math.floor((modelX - box.min.x) / size.x * footprint.width);
-          var row = Math.floor((modelZ - box.min.z) / size.z * footprint.height);
-          if (column < 0 || row < 0 || column >= footprint.width || row >= footprint.height) continue;
-          hits += footprint.covered[row * footprint.width + column];
-        }
+  // Moving the logo down only slides each text point up through the logo's column under it,
+  // so every point hits the logo over a few offset ranges, one per covered run of rows in
+  // that column. Returns the smallest offset (0 to maxOffset) with the fewest points on the
+  // logo, as { offset, hits }; hits is 0 when the text clears the logo.
+  function leastOverlap(scale, maxOffset){
+    var starts = [];
+    var ends = [];
+    var shift = boxCenterZ * (1 - scale);
+    for (var i = 0; i < samples.length; i += 2){
+      var modelX = (samples[i] - width / 2) * unitsPerPx / scale;
+      var column = Math.floor((modelX - box.min.x) / size.x * footprint.width);
+      if (column < 0 || column >= footprint.width) continue;
+      var runs = footprint.runs[column];
+      var depth = (samples[i + 1] - height / 2) * unitsPerPx - shift;
+      for (var r = 0; r < runs.length; r += 2){
+        // The point is on this run for offsets in (from, to].
+        var from = (depth - (box.min.z + (runs[r + 1] + 1) * rowDepth) * scale) / unitsPerPx;
+        var to = (depth - (box.min.z + runs[r] * rowDepth) * scale) / unitsPerPx;
+        if (to < 0 || from > maxOffset) continue;
+        starts.push(from);
+        ends.push(to);
       }
-    });
-    return hits;
+    }
+    starts = Float64Array.from(starts).sort();
+    ends = Float64Array.from(ends).sort();
+
+    // The count only drops just after a range ends, so those are the offsets worth testing.
+    // TEXT_CLEARANCE already keeps a gap, so a hair past the end is enough.
+    var best = { offset: 0, hits: Infinity };
+    var started = 0;
+    var ended = 0;
+    for (var e = -1; e < ends.length; e++){
+      var offset = e < 0 ? 0 : ends[e] + 1e-6;
+      if (offset > maxOffset) break;
+      while (started < starts.length && starts[started] < offset) started++;
+      while (ended < ends.length && ends[ended] < offset) ended++;
+      var hits = started - ended;
+      if (hits < best.hits) best = { offset: offset, hits: hits };
+      if (!hits) break;
+    }
+    return best;
   }
 
   var best = { scale: 1, offset: 0, hits: Infinity };
-  search:
   for (var scale = 1; scale >= MIN_SCALE - 1e-6; scale -= SCALE_STEP){
     var halfHeightPx = size.z * scale / unitsPerPx / 2;
     var maxOffset = Math.max(0, height - BOTTOM_CLEARANCE - (height / 2 + halfHeightPx));
-    for (var offset = 0; offset <= maxOffset; offset += OFFSET_STEP){
-      var hits = overlap(scale, offset);
-      if (hits < best.hits) best = { scale: scale, offset: offset, hits: hits };
-      if (!hits) break search;
-    }
+    var result = leastOverlap(scale, maxOffset);
+    if (result.hits < best.hits) best = { scale: scale, offset: result.offset, hits: result.hits };
+    if (!result.hits) break;
   }
 
   entry.root.scale.setScalar(best.scale);

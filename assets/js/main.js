@@ -7,10 +7,17 @@ import { initHero } from './hero.js';
 import { initServices } from './services.js';
 
 // Each feature starts independently so one failure doesn't take down the rest.
-[initSite, initGrid, initSplitText, initHero, initServices].forEach(function(init){
+function start(init, options){
   try {
-    init();
+    return init(options);
   } catch (error) {
     console.error('Failed to start ' + init.name + ':', error);
   }
-});
+}
+
+start(initSite);
+start(initGrid);
+start(initSplitText);
+var heroReady = start(initHero);
+// The service models wait for the hero logo, so they don't compete with it for bandwidth.
+start(initServices, { modelsAfter: heroReady });

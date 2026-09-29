@@ -11,7 +11,7 @@
     if (localStorage.getItem('artofnobody-theme') === 'light') document.documentElement.setAttribute('data-theme', 'light');
   } catch (error) {}
 </script>
-<link id="site-favicon" rel="icon" type="image/png" href="assets/images/logo_bl_LR.png">
+<link id="site-favicon" rel="icon" type="image/png" href="assets/images/logo_bl_96.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Roboto:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -23,6 +23,12 @@
     }
   }
 </script>
+<!-- Start the hero's downloads at once; otherwise three.js waits for main.js, and the models for three.js. -->
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/loaders/GLTFLoader.js">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/utils/BufferGeometryUtils.js">
+<link rel="preload" href="assets/models/3D_Icon_Logo.glb" as="fetch" crossorigin>
+<link rel="preload" href="assets/models/3D_Icon_Logo_Inst.glb" as="fetch" crossorigin>
 <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
@@ -31,8 +37,8 @@
 
 <header>
   <a href="#top" class="logo" aria-label="ArtOf_Nobody home">
-    <img class="logo-dark" src="assets/images/logo_wh_LR.png" alt="ArtOf_Nobody">
-    <img class="logo-light" src="assets/images/logo_bl_LR.png" alt="ArtOf_Nobody">
+    <img class="logo-dark" src="assets/images/logo_wh_96.png" width="96" height="96" alt="ArtOf_Nobody">
+    <img class="logo-light" src="assets/images/logo_bl_96.png" width="96" height="96" alt="ArtOf_Nobody">
   </a>
   <div class="header-actions">
     <nav class="header-nav" aria-label="Main">

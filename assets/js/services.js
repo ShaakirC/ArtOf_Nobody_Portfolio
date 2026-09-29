@@ -1,6 +1,10 @@
 import * as ModelStage from './model-stage.js';
 
-export function initServices(){
+// options.modelsAfter: a promise to wait for before loading the service models (the hero
+// logo), so they don't compete for bandwidth. The first service shows as soon as the page
+// scrolls, so scrolling loads them straight away.
+export function initServices(options){
+  options = options || {};
   // ---------- services scroll ----------
   // Each .panel is one service step. Its model comes from data-model, and
   // data-model-behavior optionally names a ModelStage behavior.
@@ -124,14 +128,29 @@ export function initServices(){
     console.error('Unable to start the model stage:', error);
     modelCanvas.setAttribute('aria-label', 'Service icons unavailable');
   });
-  panels.forEach(function(panel, index){
-    var src = panel.dataset.model;
-    if (!src) return;
-    modelStage.load(src, { behavior: panel.dataset.modelBehavior }).then(function(entry){
-      modelEntries[index] = entry;
-      syncModels();
-    }, function(error){
-      console.error('Unable to load model ' + src + ':', error);
+
+  var modelsRequested = false;
+  function loadModels(){
+    if (modelsRequested) return;
+    modelsRequested = true;
+    window.removeEventListener('scroll', onFirstScroll);
+    panels.forEach(function(panel, index){
+      var src = panel.dataset.model;
+      if (!src) return;
+      modelStage.load(src, { behavior: panel.dataset.modelBehavior }).then(function(entry){
+        modelEntries[index] = entry;
+        syncModels();
+      }, function(error){
+        console.error('Unable to load model ' + src + ':', error);
+      });
     });
-  });
+  }
+
+  function onFirstScroll(){
+    if (window.scrollY > 0) loadModels();
+  }
+
+  window.addEventListener('scroll', onFirstScroll, { passive: true });
+  onFirstScroll();
+  Promise.resolve(options.modelsAfter).then(loadModels);
 }

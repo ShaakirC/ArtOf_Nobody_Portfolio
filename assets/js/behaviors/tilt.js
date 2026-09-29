@@ -1,5 +1,6 @@
 // Tilts a model in the direction the mouse moves across it, then springs back to rest.
 // Faster movement tilts further, but the angle eases toward MAX_TILT and never reaches it.
+// An optional resting pose, in degrees, can be passed as data: { restRotation: { x, z } }.
 import { registerBehavior } from '../model-stage.js';
 
 // Largest tilt in radians; the tilt approaches this asymptotically.
@@ -51,6 +52,11 @@ function applyRotation(entry){
 
 registerBehavior('tilt', {
   setup: function(entry){
+    var rest = entry.data.restRotation;
+    if (rest){
+      entry.root.rotation.x = (rest.x || 0) * Math.PI / 180;
+      entry.root.rotation.z = (rest.z || 0) * Math.PI / 180;
+    }
     entry.state.yaw = { angle: 0, velocity: 0 };
     entry.state.pitch = { angle: 0, velocity: 0 };
     entry.state.baseX = entry.root.rotation.x;

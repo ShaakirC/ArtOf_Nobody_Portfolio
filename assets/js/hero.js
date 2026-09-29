@@ -11,6 +11,9 @@ var PIECES_SRC = 'assets/models/3D_Icon_Logo_Inst.glb';
 // 'animate-near-pointer' plays each piece's own animation forward and back,
 // 'morph-near-pointer' plays each piece's shape keys down from last to first.
 var PIECES_BEHAVIOR = 'morph-near-pointer';
+// Resting pose in degrees, so the front face turns toward the top left of the screen
+// (~28 degrees off the camera). Negative x tilts it up; positive z tilts it left.
+var LOGO_REST_ROTATION = { x: -20, z: 20 };
 // Share of the hero height the logo fills.
 var LOGO_HEIGHT_SHARE = 0.6;
 // Largest share of the hero width the logo may take; narrow screens shrink it to fit.
@@ -29,57 +32,70 @@ var FOOTPRINT_WIDTH = 256;
 // Distance in px between sampled points inside each text box.
 var SAMPLE_STEP = 4;
 
+// The canvas fills the hero, so its pixel density is capped below the default of 2 to keep
+// tilting smooth on weaker GPUs; antialiasing hides the difference.
+var MAX_PIXEL_RATIO = 1.5;
+
 var AVOID_SELECTOR = '.hero-eyebrow, .hero h1, .hero-scroll-cue';
 
-// Lighting, per theme. The logo's edges only show as it tilts, so the rim comes from how
-// its side walls are lit compared with its front face:
-//   dark:  strong back lights make the walls brighter than the front (a light rim).
-//   light: a low ambient leaves the walls in shadow, and a front light (from the camera)
-//          lifts only the front face back up, so the walls read darker (a dark rim).
-// The front face gets ambient + front, and the walls get ambient + back.
-var LIGHTING = {
-  dark: { ambient: 1, front: 0, back: 10 },
-  light: { ambient: 0.4, front: 0.6, back: 0 }
-};
-// The camera looks down from +Y, so -Y is behind the logo; -Z points to the top of the
-// screen and +Z to the bottom, so each back light rims one set of faces.
-var FRONT_LIGHT_POSITION = [0, 5, 0];
-var BACK_LIGHT_POSITIONS = [
-  [0, -3, -2], // rims the faces toward the top of the screen
-  [0, -3, 2]   // rims the faces toward the bottom of the screen
+// Lights copied from the Blender sun lamps, in the logo's coordinates: the camera looks
+// down from +Y, so -Y is behind the logo, -Z is its top and +Z its bottom. Each light aims
+// at the logo's pivot and is attached to the logo, so it turns with it, both into its
+// resting pose and as it tilts. Strength is Blender's sun strength: 1 lights a white
+// surface to full white.
+var LIGHTS = [
+  { name: 'Front', position: [0, 2.991, 0], strength: 0.5 },
+  { name: 'Rim_Top', position: [1.103, -0.844, -1.904], strength: 1 },
+  { name: 'Rim_Bot', position: [-1.806, -1.049, 1.092], strength: 1 }
 ];
+// three.js needs an intensity of PI to light a white surface to full white.
+var STRENGTH_TO_INTENSITY = Math.PI;
+
+// Lighting, per theme: the ambient intensity, plus a multiplier on each light's strength,
+// by name. The rim comes from how the side walls are lit compared with the front face:
+//   dark:  the rim lights make the walls brighter than the front (a light rim).
+//   light: the rims are off and a low ambient leaves the walls in shadow, while the front
+//          light lifts only the front face back up, so the walls read darker (a dark rim).
+var LIGHTING = {
+  dark: { ambient: 0.5, lights: { Front: .2, Rim_Top: 3, Rim_Bot: .5 } },
+  light: { ambient: 0.4, lights: { Front: 1, Rim_Top: 0, Rim_Bot: 0 } }
+};
 
 var heroLights = null;
 
 function addHeroLights(scene, THREE){
   heroLights = {
     ambient: new THREE.AmbientLight(0xffffff, 0),
-    front: new THREE.DirectionalLight(0xffffff, 0),
-    back: BACK_LIGHT_POSITIONS.map(function(position){
+    logo: LIGHTS.map(function(settings){
       var light = new THREE.DirectionalLight(0xffffff, 0);
-      light.position.fromArray(position);
+      light.position.fromArray(settings.position);
       return light;
     })
   };
-  heroLights.front.position.fromArray(FRONT_LIGHT_POSITION);
-  scene.add(heroLights.ambient, heroLights.front);
-  heroLights.back.forEach(function(light){ scene.add(light); });
+  scene.add(heroLights.ambient);
   applyThemeLighting();
+}
+
+// Parents the logo lights and their targets to the logo, with the targets on its pivot.
+function attachLogoLights(root){
+  heroLights.logo.forEach(function(light){ root.add(light, light.target); });
 }
 
 function applyThemeLighting(){
   if (!heroLights) return;
   var settings = LIGHTING[document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'];
   heroLights.ambient.intensity = settings.ambient;
-  heroLights.front.intensity = settings.front;
-  heroLights.back.forEach(function(light){ light.intensity = settings.back; });
+  heroLights.logo.forEach(function(light, index){
+    var multiplier = settings.lights[LIGHTS[index].name];
+    light.intensity = LIGHTS[index].strength * STRENGTH_TO_INTENSITY * (multiplier === undefined ? 1 : multiplier);
+  });
 }
 
 export function initHero(){
   var hero = document.querySelector('.hero');
   var canvas = document.getElementById('heroModel');
   // The canvas sits behind the text, so pointer events are read from the whole hero.
-  var stage = ModelStage.create(canvas, { pointerTarget: hero, lights: addHeroLights });
+  var stage = ModelStage.create(canvas, { pointerTarget: hero, lights: addHeroLights, maxPixelRatio: MAX_PIXEL_RATIO });
   new MutationObserver(function(){
     applyThemeLighting();
     stage.requestRender();
@@ -88,11 +104,12 @@ export function initHero(){
   stage.ready.catch(function(error){
     console.error('Unable to start the hero model stage:', error);
   });
-  var logoLoaded = stage.load(LOGO_SRC, { behavior: 'tilt' });
+  var logoLoaded = stage.load(LOGO_SRC, { behavior: 'tilt', data: { restRotation: LOGO_REST_ROTATION } });
   var piecesLoaded = stage.load(PIECES_SRC, { behavior: PIECES_BEHAVIOR, colorVar: '--hero-pieces-color' });
 
   logoLoaded.then(function(entry){
     var THREE = stage.THREE;
+    if (heroLights) attachLogoLights(entry.root);
     var box = new THREE.Box3().setFromObject(entry.root);
     var size = box.getSize(new THREE.Vector3());
     // The camera looks down the Y axis, so on screen the width is X and the height is Z.

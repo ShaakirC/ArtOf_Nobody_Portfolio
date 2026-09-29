@@ -94,7 +94,6 @@ header{
   letter-spacing:0.02em;
   background:var(--header-gradient);
   border-bottom:1px solid transparent;
-  backdrop-filter: blur(2px);
 }
 header.scrolled{
   background:var(--header-solid);

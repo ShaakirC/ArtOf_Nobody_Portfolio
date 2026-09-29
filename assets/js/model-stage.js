@@ -13,7 +13,8 @@
       viewSize: 4.2,          // world units visible vertically, or function(aspect){ return units; }
       pointerTarget: element, // where pointer events are read (defaults to the canvas);
                               // use a covering element when the canvas sits behind content
-      lights: function(scene, THREE){} // replaces the default ambient + key light
+      lights: function(scene, THREE){}, // replaces the default ambient + key light
+      maxPixelRatio: 2        // caps the device pixel ratio; lower it for large canvases
     });
     stage.load('assets/models/thing.glb', {
       behavior: 'spin',       // registered behavior name
@@ -113,6 +114,7 @@ export function create(canvas, options){
   var viewSize = options.viewSize || 4.2;
   var pointerTarget = options.pointerTarget || canvas;
   var addLights = options.lights || addDefaultLights;
+  var maxPixelRatio = options.maxPixelRatio || 2;
   var themedMaterials = [];
   var loopOwners = new Set();
   var dirty = true;
@@ -414,7 +416,7 @@ export function create(canvas, options){
     stage.camera.up.set(0, 0, -1);
     stage.camera.lookAt(0, 0, 0);
     stage.renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
-    stage.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    stage.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxPixelRatio));
     stage.renderer.outputColorSpace = THREE.SRGBColorSpace;
     addLights(stage.scene, THREE);
     raycaster = new THREE.Raycaster();

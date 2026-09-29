@@ -11,7 +11,9 @@ export function initServices(options){
   // Each .panel is one service step. Its model comes from data-model, and
   // data-model-behavior optionally names a ModelStage behavior. data-service names the
   // service in js/projects.js whose projects it previews.
-  // Fraction of each model's animation that overlaps the next service's model.
+  // The scroll splits into one equal step per service; the progress fill, the step number and
+  // the text all change at the same step boundaries. Each model plays across its own step, and
+  // hands over to the next one in a window centered on the boundary, this share of a step wide.
   var MODEL_OVERLAP = 0.25;
 
   var panels = Array.prototype.slice.call(document.querySelectorAll('.panel'));
@@ -114,13 +116,24 @@ export function initServices(options){
   }
   sizeServices();
 
+  // The stretch of overall progress over which model `index` plays, 0 to 1. The first starts
+  // at the top of the section and the last ends at the bottom; the rest reach half the
+  // overlap window past each of their step's boundaries.
+  function modelSpan(index){
+    var step = 1 / serviceSections;
+    var reach = step * MODEL_OVERLAP / 2;
+    return {
+      start: index === 0 ? 0 : index * step - reach,
+      end: index === serviceSections - 1 ? 1 : (index + 1) * step + reach
+    };
+  }
+
   function syncModels(){
-    var timelineLength = 1 + (serviceSections - 1) * (1 - MODEL_OVERLAP);
-    var timelinePosition = currentProgress * timelineLength;
     var anyVisible = false;
     modelEntries.forEach(function(entry, index){
       if (!entry) return;
-      var entryProgress = timelinePosition - index * (1 - MODEL_OVERLAP);
+      var span = modelSpan(index);
+      var entryProgress = (currentProgress - span.start) / (span.end - span.start);
       var isActive = entryProgress >= 0 && entryProgress <= 1;
       modelStage.setEntryVisible(entry, isActive);
       modelStage.setEntryProgress(entry, entryProgress);
@@ -157,8 +170,7 @@ export function initServices(options){
 
     syncModels();
 
-    var activeIndex = idx + (localT >= 0.85 ? 1 : 0);
-    if (activeIndex >= segments) activeIndex = segments - 1;
+    var activeIndex = idx;
     progressSteps.forEach(function(step, index){
       step.classList.toggle('active', index === activeIndex);
     });

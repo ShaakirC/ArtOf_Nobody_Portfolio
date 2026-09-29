@@ -19,6 +19,10 @@ export function initServices(options){
   var progressStepsContainer = document.getElementById('servicesProgressSteps');
   var modelCanvas = document.getElementById('serviceModels');
   var wrap = document.querySelector('.services-wrap');
+  // The section starts behind the hero; the first service arrives once the hero has scrolled
+  // clear of its heading.
+  var hero = document.querySelector('.hero');
+  var firstHeading = panels.length ? panels[0].querySelector('h2') : null;
   var serviceSections = Math.max(1, panels.length);
   var previewSets = [];
   var progressSteps = [];
@@ -66,11 +70,42 @@ export function initServices(options){
     panel.appendChild(link);
   });
 
-  // Fades a step's text or previews; faded-out steps can't be clicked or read out.
-  function showStep(element, opacity){
-    element.style.opacity = opacity;
-    element.style.pointerEvents = opacity > 0.6 ? 'auto' : 'none';
-    element.setAttribute('aria-hidden', opacity < 0.4 ? 'true' : 'false');
+  // ---------- service steps ----------
+  // Each service holds still for its stretch of the scroll. Crossing into the next one plays
+  // a short timed transition instead of scrubbing it: .is-entering and .is-leaving drive the
+  // animations in the stylesheet, and are cleared once those have finished.
+  var LEAVE_TIME = 800; // ms, the leave animation's duration in styles.css
+  var ENTER_TIME = 1120; // ms, the enter animation's delay plus duration in styles.css
+  var shownIndex = -1;
+  var stepTimers = [];
+
+  // index -1 shows no service (the hero still covers the headings).
+  function showService(index){
+    var previous = shownIndex;
+    shownIndex = index;
+    panels.forEach(function(panel, i){
+      var active = i === index;
+      clearTimeout(stepTimers[i]);
+      if (panel.classList.contains('is-entering')){
+        panel.classList.remove('is-entering');
+        // Restart the animation if the same service comes straight back.
+        void panel.offsetWidth;
+      }
+      panel.classList.remove('is-leaving');
+      if (active){
+        panel.classList.add('is-entering');
+        stepTimers[i] = setTimeout(function(){ panel.classList.remove('is-entering'); }, ENTER_TIME);
+      } else if (i === previous){
+        panel.classList.add('is-leaving');
+        stepTimers[i] = setTimeout(function(){ panel.classList.remove('is-leaving'); }, LEAVE_TIME);
+      }
+      panel.classList.toggle('is-active', active);
+      panel.setAttribute('aria-hidden', String(!active));
+      if (previewSets[i]){
+        previewSets[i].classList.toggle('is-active', active);
+        previewSets[i].setAttribute('aria-hidden', String(!active));
+      }
+    });
   }
 
   function sizeServices(){
@@ -128,14 +163,11 @@ export function initServices(options){
       step.classList.toggle('active', index === activeIndex);
     });
 
-    var textTransitionT = localT < 0.75 ? 0 : (localT - 0.75) / 0.25;
-    panels.forEach(function(panel, i){
-      var opacity = idx === segments - 1
-        ? (i === idx ? 1 : 0)
-        : (i === idx ? 1 - textTransitionT : (i === idx + 1 ? textTransitionT : 0));
-      showStep(panel, opacity);
-      if (previewSets[i]) showStep(previewSets[i], opacity);
-    });
+    // The text switches with the progress number, not gradually with the scroll.
+    var heroCleared = !hero || !firstHeading ||
+      hero.getBoundingClientRect().bottom <= firstHeading.getBoundingClientRect().top;
+    var shownTarget = heroCleared ? activeIndex : -1;
+    if (shownTarget !== shownIndex) showService(shownTarget);
   }
 
   function onScroll(){

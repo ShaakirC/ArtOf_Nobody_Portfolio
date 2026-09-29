@@ -292,6 +292,51 @@ a:active{ opacity:0.72; }
   opacity:0;
   pointer-events:none;
 }
+/* A service holds still until the scroll crosses into the next one, then switches with a
+   short timed transition (classes set by services.js). The current heading's red/cyan
+   channels drift apart as it fades; 40% of the way into that, the next heading's channels
+   fade in apart and drift together into place. The rest of the text simply fades. */
+.panel.is-active,
+.panel.is-leaving{ opacity:1; }
+.panel.is-active{ pointer-events:auto; }
+.panel > :not(h2){ opacity:0; transition:opacity 0.5s ease; }
+.panel.is-active > :not(h2){ opacity:1; transition-delay:0.32s; }
+/* Leave: 0.8s. Enter: starts 0.32s in (40% through the leave) and runs 0.8s. Keep
+   LEAVE_TIME and ENTER_TIME in services.js in step. */
+.panel.is-leaving h2{ animation:channel-out 0.8s cubic-bezier(0.4,0,0.6,1) forwards; }
+.panel.is-leaving h2 .split-base{ animation:base-out 0.8s ease forwards; }
+.panel.is-entering h2{ animation:channel-in 0.8s cubic-bezier(0.25,0.6,0.3,1) 0.32s backwards; }
+.panel.is-entering h2 .split-base{ animation:base-in 0.8s ease 0.32s backwards; }
+
+/* Registered so the channel offset and strength can animate; unregistered they'd jump. */
+@property --channel-split{ syntax:'<length>'; inherits:true; initial-value:0px; }
+@property --channel-opacity{ syntax:'<number>'; inherits:true; initial-value:0; }
+/* Channels travel 8px and peak at 0.7 opacity. */
+@keyframes channel-out{
+  0%{ --channel-split:0px; --channel-opacity:0.7; }
+  100%{ --channel-split:8px; --channel-opacity:0; }
+}
+@keyframes base-out{
+  0%{ opacity:1; }
+  55%, 100%{ opacity:0; }
+}
+@keyframes channel-in{
+  0%{ --channel-split:8px; --channel-opacity:0; }
+  55%{ --channel-opacity:0.7; }
+  100%{ --channel-split:0px; --channel-opacity:0; }
+}
+@keyframes base-in{
+  0%, 45%{ opacity:0; }
+  100%{ opacity:1; }
+}
+@media (prefers-reduced-motion: reduce){
+  .panel > :not(h2){ transition:none; }
+  .panel.is-leaving{ opacity:0; }
+  .panel.is-entering h2,
+  .panel.is-entering h2 .split-base,
+  .panel.is-leaving h2,
+  .panel.is-leaving h2 .split-base{ animation:none; }
+}
 .panel .tag{
   font-family:var(--mono);
   font-size:12px;
@@ -309,9 +354,14 @@ a:active{ opacity:0.72; }
 .split-word{ position:relative; display:inline-block; white-space:nowrap; }
 .split-base{ position:relative; z-index:1; }
 .split-letter{ position:absolute; }
-/* The copies only exist while a letter is split, so resting letters add no blended layers. */
+/* The copies only exist while a letter is split by the pointer, or during a services step
+   transition, so resting letters add no blended layers. */
 .split-letter.is-split::before,
-.split-letter.is-split::after{
+.split-letter.is-split::after,
+.panel.is-entering .split-letter::before,
+.panel.is-entering .split-letter::after,
+.panel.is-leaving .split-letter::before,
+.panel.is-leaving .split-letter::after{
   content:attr(data-letter);
   position:absolute;
   top:0; left:0;
@@ -319,18 +369,18 @@ a:active{ opacity:0.72; }
   color:var(--split-color);
   line-height:inherit;
   white-space:pre;
-  opacity:calc(var(--split-opacity, 0) * var(--split-opacity-scale));
+  opacity:calc(max(var(--split-opacity, 0), var(--channel-opacity, 0)) * var(--split-opacity-scale));
   pointer-events:none;
   user-select:none;
   mix-blend-mode:var(--split-blend-mode);
 }
-.split-letter.is-split::before{
+.split-letter::before{
   --split-color:var(--split-red);
-  transform:translateX(calc(var(--split-red-x, 0px) * var(--split-offset-scale)));
+  transform:translateX(calc((var(--split-red-x, 0px) - var(--channel-split, 0px)) * var(--split-offset-scale)));
 }
-.split-letter.is-split::after{
+.split-letter::after{
   --split-color:var(--split-cyan);
-  transform:translateX(calc(var(--split-cyan-x, 0px) * var(--split-offset-scale)));
+  transform:translateX(calc((var(--split-cyan-x, 0px) + var(--channel-split, 0px)) * var(--split-offset-scale)));
 }
 .panel p{
   color:var(--ink-dim);
@@ -386,6 +436,11 @@ a:active{ opacity:0.72; }
   gap:clamp(8px,1vw,14px);
   opacity:0;
   pointer-events:none;
+  transition:opacity 0.5s ease;
+}
+.preview-set.is-active{ opacity:1; pointer-events:auto; transition-delay:0.32s; }
+@media (prefers-reduced-motion: reduce){
+  .preview-set{ transition:none; }
 }
 
 /* ---------- project tiles ---------- */

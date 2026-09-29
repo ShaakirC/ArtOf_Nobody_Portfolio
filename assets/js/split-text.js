@@ -1,4 +1,6 @@
 // Red/cyan split effect on [data-split] headings that reacts to pointer speed.
+// The same red/cyan copies also carry the services step transition (see .panel in the stylesheet),
+// so letter positions are measured up front rather than on the first pointer move.
 export function initSplitText(){
   // Effect tuning: radius in px; maximum red/cyan offset in px.
   var SPLIT_RADIUS = 120; // Distance from the pointer where the effect fades out.
@@ -18,6 +20,7 @@ export function initSplitText(){
 
   var activeLetters = new Set();
   var frameId = 0;
+  var measureFrameId = 0;
 
   function buildLetters(state){
     var fragment = document.createDocumentFragment();
@@ -54,6 +57,7 @@ export function initSplitText(){
 
     state.element.replaceChildren(fragment);
     state.positionsValid = false;
+    scheduleMeasure();
   }
 
   function clearLetters(state){
@@ -67,6 +71,46 @@ export function initSplitText(){
     states.forEach(function(state){
       state.positionsValid = false;
       state.bounds = null;
+    });
+    scheduleMeasure();
+  }
+
+  // Places each letter's copies over its glyph, and keeps its center relative to the heading
+  // for pointer distances. Layout-only, so it holds until a resize or font load.
+  function measureLetters(state){
+    if (!state.letters.length) return;
+    var bounds = state.element.getBoundingClientRect();
+    var wordBounds = new Map();
+    var range = document.createRange();
+    var measuredLetters = state.letters.map(function(letter){
+      var word = wordBounds.get(letter.word);
+      if (!word){
+        word = letter.word.getBoundingClientRect();
+        wordBounds.set(letter.word, word);
+      }
+      range.setStart(letter.textNode, letter.offset);
+      range.setEnd(letter.textNode, letter.offset + letter.element.dataset.letter.length);
+      var rect = range.getBoundingClientRect();
+      return { letter:letter, left:rect.left - word.left,
+        x:rect.left + rect.width / 2 - bounds.left, y:rect.top + rect.height / 2 - bounds.top };
+    });
+    // Reads first, then writes, so measuring every heading costs one layout.
+    measuredLetters.forEach(function(position){
+      position.letter.x = position.x;
+      position.letter.y = position.y;
+      position.letter.element.style.left = position.left + 'px';
+      position.letter.element.style.top = '0px';
+    });
+    state.positionsValid = true;
+  }
+
+  function scheduleMeasure(){
+    if (measureFrameId) return;
+    measureFrameId = window.requestAnimationFrame(function(){
+      measureFrameId = 0;
+      states.forEach(function(state){
+        if (!state.positionsValid) measureLetters(state);
+      });
     });
   }
 
@@ -118,37 +162,14 @@ export function initSplitText(){
     if (!speedFactor) return;
 
     states.forEach(function(state){
-      // Service panels fade through an inline opacity set by services.js; reading the inline
-      // value avoids forcing a style recalculation on every mouse move.
-      if (state.panel && !(parseFloat(state.panel.style.opacity) > 0.05)) return;
+      // Only the service shown right now reacts (services.js marks it .is-active).
+      if (state.panel && !state.panel.classList.contains('is-active')) return;
       if (!state.bounds) state.bounds = state.element.getBoundingClientRect();
       var bounds = state.bounds;
       if (event.clientX < bounds.left - SPLIT_RADIUS || event.clientX > bounds.right + SPLIT_RADIUS ||
           event.clientY < bounds.top - SPLIT_RADIUS || event.clientY > bounds.bottom + SPLIT_RADIUS) return;
 
-      if (!state.positionsValid){
-        var wordBounds = new Map();
-        var range = document.createRange();
-        var measuredLetters = state.letters.map(function(letter){
-          var word = wordBounds.get(letter.word);
-          if (!word){
-            word = letter.word.getBoundingClientRect();
-            wordBounds.set(letter.word, word);
-          }
-          range.setStart(letter.textNode, letter.offset);
-          range.setEnd(letter.textNode, letter.offset + letter.element.dataset.letter.length);
-          var rect = range.getBoundingClientRect();
-          return { letter:letter, left:rect.left - word.left,
-            x:rect.left + rect.width / 2 - bounds.left, y:rect.top + rect.height / 2 - bounds.top };
-        });
-        measuredLetters.forEach(function(position){
-          position.letter.x = position.x;
-          position.letter.y = position.y;
-          position.letter.element.style.left = position.left + 'px';
-          position.letter.element.style.top = '0px';
-        });
-        state.positionsValid = true;
-      }
+      if (!state.positionsValid) measureLetters(state);
 
       state.letters.forEach(function(letter){
         var distance = Math.hypot(event.clientX - bounds.left - letter.x, event.clientY - bounds.top - letter.y);

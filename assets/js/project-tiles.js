@@ -4,7 +4,10 @@
 // slide within the frame (the services preview transition) while the frame stays put.
 import { findService, projectUrl } from './projects.js';
 
-export function createProjectTile(project){
+// options.showService: false leaves out the small service label (the services previews,
+// where the service is already on screen).
+export function createProjectTile(project, options){
+  options = options || {};
   var tile = document.createElement('article');
   tile.className = 'project-tile';
   tile.dataset.project = project.slug;
@@ -31,7 +34,7 @@ export function createProjectTile(project){
   var caption = document.createElement('div');
   caption.className = 'project-tile-caption';
   var service = findService(project.service);
-  if (service){
+  if (service && options.showService !== false){
     var tag = document.createElement('p');
     tag.className = 'project-tile-service';
     tag.textContent = service.label;

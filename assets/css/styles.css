@@ -1,7 +1,7 @@
 :root{
-  --bg: #0b0e12;
-  --bg-alt: #10141a;
-  --panel: #12161d;
+  --bg: #0e0f11;
+  --bg-alt: #131417;
+  --panel: #15171a;
   --ink: #e9ebee;
   --ink-dim: #9aa5b1;
   --ink-faint: #79828c;
@@ -19,8 +19,8 @@
   --split-offset-scale: 1;
   --model-color: #ffffff;
   --hero-pieces-color: #c9ccd1; /* a step off the logo so the pieces read as separate */
-  --header-solid: rgba(11,14,18,0.85);
-  --header-gradient: linear-gradient(to bottom, rgba(11,14,18,0.9), rgba(11,14,18,0));
+  --header-solid: rgba(14,15,17,0.85);
+  --header-gradient: linear-gradient(to bottom, rgba(14,15,17,0.9), rgba(14,15,17,0));
   --mono: 'IBM Plex Mono', monospace;
   --sans: 'Roboto', sans-serif;
   --disp: 'Archivo', sans-serif;
@@ -191,6 +191,26 @@ html[data-theme="light"] .theme-toggle:hover .sun{ display:none; }
 }
 .theme-toggle:active{ transform:scale(0.92); }
 a:active{ opacity:0.72; }
+
+/* Phones that need permission for the motion sensors (iOS): a label over the logo until the
+   first tap. Placed on the logo's centre by hero-motion.js. */
+.hero-motion-hint{
+  position:absolute;
+  z-index:1;
+  margin:0;
+  transform:translate(-50%,-50%);
+  padding:6px 12px;
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--ink-dim);
+  white-space:nowrap;
+  background:color-mix(in srgb, var(--bg) 70%, transparent);
+  border:1px solid var(--line-bright);
+  border-radius:999px;
+  pointer-events:none;
+  transition:opacity 0.4s ease;
+}
+.hero-motion-hint.is-hidden{ opacity:0; }
 
 .hero-scroll-cue{
   position:absolute; left:clamp(20px,5vw,56px); bottom:36px; z-index:1;
@@ -571,26 +591,85 @@ a:active{ opacity:0.72; }
   text-overflow:ellipsis;
   white-space:nowrap;
 }
+.project-tile-media img{ transition:transform var(--tile-hover-time, 0.6s) cubic-bezier(0.2,0.7,0.2,1); }
+
+/* Services previews: the title stays out of sight until the tile is hovered, then slides in
+   from the left edge (clipped by the tile) while the image zooms slightly and a gradient in
+   the panel colour fades up from the bottom behind it, for legibility on bright images.
+   Only on devices that can hover; elsewhere the title and gradient just show. */
+.preview-set{
+  --tile-hover-time:0.6s;
+  --tile-hover-zoom:1.06;
+  /* Share of the tile the gradient covers, and its strength at the bottom edge. */
+  --tile-shade-height:55%;
+  --tile-shade-strength:85%;
+}
+.preview-set .project-tile-caption{ background:none; }
+.preview-set .project-tile-inner::after{
+  content:"";
+  position:absolute;
+  left:0; right:0; bottom:0;
+  height:var(--tile-shade-height);
+  background:linear-gradient(to top,
+    color-mix(in srgb, var(--panel) var(--tile-shade-strength), transparent),
+    transparent);
+  pointer-events:none;
+}
+/* The caption sits above the gradient. */
+.preview-set .project-tile-caption{ z-index:1; }
+@media (hover: hover){
+  .preview-set .project-tile-inner::after{
+    opacity:0;
+    transform:translateY(25%);
+    transition:opacity var(--tile-hover-time) ease,
+      transform var(--tile-hover-time) cubic-bezier(0.2,0.7,0.2,1);
+  }
+  .preview-set .project-tile-title{
+    transform:translateX(calc(-100% - 14px));
+    transition:transform var(--tile-hover-time) cubic-bezier(0.2,0.7,0.2,1);
+  }
+  .preview-set .project-tile:hover .project-tile-inner::after{ opacity:1; transform:none; }
+  .preview-set .project-tile:hover .project-tile-title{ transform:none; }
+  .preview-set .project-tile:hover .project-tile-media img{ transform:scale(var(--tile-hover-zoom)); }
+}
+@media (prefers-reduced-motion: reduce){
+  .preview-set .project-tile-title,
+  .preview-set .project-tile-inner::after,
+  .preview-set .project-tile-media img{ transition:none; }
+}
 
 /* ---------- about ---------- */
+/* Laid out like the services section: a left column a quarter of the screen wide with the
+   model, then the text, with an empty quarter on the right to balance the model's column.
+   The model sits on the same vertical line as the service icons (centered right of where
+   the services progress bar would be). */
 .about{
   position:relative; z-index:2;
   margin-top:0;
-  padding:clamp(90px,14vh,150px) clamp(20px,5vw,56px);
+  padding:clamp(90px,14vh,150px) 25vw clamp(90px,14vh,150px) 0;
   display:grid;
-  grid-template-columns: 1fr 1.3fr;
-  gap:clamp(40px,6vw,90px);
+  grid-template-columns:25vw minmax(0,1fr);
   border-bottom:1px solid var(--line);
-  align-items:start;
+  align-items:center;
+  --progress-left:clamp(10px,2vw,24px);
+  --progress-width:28px;
+  --shape-pad:clamp(24px,3vw,48px);
+  --col-pad:clamp(20px,3vw,48px);
 }
 .about > *{ position:relative; z-index:1; }
 .about-figure{
-  width:100%;
-  aspect-ratio:1/1;
-  max-width:340px;
-  position:relative;
+  min-width:0;
+  display:flex;
+  justify-content:center;
+  padding-left:calc(var(--progress-left) + var(--progress-width));
 }
-.about-figure svg{ width:100%; height:100%; }
+.about-stage{
+  width:min(340px, calc(25vw - var(--progress-left) - var(--progress-width) - 2 * var(--shape-pad)));
+  max-width:100%;
+  aspect-ratio:1/1;
+}
+.about-stage canvas{ width:100%; height:100%; display:block; }
+.about-text{ min-width:0; padding-left:var(--col-pad); }
 .section-label{
   font-family:var(--mono);
   font-size:13px;
@@ -603,19 +682,22 @@ a:active{ opacity:0.72; }
   font-size:clamp(1.8rem,3.4vw,2.7rem);
   letter-spacing:-0.01em;
   margin:0 0 22px;
-  max-width:14ch;
 }
-.about p{ color:var(--ink-dim); max-width:60ch; margin:0 0 16px; }
+.about p{ color:var(--ink-dim); margin:0 0 16px; }
 .about-stats{
   margin-top:32px;
-  display:grid; grid-template-columns:repeat(3,auto);
+  /* One row however many stats there are. */
+  display:grid; grid-auto-flow:column; grid-auto-columns:auto;
+  justify-content:start;
   gap:clamp(20px,4vw,50px);
 }
 .about-stats div b{
   display:block; font-family:var(--disp); font-size:1.8rem; font-weight:600;
 }
 .about-stats div span{
-  font-family:var(--mono); font-size:11.5px; color:var(--ink-faint);
+  display:block;
+  margin-top:4px;
+  font-family:var(--mono); font-size:11.5px; line-height:1.35; color:var(--ink-faint);
 }
 
 /* ---------- contact ---------- */
@@ -719,7 +801,31 @@ footer{
   .preview-col{ display:none; }
   .panel-portfolio-link{ display:inline-block; }
   .services-wrap{ height:366vh; }
-  .about{ grid-template-columns:1fr; }
-  .about-figure{ max-width:220px; }
+  /* Stacked, like the services on mobile: the model row a quarter of the screen tall. */
+  .about{ grid-template-columns:minmax(0,1fr); padding-left:clamp(20px,5vw,40px); padding-right:clamp(20px,5vw,40px); }
+  .about-figure{ height:25vh; padding-left:0; margin-bottom:24px; }
+  .about-stage{ width:auto; height:100%; }
+  .about-text{ padding-left:0; }
+  /* Still one row, in equal columns; the labels are already split over two lines. */
+  .about-stats{ grid-auto-columns:minmax(0,1fr); gap:12px; }
   .contact-grid{ grid-template-columns:1fr; }
+}
+
+/* Short phones (an iPhone SE is 667px tall): the services section is pinned to one screen,
+   so a smaller icon row and tighter type keep a whole service, list and link included, in
+   view. Taller phones and desktop are unaffected. */
+@media (max-width: 860px) and (max-height: 700px){
+  .services-sticky{ grid-template-rows:18vh minmax(0,1fr); }
+  .text-col{ padding-top:10px; }
+  .panel .tag{ margin-bottom:6px; }
+  .panel h2{ font-size:1.5rem; margin-bottom:10px; }
+  .panel p{ font-size:0.9rem; --text-line:1.5; margin-bottom:10px; }
+  .panel ul{ margin-top:8px; gap:2px; }
+  .panel-portfolio-link{ margin-top:12px; }
+}
+
+/* The narrowest phones (320–360px): a smaller stat row, so its longest words still fit. */
+@media (max-width: 360px){
+  .about-stats div b{ font-size:1.45rem; }
+  .about-stats div span{ font-size:10px; }
 }

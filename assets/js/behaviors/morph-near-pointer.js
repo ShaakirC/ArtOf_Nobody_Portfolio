@@ -14,6 +14,7 @@
 // not just at its starting point. That outline never changes, so there's no flicker.
 import { registerBehavior } from '../model-stage.js';
 import { createProximity } from './shared/proximity.js';
+import { applyWeights } from './shared/shape-keys.js';
 
 // Distance in canvas px from a piece's grown outline within which it triggers.
 var RADIUS = 110;
@@ -24,20 +25,6 @@ var RECEDE_SPEED = 0.65;
 var RECEDE_TIME = GROW_TIME / RECEDE_SPEED;
 // Seconds a fully grown piece waits after the cursor has left before receding.
 var HOLD_TIME = 1;
-
-// Weight for key `index` of `count` at overall progress `value`: the last key runs
-// first over the opening 1/count of the range, the first key runs last.
-function keyWeight(value, index, count){
-  var progress = value * count - (count - 1 - index);
-  return 1 - Math.max(0, Math.min(1, progress));
-}
-
-function applyWeights(piece){
-  var influences = piece.mesh.morphTargetInfluences;
-  for (var index = 0; index < piece.count; index++){
-    influences[index] = keyWeight(piece.value, index, piece.count);
-  }
-}
 
 // The piece's fully grown shape (every key at 0, i.e. the base mesh), as a flat
 // [x, y, z, ...] array in mesh space.
@@ -70,6 +57,16 @@ function triangleEdges(geometry){
     }
   }
   return edges;
+}
+
+// Drives the pieces from a virtual pointer (canvas px) as well as the mouse, e.g. the phone's
+// motion sensors (hero-motion.js). strength (0-1) scales its proximity; 0 turns it off, and
+// grown pieces then hold and recede as they do when the mouse leaves. A piece only grows when
+// its scaled proximity is above threshold (0-1).
+export function setVirtualPointer(entry, x, y, strength, threshold, stage){
+  if (!entry.state.proximity) return;
+  entry.state.proximity.setVirtual(x, y, strength, threshold);
+  stage.startLoop(entry);
 }
 
 registerBehavior('morph-near-pointer', {

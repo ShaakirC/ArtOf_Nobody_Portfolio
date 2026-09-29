@@ -46,8 +46,28 @@ function applyRotation(entry){
   var state = entry.state;
   // The camera looks down -Y with screen-up along -Z, so screen X maps to world X and
   // screen Y to world Z. Signs make the surface facing the viewer follow the mouse.
-  entry.root.rotation.z = state.baseZ - softLimit(state.yaw.angle);
-  entry.root.rotation.x = state.baseX + softLimit(state.pitch.angle);
+  // The offsets are an optional extra turn on top (see setTiltOffset); 0 unless set.
+  entry.root.rotation.z = state.baseZ - softLimit(state.yaw.angle) - state.offsetYaw;
+  entry.root.rotation.x = state.baseX + softLimit(state.pitch.angle) + state.offsetPitch;
+}
+
+// Adds angular velocity (rad/s) to the tilt, then lets the spring settle it back to rest.
+// Positive yaw turns the front face toward the right, positive pitch toward the bottom, the
+// same as moving the mouse right or down. Used for the mouse here, and for the phone's motion
+// sensors by hero-motion.js.
+export function addTiltImpulse(entry, yaw, pitch, stage){
+  entry.state.yaw.velocity += yaw;
+  entry.state.pitch.velocity += pitch;
+  stage.startLoop(entry);
+}
+
+// Sets an extra turn in radians (same directions as addTiltImpulse) on top of the tilt, e.g.
+// a gentle idle drift on phones when there's no sensor input.
+export function setTiltOffset(entry, yaw, pitch, stage){
+  entry.state.offsetYaw = yaw;
+  entry.state.offsetPitch = pitch;
+  applyRotation(entry);
+  stage.requestRender();
 }
 
 registerBehavior('tilt', {
@@ -63,6 +83,8 @@ registerBehavior('tilt', {
     entry.state.baseZ = entry.root.rotation.z;
     entry.state.lastMoveTime = 0;
     entry.state.carry = 0;
+    entry.state.offsetYaw = 0;
+    entry.state.offsetPitch = 0;
   },
 
   onPointerMove: function(entry, pointer, stage){
@@ -76,9 +98,7 @@ registerBehavior('tilt', {
     if (!(elapsed > 0) || elapsed > 100) elapsed = 16;
     var speed = Math.hypot(dx, dy) / elapsed;
     var strength = IMPULSE * (SPEED_FLOOR + (1 - SPEED_FLOOR) * Math.min(1, speed / FULL_SPEED));
-    entry.state.yaw.velocity += dx * strength;
-    entry.state.pitch.velocity += dy * strength;
-    stage.startLoop(entry);
+    addTiltImpulse(entry, dx * strength, dy * strength, stage);
   },
 
   update: function(entry, dt, stage){

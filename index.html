@@ -43,6 +43,7 @@
   <div class="header-actions">
     <nav class="header-nav" aria-label="Main">
       <a href="#work">Work</a>
+      <a href="#about">About</a>
       <a href="#contact">Contact</a>
     </nav>
     <button class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">
@@ -79,35 +80,35 @@
       <div class="panels">
         <div class="panel" data-i="0" data-service="vfx" data-model="assets/models/3D_Icon_VFX_COMP.glb">
           <p class="tag">VFX &amp; Compositing</p>
-          <h2 data-split aria-label="Visual effects that hold up frame by frame.">Visual effects that hold up frame by frame.</h2>
-          <p>Rotoscoping, tracking, keying and cleanup, plus seamless integration of CG elements into live-action plates. I work in Nuke and After Effects to match grain, light and lens so the fix is invisible.</p>
+          <h2 data-split aria-label="The best effects are the ones Nobody notices.">The best effects are the ones Nobody notices.</h2>
+          <p>From roto and tracking to keying and cleanup, I make CG and live-action plates sit together as if they were shot that way. Working in DaVinci Resolve, I match grain, lighting and lens character until the seams disappear.</p>
           <ul>
-            <li>Roto &amp; paint</li>
-            <li>Match-move &amp; tracking</li>
+            <li>Rotoscoping &amp; paint</li>
+            <li>Camera &amp; object tracking</li>
             <li>Green-screen keying</li>
-            <li>Set extension &amp; cleanup</li>
+            <li>Set extensions &amp; cleanup</li>
           </ul>
         </div>
         <div class="panel" data-i="1" data-service="cgi" data-model="assets/models/3D_Icon_3D_CGI.glb">
           <p class="tag">CGI &amp; 3D</p>
-          <h2 data-split aria-label="Full CG assets, built and lit from scratch.">Full CG assets, built and lit from scratch.</h2>
-          <p>Modeling, texturing, lighting and rendering for product shots, hero assets and environments. Every asset is built to survive a close-up, with render times kept honest for real production schedules.</p>
+          <h2 data-split aria-label="Nobody said it had to be real.">Nobody said it had to be real.</h2>
+          <p>Modeling, texturing, lighting and rendering for product shots, hero assets and environments. I build custom procedural setups in Blender's Geometry Nodes, so assets stay flexible, variations come fast, and revisions don't mean starting over. Every piece holds up to a close-up, with render times kept realistic for real production schedules.</p>
           <ul>
+            <li>Procedural systems in Geometry Nodes</li>
             <li>Hard-surface &amp; organic modeling</li>
-            <li>PBR texturing</li>
-            <li>Lookdev &amp; lighting</li>
-            <li>Render optimization</li>
+            <li>PBR texturing &amp; lookdev</li>
+            <li>Lighting &amp; render optimization</li>
           </ul>
         </div>
         <div class="panel" data-i="2" data-service="mograph" data-model="assets/models/3D_Icon_MoGraph.glb">
           <p class="tag">Motion Graphics</p>
-          <h2 data-split aria-label="Graphics that carry a brand in motion.">Graphics that carry a brand in motion.</h2>
-          <p>Title sequences, kinetic type and broadcast packages designed to read at a glance and hold up on a loop. Built modular, so a system scales from a 6-second bumper to a full open.</p>
+          <h2 data-split aria-label="Nobody skips this intro.">Nobody skips this intro.</h2>
+          <p>Title sequences, kinetic type and broadcast packages designed to read in a glance and hold up on repeat. Everything is built as a modular system, so one look can stretch from a six-second bumper to a full opening sequence without losing its shape.</p>
           <ul>
             <li>Title sequences &amp; opens</li>
             <li>Kinetic typography</li>
-            <li>Broadcast &amp; lower-thirds</li>
-            <li>Animated logos</li>
+            <li>Broadcast packages &amp; lower-thirds</li>
+            <li>Logo animation</li>
           </ul>
         </div>
       </div>
@@ -121,23 +122,21 @@
 
 <section class="about" id="about">
   <div class="about-figure">
-    <svg viewBox="-110 -110 220 220">
-      <polygon points="0,-90 85.6,-27.8 52.9,72.8 -52.9,72.8 -85.6,-27.8"
-        fill="none" stroke="var(--line-bright)" stroke-width="1"></polygon>
-      <polygon points="0,-62 59,-19 36.5,50 -36.5,50 -59,-19"
-        fill="var(--ink)" fill-opacity="0.08" stroke="var(--ink)" stroke-width="1.4"></polygon>
-      <circle cx="0" cy="-6" r="2.4" fill="var(--ink)"></circle>
-    </svg>
+    <!-- Stand-in: the hero logo model (js/about.js); may be swapped for its own asset. -->
+    <div class="about-stage"><canvas id="aboutModel" aria-hidden="true"></canvas></div>
   </div>
-  <div>
+  <div class="about-text">
     <p class="section-label">About</p>
-    <h2 data-split aria-label="Ten years of making things that aren't there look like they always were.">Ten years of making things that aren't there look like they always were.</h2>
-    <p>I'm ArtOf_Nobody, a freelance VFX and CGI artist working with production companies and agencies who need a shot fixed, an asset built, or a brand brought to life in motion.</p>
-    <p>My background is in compositing, which means every discipline I've picked up since — 3D and motion graphics — gets judged by the same standard: does it sit believably in the frame. I run projects solo end-to-end, or slot into a larger pipeline as one more artist on the crew.</p>
+    <h2 data-split aria-label="The somebody behind Nobody.">The somebody behind Nobody.</h2>
+    <p>I'm Shaakir Cassiem, a freelance VFX and CGI artist working under the name ArtOf_Nobody.</p>
+    <p>I came to 3D by way of a degree in robotics, and I still approach every project like a system: understand the whole, break it into parts, and make sure every piece works together. That means I'm as comfortable planning scope and pipeline as I am solving the technical problem buried in shot forty-two. Big projects don't intimidate me, and unfamiliar ones are my favourite kind.</p>
+    <p>That curiosity has taken me in a lot of directions. I've produced music, played guitar and keys, built apps, tinkered with DIY electronics, and I'm still deep in game development. Every one of them feeds the work. Music taught me timing, which shows up in every animation I make, and years of coaxing hardware and code into behaving means technical challenges feel like puzzles rather than roadblocks.</p>
+    <p>Today I work across VFX &amp; compositing, 3D &amp; CGI, and motion graphics, and I'm expanding into interactive 3D websites and virtual tours. This site is part of that. If your project needs both a creative eye and a technical mind, let's talk.</p>
     <div class="about-stats">
-      <div><b>10+</b><span>YEARS IN PRODUCTION</span></div>
-      <div><b>140</b><span>PROJECTS DELIVERED</span></div>
-      <div><b>3</b><span>DISCIPLINES</span></div>
+      <div><b>1</b><span>ROBOTICS<br>DEGREE</span></div>
+      <div><b>5+</b><span>YEARS IN<br>PRODUCTION</span></div>
+      <div><b>50+</b><span>PROJECTS<br>DELIVERED</span></div>
+      <div><b>&infin;</b><span>SIDE<br>PROJECTS</span></div>
     </div>
   </div>
 </section>

@@ -69,7 +69,7 @@ export function initServices(options){
     var set = document.createElement('div');
     set.className = 'preview-set';
     projectsFor(serviceId).slice(0, PREVIEWS_PER_SERVICE).forEach(function(project){
-      set.appendChild(createProjectTile(project));
+      set.appendChild(createProjectTile(project, { showService: false }));
     });
     previewContainer.appendChild(set);
     previewSets.push(set);

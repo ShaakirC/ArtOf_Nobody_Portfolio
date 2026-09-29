@@ -3,6 +3,8 @@
 // The logo is centered, then nudged down (and only if needed, shrunk) until it
 // clears the text, so the heading never sits on top of it at any screen size.
 import * as ModelStage from './model-stage.js';
+import { createLogoLights } from './logo-lights.js';
+import { initHeroMotion } from './hero-motion.js';
 
 var LOGO_SRC = 'assets/models/3D_Icon_Logo.glb';
 // Low-poly stand-in for pointer hits, in the logo's coordinates: every mouse move over the
@@ -41,79 +43,25 @@ var MAX_PIXEL_RATIO = 1.5;
 
 var AVOID_SELECTOR = '.hero-eyebrow, .hero h1, .hero-scroll-cue';
 
-// Lights copied from the Blender sun lamps, in the logo's coordinates: the camera looks
-// down from +Y, so -Y is behind the logo, -Z is its top and +Z its bottom. Each light aims
-// at the logo's pivot and is attached to the logo, so it turns with it, both into its
-// resting pose and as it tilts. Strength is Blender's sun strength: 1 lights a white
-// surface to full white.
-var LIGHTS = [
-  { name: 'Front', position: [0, 2.991, 0], strength: 0.5 },
-  { name: 'Rim_Top', position: [1.103, -0.844, -1.904], strength: 1 },
-  { name: 'Rim_Bot', position: [-1.806, -1.049, 1.092], strength: 1 }
-];
-// three.js needs an intensity of PI to light a white surface to full white.
-var STRENGTH_TO_INTENSITY = Math.PI;
-
-// Lighting, per theme: the ambient intensity, plus a multiplier on each light's strength,
-// by name. The rim comes from how the side walls are lit compared with the front face:
-//   dark:  the rim lights make the walls brighter than the front (a light rim).
-//   light: the rims are off and a low ambient leaves the walls in shadow, while the front
-//          light lifts only the front face back up, so the walls read darker (a dark rim).
-var LIGHTING = {
-  dark: { ambient: 0.5, lights: { Front: .2, Rim_Top: 3, Rim_Bot: .5 } },
-  light: { ambient: 0.4, lights: { Front: 1, Rim_Top: 0, Rim_Bot: 0 } }
-};
-
-var heroLights = null;
-
-function addHeroLights(scene, THREE){
-  heroLights = {
-    ambient: new THREE.AmbientLight(0xffffff, 0),
-    logo: LIGHTS.map(function(settings){
-      var light = new THREE.DirectionalLight(0xffffff, 0);
-      light.position.fromArray(settings.position);
-      return light;
-    })
-  };
-  scene.add(heroLights.ambient);
-  applyThemeLighting();
-}
-
-// Parents the logo lights and their targets to the logo, with the targets on its pivot.
-function attachLogoLights(root){
-  heroLights.logo.forEach(function(light){ root.add(light, light.target); });
-}
-
-function applyThemeLighting(){
-  if (!heroLights) return;
-  var settings = LIGHTING[document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'];
-  heroLights.ambient.intensity = settings.ambient;
-  heroLights.logo.forEach(function(light, index){
-    var multiplier = settings.lights[LIGHTS[index].name];
-    light.intensity = LIGHTS[index].strength * STRENGTH_TO_INTENSITY * (multiplier === undefined ? 1 : multiplier);
-  });
-}
-
 // Returns a promise that settles once the logo has loaded or failed.
 export function initHero(){
   var hero = document.querySelector('.hero');
   var canvas = document.getElementById('heroModel');
   // The canvas sits behind the text, so pointer events are read from the whole hero.
-  var stage = ModelStage.create(canvas, { pointerTarget: hero, lights: addHeroLights, maxPixelRatio: MAX_PIXEL_RATIO });
-  new MutationObserver(function(){
-    applyThemeLighting();
-    stage.requestRender();
-  }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  var lights = createLogoLights();
+  var stage = ModelStage.create(canvas, { pointerTarget: hero, lights: lights.addTo, maxPixelRatio: MAX_PIXEL_RATIO });
+  lights.watchTheme(stage);
 
   stage.ready.catch(function(error){
     console.error('Unable to start the hero model stage:', error);
   });
+  var motion = null;
   var logoLoaded = stage.load(LOGO_SRC, { behavior: 'tilt', data: { restRotation: LOGO_REST_ROTATION } });
   var piecesLoaded = stage.load(PIECES_SRC, { behavior: PIECES_BEHAVIOR, colorVar: '--hero-pieces-color' });
 
   logoLoaded.then(function(entry){
     var THREE = stage.THREE;
-    if (heroLights) attachLogoLights(entry.root);
+    lights.attach(entry.root);
     var box = new THREE.Box3().setFromObject(entry.root);
     var size = box.getSize(new THREE.Vector3());
     // The camera looks down the Y axis, so on screen the width is X and the height is Z.
@@ -136,6 +84,8 @@ export function initHero(){
     stage.setEntryVisible(entry, true);
     new ResizeObserver(requestFit).observe(hero);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(requestFit);
+    // Phones: the motion sensors drive the same tilt and pieces (null on other devices).
+    motion = initHeroMotion({ stage: stage, hero: hero, logo: entry });
   }, function(error){
     console.error('Unable to load model ' + LOGO_SRC + ':', error);
   });
@@ -151,6 +101,7 @@ export function initHero(){
   Promise.all([logoLoaded, piecesLoaded]).then(function(entries){
     entries[0].root.add(entries[1].root);
     stage.setEntryVisible(entries[1], true);
+    if (motion) motion.setPieces(entries[1]);
   }, function(error){
     console.error('Unable to load model ' + PIECES_SRC + ':', error);
   });

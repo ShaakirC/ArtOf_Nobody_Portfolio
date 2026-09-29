@@ -52,13 +52,21 @@ assets/js/
   portfolio.js          Portfolio page: tabs, tiles, ?service= and #slug handling
   services.js           Services section: scroll steps, transitions, icons, previews
   hero.js               Hero: logo model, fitting around the text, lighting, pieces, hit proxy
+  hero-motion.js        Phones: motion sensors drive the hero's tilt and pieces (CONFIG at top)
+  about.js              About section: the model beside the text (a static stand-in for now)
+  logo-lights.js        The logo's lighting rig (Blender sun lamps, per-theme strengths),
+                        shared by the hero and about stages
   model-stage.js        Reusable WebGL canvas that shows glTF models (API documented at top)
   behaviors/            Pluggable model behaviours (tilt, pieces near the pointer, ...)
     index.js            Imports every behaviour so it registers itself
     tilt.js             Mouse-driven tilt with a spring back to a resting pose
     morph-near-pointer.js, grow-near-pointer.js, animate-near-pointer.js
                         Three ways for "pieces" to react to the cursor (hero uses morph)
-    shared/             Helpers for those behaviours (proximity, instancing, easing)
+    sway.js             Idle back-and-forth turn between a pose and its mirror (about logo)
+    grow-cycle.js       Shape-key pieces growing, holding and receding in a random order
+                        on their own (about pieces)
+    shared/             Helpers for those behaviours (proximity, instancing, easing, and
+                        shape-keys.js: the grow sequencing shared by morph and grow-cycle)
   split-text.js         Red/cyan split effect on headings with [data-split]
   zip-text.js           Splits a text block into per-letter clip boxes for the services zipper
   grid.js               Interactive crosshair grid drawn behind the page
@@ -74,10 +82,10 @@ assets/js/
 | Element | id / anchor | Built by | Notes |
 |---|---|---|---|
 | `#grid-canvas` | – | grid.js | Fixed, full-screen background grid; reacts to the mouse below the hero |
-| `<header>` | – | static + site.js | Fixed. Logo, nav (Work → `#work`, Contact → `#contact`), theme toggle |
+| `<header>` | – | static + site.js | Fixed. Logo, nav (Work → `#work`, About → `#about`, Contact → `#contact`), theme toggle |
 | `.hero` | `#top` | static + hero.js | Eyebrow, `h1[data-split]`, scroll cue, and `#heroModel` canvas behind them |
 | `.services-wrap` | `#work` (via `.services-anchor`) | static + services.js | Tall scroll track; its `.services-sticky` child pins to the screen |
-| `.about` | `#about` | static | Text, SVG figure, stats |
+| `.about` | `#about` | static + about.js | Same column layout as services: `#aboutModel` canvas in the left 25vw (the hero logo for now), `.about-text` across the rest, stats |
 | `.contact` | `#contact` | static | Email, contact list |
 | `<footer>` | – | static + site.js | `#year` filled in by site.js |
 
@@ -91,7 +99,9 @@ Inside `.services-sticky` (desktop: a 3-column grid of `25vw | 1fr | 1fr`):
 
 On screens ≤ 860px wide the section stacks: header clearance, the icon row at `25vh`, then the
 text. The previews are hidden, and each panel shows a "View projects →" link to that service's
-portfolio tab instead.
+portfolio tab instead. Phones under 700px tall (e.g. iPhone SE) get a smaller icon row (18vh)
+and tighter type, so a whole service fits on the pinned screen. Check this when service copy
+gets longer.
 
 ### portfolio.html
 
@@ -103,7 +113,7 @@ background reacts everywhere.
 
 - **index.html → `main.js`:** imports `behaviors/index.js` first (so behaviours are registered
   before any model loads), then starts `initSite`, `initGrid`, `initSplitText`, `initHero`,
-  and `initServices({ modelsAfter: heroReady })`. Each starts inside its own try/catch, so one
+  `initServices({ modelsAfter: heroReady })` and `initAbout({ modelsAfter: heroReady })`. Each starts inside its own try/catch, so one
   failing feature doesn't take the others down. `initHero` returns a promise that settles when
   the logo has loaded; the services wait for it before loading their icons.
 - **portfolio.html → `portfolio-main.js`:** `initSite`, `initGrid`, `initPortfolio`.
@@ -151,7 +161,9 @@ background reacts everywhere.
 
 ### project-tiles.js: the tile contract
 
-`createProjectTile(project)` returns:
+`createProjectTile(project, options)` returns the markup below. Pass
+`{ showService: false }` to leave out the service label; the services previews do this, since
+the service is already on screen.
 
 ```html
 <article class="project-tile" data-project="<slug>" data-service="<id>" data-href="portfolio.html#<slug>">
@@ -252,8 +264,9 @@ hero.js:
 - `LOGO_REST_ROTATION`: the resting tilt.
 - `LOGO_HEIGHT_SHARE` / `LOGO_MAX_WIDTH_SHARE`: the logo's size.
 - `TEXT_CLEARANCE`: the gap kept around the hero text.
-- `LIGHTS`: positions and strengths, copied from Blender sun lamps.
-- `LIGHTING`: multipliers per theme.
+- `LIGHTS` and `LIGHTING` (positions and strengths copied from Blender sun lamps, and
+  multipliers per theme) now live in logo-lights.js, so the hero and about logos stay lit
+  the same way.
 - `PIECES_BEHAVIOR`: how the pieces react.
 - `MAX_PIXEL_RATIO`: the render resolution cap.
 
@@ -270,7 +283,19 @@ hero.js:
 - **Contact:** static HTML in the `.contact` section of index.html. The phone number, reel,
   LinkedIn and Instagram links are still **placeholders** (`#`, `+1 (000) 000-0000`).
 - **Email:** `hello@artofnobody.work` appears twice there; check it's the real address.
-- **Stats:** the About stats (10+, 140, 3) are static text in `.about-stats`.
+- **About copy:** the heading, paragraphs and stats (10+, 140, 3) are static text in
+  `.about-text`. The stats predate the current copy and haven't been confirmed.
+- **About model:** `LOGO_SRC` / `PIECES_SRC` in about.js. It's a stand-in: the hero logo and
+  its pieces, lit by the shared rig in logo-lights.js, looping on its own. Its lights turn
+  with the logo like the hero's, plus up to `LIGHT_LEAD` (30°) further toward the logo's left
+  as it swings to the mirrored angle (the `sway` behaviour's `follower` option).
+  - The logo sways (`sway`) between the hero's resting angle and its mirror every
+    `SWAY_PERIOD` (8s).
+  - The whole model also bobs up and down (the `sway` behaviour's `bob` option): ±`BOB_AMOUNT`
+    (2%) of its height every `BOB_PERIOD` (5s).
+  - The pieces (`grow-cycle`) grow, hold 1s and recede, a new random one every 0.6s.
+  - The framing covers the whole swing. The timings are constants at the top of each
+    behaviour file.
 
 ### Add a new page
 Copy portfolio.html's `<head>`, header and footer, make a `<name>-main.js` entry that starts
@@ -302,6 +327,21 @@ the top of the file. What matters:
 3. Attaches the lights to the logo, so they turn with it, and sets their strengths per theme.
 4. Attaches the low-poly hit mesh (hidden) and turns off raycasting on the full mesh.
 5. Attaches the pieces (`morph-near-pointer`).
+6. On touch-first phones (`pointer: coarse`, no reduced motion), starts hero-motion.js, which
+   drives the same systems from the motion sensors instead of the mouse:
+   - **Tilt:** how fast the phone turns (`devicemotion` rotationRate, or changes in
+     `deviceorientation` as a fallback) adds impulses via `addTiltImpulse` in tilt.js, so the
+     logo springs back when the phone is still.
+   - **Pieces:** a virtual cursor, pushed by the motion and sprung back to the logo's centre,
+     feeds the proximity helper's virtual channel via `setVirtualPointer` in
+     morph-near-pointer.js. It's scaled by an activity value that decays when the phone is
+     still, with a bloom threshold, so pieces bloom only while it moves.
+   - **Permission:** asked quietly on load. Where a gesture is required (iOS), a
+     "Tap to interact" hint shows until the first tap on the hero.
+   - **Idle:** with no sensor data (or permission), the logo drifts via `setTiltOffset`.
+   - **Pausing:** it pauses off screen or in a hidden tab.
+   - **Tuning:** every value is in `CONFIG` at the top of the file; the tilt spring itself
+     is shared with the mouse, in tilt.js.
 
 ### Services scroll (services.js)
 - **Progress:** progress 0–1 runs over the `.services-wrap` scroll track and is split into N
@@ -331,6 +371,12 @@ the top of the file. What matters:
     `--tile-total` (0.8s, all four) and `--tile-ease`, set on `.preview-set`. Unlike the text,
     the tiles start at 0s, with no 0.32s offset, because the two projects move as one
     strip.
+  - **Hover** (preview tiles, devices that can hover): the title is hidden at rest and slides
+    in from the tile's left edge while the image zooms slightly and a gradient in the panel
+    colour fades up from the bottom behind the title. It's tuned by `--tile-hover-time`
+    (0.6s), `--tile-hover-zoom` (1.06), `--tile-shade-height` (55%) and
+    `--tile-shade-strength` (85%) on `.preview-set`. On devices
+    without hover, the title just shows.
   - The list bullets and the mobile link fade over 0.5s instead, with the incoming ones
     delayed 0.32s.
   - **Keep these mirrored:** durations and delays live in styles.css (the `.panel.is-*` rules
@@ -416,6 +462,11 @@ These came out of the 2026-09-29 audit (`_notes/performance-review.md`). Don't r
     page in an `<iframe>` of the target size inside a larger window.
   - **Hash scroll:** `--screenshot` of a hash-scrolled page renders wrongly. Scroll an iframe
     from a wrapper page instead.
+  - **Touch-first phones:** add
+    `--blink-settings=primaryPointerType=2,availablePointerTypes=2,primaryHoverType=1,availableHoverTypes=1`
+    to emulate one, then dispatch
+    `new DeviceMotionEvent('devicemotion', { rotationRate: {…}, interval: 16 })` to test
+    hero-motion.js.
   - **Starved animation frames:** under `--virtual-time-budget`, `requestAnimationFrame`
     barely fires, so scroll-driven code seems not to run. From the wrapper, replace the
     iframe's `requestAnimationFrame` with a 16ms `setTimeout`.

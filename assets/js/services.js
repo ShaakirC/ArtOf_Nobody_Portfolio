@@ -1,6 +1,7 @@
 import * as ModelStage from './model-stage.js';
 import { PREVIEWS_PER_SERVICE, projectsFor, serviceUrl } from './projects.js';
 import { createProjectTile } from './project-tiles.js';
+import { zipText } from './zip-text.js';
 
 // options.modelsAfter: a promise to wait for before loading the service models (the hero
 // logo), so they don't compete for bandwidth. The first service shows as soon as the page
@@ -51,6 +52,15 @@ export function initServices(options){
     progressSteps.push(step);
     progressSegments.push(segmentFill);
   });
+
+  // ---------- zipper text ----------
+  // Each panel's tag, paragraph and list items zip in and out letter by letter with the
+  // heading's transition. Left as plain text when the visitor prefers reduced motion.
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    panels.forEach(function(panel){
+      zipText(panel.querySelectorAll(':scope > p, li'));
+    });
+  }
 
   // ---------- project previews ----------
   var previewContainer = document.getElementById('servicePreviews');

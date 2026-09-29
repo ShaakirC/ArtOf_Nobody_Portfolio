@@ -3,7 +3,7 @@
 The single reference for how this site is built, where its content lives, and how to change
 it safely. Read this before touching the code; it should save you from scanning the repo.
 
-Last verified against commit `b7f9674` (2026-09-29). **If you change the structure, the data
+Last verified 2026-09-29, including the services zipper text. **If you change the structure, the data
 pipeline or any timing that's mirrored between files, update this guide in the same commit.**
 
 ---
@@ -59,6 +59,7 @@ assets/js/
                         Three ways for "pieces" to react to the cursor (hero uses morph)
     shared/             Helpers for those behaviours (proximity, instancing, easing)
   split-text.js         Red/cyan split effect on headings with [data-split]
+  zip-text.js           Splits a text block into per-letter clip boxes for the services zipper
   grid.js               Interactive crosshair grid drawn behind the page
   site.js               Page chrome: theme toggle, favicon, header background, footer year
 ```
@@ -302,6 +303,8 @@ the top of the file. What matters:
 - **Progress:** progress 0–1 runs over the `.services-wrap` scroll track and is split into N
   equal steps. The progress fill, the highlighted step number and the shown service all change
   **at the same step boundary**.
+- **Panels share one grid cell and the same top edge** (`.panels` is a grid), so the lines of
+  consecutive services occupy the same heights and a transition swaps them slot for slot.
 - **Hold:** a service stays completely still for its step. Crossing a boundary plays a
   **timed** transition; it is not scrubbed by the scroll. The owner chose this deliberately:
   scrubbing leaves half-transitioned resting states and steps visibly with mouse wheels.
@@ -310,7 +313,14 @@ the top of the file. What matters:
     apart and fade out.
   - `.is-entering` starts 0.32s later (40% into the leave) and runs 0.8s: the copies fade in
     8px apart, converge, and hand over to the white text.
-  - The body text and preview tiles fade over 0.5s, the incoming ones delayed 0.32s.
+  - The tag, paragraph and list items **zip** letter by letter (zip-text.js): outgoing letters
+    slide up out of their own line, and incoming ones rise from below it, one after another in
+    reading order. `--zip-letter` (on `.panel` in styles.css) sets how long each letter
+    takes, and `--zip-total` (0.8s, in step with the heading) how long the whole block
+    takes. Start times spread over the difference by `--zip` (the letter's place in reading
+    order, 0 to 1). The incoming zipper starts at 0.32s, like the incoming heading.
+  - The list bullets, the mobile link and the preview tiles fade over 0.5s instead, with the
+    incoming ones delayed 0.32s.
   - **Keep these mirrored:** durations and delays live in styles.css (the `.panel.is-*` rules
     and `@keyframes channel-*` / `base-*`), and `LEAVE_TIME` / `ENTER_TIME` in services.js
     must equal them, because timers remove the classes.
@@ -330,6 +340,12 @@ the top of the file. What matters:
   - The services transition drives the same copies through the inherited custom properties
     `--channel-split` / `--channel-opacity`, which are registered with `@property` so they can
     animate.
+- **Body text is different:** the services body text uses zip-text.js, not split-text. Each
+  letter is an inline-block clip box (so the proportional font loses kerning), only as tall as
+  the glyphs (`--zip-mask`, 1.3em), with the rest of the line height (`--text-line`) as margin
+  so the text sits exactly where plain text would,
+  and screen readers get a visually hidden copy of the text. It's skipped when reduced motion
+  is on at load.
 - **Measuring:** letter positions are measured when the page loads and again on resize or font
   load, not during interaction.
 

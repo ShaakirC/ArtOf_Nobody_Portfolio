@@ -49,6 +49,16 @@ html[data-theme="light"]{
 }
 
 *{ box-sizing:border-box; }
+/* Read by screen readers, invisible on screen. */
+.sr-only{
+  position:absolute;
+  width:1px; height:1px;
+  margin:-1px; padding:0;
+  overflow:hidden;
+  clip:rect(0,0,0,0);
+  white-space:nowrap;
+  border:0;
+}
 html{ scroll-behavior:smooth; background:var(--bg); }
 body{
   margin:0;
@@ -284,29 +294,63 @@ a:active{ opacity:0.72; }
   padding:0 var(--col-pad);
   position:relative;
 }
-.panels{ position:relative; width:100%; max-width:560px; }
+/* Every panel sits in the same grid cell with the same top edge, so the group is as tall as
+   the tallest panel and centered as one. Sharing a top keeps the lines of consecutive
+   services on the same heights, so during a transition each incoming line rises into the
+   slot an outgoing line is leaving instead of landing between them. */
+.panels{ position:relative; width:100%; max-width:560px; display:grid; }
 .panel{
-  position:absolute;
-  top:50%; left:0; right:0;
-  transform:translateY(-50%);
+  grid-area:1 / 1;
+  align-self:start;
+  min-width:0;
   opacity:0;
   pointer-events:none;
 }
 /* A service holds still until the scroll crosses into the next one, then switches with a
    short timed transition (classes set by services.js). The current heading's red/cyan
    channels drift apart as it fades; 40% of the way into that, the next heading's channels
-   fade in apart and drift together into place. The rest of the text simply fades. */
+   fade in apart and drift together into place. Alongside each heading, the tag, paragraph
+   and list zip out above / in from below their lines letter by letter (zip-text.js); the
+   bullets and the mobile link, which aren't split into letters, fade. */
 .panel.is-active,
 .panel.is-leaving{ opacity:1; }
 .panel.is-active{ pointer-events:auto; }
-.panel > :not(h2){ opacity:0; transition:opacity 0.5s ease; }
-.panel.is-active > :not(h2){ opacity:1; transition-delay:0.32s; }
+.panel .panel-portfolio-link,
+.panel li::before{ opacity:0; transition:opacity 0.5s ease; }
+.panel.is-active .panel-portfolio-link,
+.panel.is-active li::before{ opacity:1; transition-delay:0.32s; }
 /* Leave: 0.8s. Enter: starts 0.32s in (40% through the leave) and runs 0.8s. Keep
    LEAVE_TIME and ENTER_TIME in services.js in step. */
 .panel.is-leaving h2{ animation:channel-out 0.8s cubic-bezier(0.4,0,0.6,1) forwards; }
 .panel.is-leaving h2 .split-base{ animation:base-out 0.8s ease forwards; }
 .panel.is-entering h2{ animation:channel-in 0.8s cubic-bezier(0.25,0.6,0.3,1) 0.32s backwards; }
 .panel.is-entering h2 .split-base{ animation:base-in 0.8s ease 0.32s backwards; }
+/* Zipper timing. --zip-letter is how long each letter takes to slide; --zip-total is how
+   long a whole block takes, kept equal to the heading's 0.8s. Letters start one after
+   another in reading order (--zip, 0 to 1, set per letter by zip-text.js), spread over
+   whatever time is left: --zip-total minus --zip-letter. A shorter --zip-letter means fewer
+   letters in motion at once, so they read as individual letters rather than a moving line. */
+.panel{
+  --zip-letter:0.4s;
+  --zip-total:0.8s;
+  /* Mask height per letter, in em: enough for the ascenders and descenders of Roboto and
+     IBM Plex Mono. Lower clips glyph tops and tails; higher lets letters show in the gap. */
+  --zip-mask:1.3;
+  /* Line height of the zipped text, shared by the text and its letter masks. */
+  --text-line:1.6;
+}
+.panel p,
+.panel li{ line-height:var(--text-line); }
+.panel.is-leaving .zip-glyph{
+  animation:zip-out var(--zip-letter) cubic-bezier(0.5,0,0.75,0)
+    calc(var(--zip, 0) * (var(--zip-total) - var(--zip-letter))) forwards;
+}
+.panel.is-entering .zip-glyph{
+  animation:zip-in var(--zip-letter) cubic-bezier(0.25,1,0.5,1)
+    calc(0.32s + var(--zip, 0) * (var(--zip-total) - var(--zip-letter))) backwards;
+}
+@keyframes zip-out{ to{ transform:translateY(-100%); } }
+@keyframes zip-in{ from{ transform:translateY(100%); } }
 
 /* Registered so the channel offset and strength can animate; unregistered they'd jump. */
 @property --channel-split{ syntax:'<length>'; inherits:true; initial-value:0px; }
@@ -330,12 +374,14 @@ a:active{ opacity:0.72; }
   100%{ opacity:1; }
 }
 @media (prefers-reduced-motion: reduce){
-  .panel > :not(h2){ transition:none; }
+  .panel .panel-portfolio-link,
+  .panel li::before{ transition:none; }
   .panel.is-leaving{ opacity:0; }
   .panel.is-entering h2,
   .panel.is-entering h2 .split-base,
   .panel.is-leaving h2,
-  .panel.is-leaving h2 .split-base{ animation:none; }
+  .panel.is-leaving h2 .split-base,
+  .panel .zip-glyph{ animation:none; }
 }
 .panel .tag{
   font-family:var(--mono);
@@ -352,6 +398,21 @@ a:active{ opacity:0.72; }
   margin:0 0 18px;
 }
 .split-word{ position:relative; display:inline-block; white-space:nowrap; }
+/* Zipper text (zip-text.js): each letter is a one-line-tall clipping box, so its glyph can
+   slide in from below or out above its own line. */
+.zip-word{ display:inline-block; white-space:nowrap; vertical-align:top; }
+.zip-letter{
+  display:inline-block;
+  overflow:hidden;
+  vertical-align:top;
+  /* The mask is only as tall as the glyphs (--zip-mask, in em), not the whole line, so a
+     letter appears and disappears right at its own edge instead of sliding through the gap
+     between lines. The rest of the line height (--text-line) becomes margin above and below,
+     which keeps every glyph exactly where plain text would put it. */
+  line-height:var(--zip-mask);
+  margin:calc((var(--text-line, 1.6) - var(--zip-mask)) * 0.5em) 0;
+}
+.zip-glyph{ display:inline-block; }
 .split-base{ position:relative; z-index:1; }
 .split-letter{ position:absolute; }
 /* The copies only exist while a letter is split by the pointer, or during a services step
@@ -620,11 +681,10 @@ footer{
   .shape-col{ padding:0; justify-content:center; }
   .shape-stage{ width:auto; height:100%; max-width:100%; }
   .text-col{ padding:16px clamp(20px,5vw,40px) 0 12px; align-items:flex-start; }
-  .panel{ top:0; transform:none; }
   /* Tighter type so a whole step fits on short phones. */
   .panel .tag{ margin-bottom:10px; }
   .panel h2{ margin-bottom:12px; }
-  .panel p{ font-size:0.95rem; line-height:1.55; }
+  .panel p{ font-size:0.95rem; --text-line:1.55; }
   .panel ul{ margin-top:12px; gap:4px; }
   .panel-portfolio-link{ margin-top:16px; }
   .preview-col{ display:none; }

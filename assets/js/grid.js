@@ -314,6 +314,13 @@ export function initGrid(){
 
   refreshGridColor();
   resizeCanvas();
+  // A GPU reset can wipe 2D canvases too; the browser restores them blank, so redraw.
+  function onContextRestored(){
+    rebuildRestingGrid();
+    drawGrid();
+  }
+  canvas.addEventListener('contextrestored', onContextRestored);
+  restingCanvas.addEventListener('contextrestored', onContextRestored);
   document.addEventListener('pointermove', onPointerMove, { passive:true });
   document.addEventListener('pointerleave', setPointerInactive, { passive:true });
   window.addEventListener('blur', setPointerInactive);

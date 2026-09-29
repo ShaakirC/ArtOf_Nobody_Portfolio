@@ -423,6 +423,10 @@ export function create(canvas, options){
     stage.renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
     stage.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxPixelRatio));
     stage.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    // If the GPU resets (a driver timeout, or another app like Blender saturating it), the
+    // browser drops the WebGL context and later hands it back empty. Three.js rebuilds its
+    // state on restore, but frames here are drawn on demand, so ask for one straight away.
+    canvas.addEventListener('webglcontextrestored', requestRender);
     addLights(stage.scene, THREE);
     raycaster = new THREE.Raycaster();
     pointerCoords = new THREE.Vector2();

@@ -497,11 +497,38 @@ a:active{ opacity:0.72; }
   gap:clamp(8px,1vw,14px);
   opacity:0;
   pointer-events:none;
-  transition:opacity 0.5s ease;
+  /* Carousel timing, like the text zipper: --tile-slide is how long each tile's push takes;
+     --tile-total is how long all four take, kept equal to the heading's 0.8s. Tiles start one
+     after another in reading order, spread over the time left. */
+  --tile-slide:0.5s;
+  --tile-total:0.8s;
+  --tile-ease:cubic-bezier(0.65,0,0.35,1);
 }
-.preview-set.is-active{ opacity:1; pointer-events:auto; transition-delay:0.32s; }
+/* Place of each tile in reading order, 0 to 1. */
+.preview-set .project-tile:nth-child(1){ --tile:0; }
+.preview-set .project-tile:nth-child(2){ --tile:0.3333; }
+.preview-set .project-tile:nth-child(3){ --tile:0.6667; }
+.preview-set .project-tile:nth-child(4){ --tile:1; }
+/* Switching services, each tile works like a carousel: its frame stays put while the
+   outgoing and incoming projects slide through it together, edge to edge, so the next one
+   pushes the current one out. Scrolling down pushes left to right, scrolling back up right
+   to left: services.js sets --slide-dir (1 or -1) on #servicePreviews for each switch. */
+.preview-set.is-active,
+.preview-set.is-leaving{ opacity:1; }
+.preview-set.is-active{ pointer-events:auto; }
+.preview-set.is-leaving .project-tile-inner{
+  animation:tile-out var(--tile-slide) var(--tile-ease)
+    calc(var(--tile, 0) * (var(--tile-total) - var(--tile-slide))) forwards;
+}
+.preview-set.is-entering .project-tile-inner{
+  animation:tile-in var(--tile-slide) var(--tile-ease)
+    calc(var(--tile, 0) * (var(--tile-total) - var(--tile-slide))) backwards;
+}
+@keyframes tile-out{ to{ transform:translateX(calc(var(--slide-dir, 1) * 100%)); } }
+@keyframes tile-in{ from{ transform:translateX(calc(var(--slide-dir, 1) * -100%)); } }
 @media (prefers-reduced-motion: reduce){
-  .preview-set{ transition:none; }
+  .preview-set.is-leaving{ opacity:0; }
+  .preview-set .project-tile-inner{ animation:none; }
 }
 
 /* ---------- project tiles ---------- */
@@ -510,9 +537,11 @@ a:active{ opacity:0.72; }
   min-width:0;
   aspect-ratio:1/1;
   overflow:hidden;
-  background:var(--panel);
   border:1px solid var(--line);
 }
+/* The tile is a frame that clips; the inner layer carries the content (and the background,
+   so two stacked tiles mid-transition don't cover each other's content). */
+.project-tile-inner{ position:absolute; inset:0; background:var(--panel); }
 .project-tile-media{ position:absolute; inset:0; }
 .project-tile-media img{ width:100%; height:100%; object-fit:cover; }
 .project-tile-media.is-placeholder{

@@ -1,5 +1,7 @@
 // Square project tile, used by the services previews and the portfolio grid.
 // Clicks aren't wired yet: each tile carries its portfolio URL in data-href for when they are.
+// The tile is a fixed frame; its image and caption sit in .project-tile-inner, which can
+// slide within the frame (the services preview transition) while the frame stays put.
 import { findService, projectUrl } from './projects.js';
 
 export function createProjectTile(project){
@@ -8,6 +10,9 @@ export function createProjectTile(project){
   tile.dataset.project = project.slug;
   tile.dataset.service = project.service;
   tile.dataset.href = projectUrl(project.slug);
+
+  var inner = document.createElement('div');
+  inner.className = 'project-tile-inner';
 
   var media = document.createElement('div');
   media.className = 'project-tile-media';
@@ -21,7 +26,7 @@ export function createProjectTile(project){
   } else {
     media.classList.add('is-placeholder');
   }
-  tile.appendChild(media);
+  inner.appendChild(media);
 
   var caption = document.createElement('div');
   caption.className = 'project-tile-caption';
@@ -36,7 +41,8 @@ export function createProjectTile(project){
   title.className = 'project-tile-title';
   title.textContent = project.title;
   caption.appendChild(title);
-  tile.appendChild(caption);
+  inner.appendChild(caption);
+  tile.appendChild(inner);
 
   return tile;
 }

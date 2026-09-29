@@ -42,6 +42,7 @@ _notes/                 Developer notes (not published: Jekyll skips folders sta
 assets/css/styles.css   All styles, both themes, both pages
 assets/images/          Header logos and favicon (logo_wh_96 / logo_bl_96 are used; the
                         _LR files are high-res originals kept for reference, not loaded)
+  content/              Project preview images (WebP), referenced from projects.js
 assets/models/          glTF (.glb) models: hero logo set and service icons
 assets/js/
   main.js               Entry point for index.html
@@ -138,9 +139,11 @@ background reacts everywhere.
   - `slug`: unique and URL-safe (lowercase, hyphens). It becomes the tile's `id` on the
     portfolio page and the link `portfolio.html#<slug>`.
   - `service`: one of the `SERVICES` ids.
-  - `image`: a path such as `'assets/images/projects/<slug>.jpg'`, or `null` for a
-    placeholder tile. Tiles are square and crop with `object-fit: cover`, so supply at least
-    ~800×800 px with the subject centred.
+  - `image`: a path under `assets/images/content/` (any file name; the current stand-ins
+    are `VFX_Comp_1.webp`, `3D_CGI_1.webp`, `MoGraph_1.webp` and so on), or `null` for an
+    empty placeholder tile. Tiles are square and crop with `object-fit: cover`, so a 16:9
+    image loses about 22% off each side. Use WebP, at least 800px on the short side, at
+    quality 75–80, with the subject centred.
 - `PREVIEWS_PER_SERVICE` (4): how many projects each service previews on the home page. The
   preview grid is 2×2, so changing this also needs a CSS change (`.preview-set`).
 - Helpers: `projectsFor(serviceId)`, `findService(id)`, `projectUrl(slug)`, `serviceUrl(id)`.
@@ -152,10 +155,12 @@ background reacts everywhere.
 
 ```html
 <article class="project-tile" data-project="<slug>" data-service="<id>" data-href="portfolio.html#<slug>">
-  <div class="project-tile-media [is-placeholder]"> <img …> (only when image is set) </div>
-  <div class="project-tile-caption">
-    <p class="project-tile-service">Service label</p>
-    <h3 class="project-tile-title">Title</h3>
+  <div class="project-tile-inner">   <!-- slides within the tile's frame; carries the background -->
+    <div class="project-tile-media [is-placeholder]"> <img …> (only when image is set) </div>
+    <div class="project-tile-caption">
+      <p class="project-tile-service">Service label</p>
+      <h3 class="project-tile-title">Title</h3>
+    </div>
   </div>
 </article>
 ```
@@ -187,8 +192,7 @@ Each `.panel` is one service step, in order:
 ## 5. Recipes
 
 ### Add a project
-1. Put the image in `assets/images/projects/` (create the folder the first time), named after
-   the slug.
+1. Put the image in `assets/images/content/` (WebP; see the `image` notes above).
 2. Add `{ slug, title, service, image }` to `PROJECTS` in projects.js, positioned where it
    should appear.
 3. That's it. It appears on the portfolio page, and on the home page if it's among the first
@@ -200,8 +204,8 @@ order. (If picking by order gets awkward, a `featured: true` flag filtered in se
 the natural next step. It isn't implemented yet.)
 
 ### Replace the placeholder projects
-The 12 entries in `PROJECTS` (`vfx-01` … `mograph-04`) are placeholders. Replace them
-outright; nothing else refers to those slugs.
+The 12 entries in `PROJECTS` (`vfx-01` … `mograph-04`) have placeholder titles and stand-in
+images. Replace them outright; nothing else refers to those slugs.
 
 ### Edit a service's text
 Edit its `.panel` in index.html. Keep `data-split` and a matching `aria-label` on the `h2`
@@ -319,11 +323,20 @@ the top of the file. What matters:
     takes, and `--zip-total` (0.8s, in step with the heading) how long the whole block
     takes. Start times spread over the difference by `--zip` (the letter's place in reading
     order, 0 to 1). The incoming zipper starts at 0.32s, like the incoming heading.
-  - The list bullets, the mobile link and the preview tiles fade over 0.5s instead, with the
-    incoming ones delayed 0.32s.
+  - The preview tiles work like a **carousel**. Each tile's frame stays put while the
+    outgoing and incoming content (`.project-tile-inner`) slide through it together, edge to
+    edge, tile by tile in reading order. The direction follows the scroll: down pushes left to
+    right, up pushes right to left, via `--slide-dir` (1 / −1), which `showService` sets on
+    `#servicePreviews`. The timing works like the zipper: `--tile-slide` (0.5s, each tile),
+    `--tile-total` (0.8s, all four) and `--tile-ease`, set on `.preview-set`. Unlike the text,
+    the tiles start at 0s, with no 0.32s offset, because the two projects move as one
+    strip.
+  - The list bullets and the mobile link fade over 0.5s instead, with the incoming ones
+    delayed 0.32s.
   - **Keep these mirrored:** durations and delays live in styles.css (the `.panel.is-*` rules
     and `@keyframes channel-*` / `base-*`), and `LEAVE_TIME` / `ENTER_TIME` in services.js
-    must equal them, because timers remove the classes.
+    must equal them, because timers remove the classes. The text panels and preview sets
+    get the same classes from `setStepState`.
   - **The owner tuned the feel of this by hand.** Don't change timing, distance (8px) or
     opacity (0.7 peak) without asking.
 - **First service:** it doesn't show until the hero's bottom edge has scrolled above the
@@ -431,7 +444,7 @@ These came out of the 2026-09-29 audit (`_notes/performance-review.md`). Don't r
 - **Project tiles:** hover and click behaviour isn't designed yet (clicks go via `data-href`
   when they are). The tiles' own transition between services is also still to be designed;
   for now they fade.
-- **Placeholders:** all projects are placeholders. Some contact details and social links are
+- **Placeholders:** all projects have placeholder titles and stand-in images. Some contact details and social links are
   placeholders; see recipe "Contact details".
 - **Portfolio page:** there's no per-project detail view yet. `#slug` only scrolls to the
   tile.

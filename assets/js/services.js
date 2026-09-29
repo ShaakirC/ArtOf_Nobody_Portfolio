@@ -89,34 +89,36 @@ export function initServices(options){
   var LEAVE_TIME = 800; // ms, the leave animation's duration in styles.css
   var ENTER_TIME = 1120; // ms, the enter animation's delay plus duration in styles.css
   var shownIndex = -1;
-  var stepTimers = [];
+
+  // Moves one step element (a text panel or a preview set) into its state for this switch.
+  function setStepState(element, active, leaving){
+    clearTimeout(element.stepTimer);
+    if (element.classList.contains('is-entering')){
+      element.classList.remove('is-entering');
+      // Restart the animation if the same service comes straight back.
+      void element.offsetWidth;
+    }
+    element.classList.remove('is-leaving');
+    if (active){
+      element.classList.add('is-entering');
+      element.stepTimer = setTimeout(function(){ element.classList.remove('is-entering'); }, ENTER_TIME);
+    } else if (leaving){
+      element.classList.add('is-leaving');
+      element.stepTimer = setTimeout(function(){ element.classList.remove('is-leaving'); }, LEAVE_TIME);
+    }
+    element.classList.toggle('is-active', active);
+    element.setAttribute('aria-hidden', String(!active));
+  }
 
   // index -1 shows no service (the hero still covers the headings).
   function showService(index){
     var previous = shownIndex;
     shownIndex = index;
+    // The preview carousel pushes left to right going down the page, right to left going up.
+    previewContainer.style.setProperty('--slide-dir', index > previous ? '1' : '-1');
     panels.forEach(function(panel, i){
-      var active = i === index;
-      clearTimeout(stepTimers[i]);
-      if (panel.classList.contains('is-entering')){
-        panel.classList.remove('is-entering');
-        // Restart the animation if the same service comes straight back.
-        void panel.offsetWidth;
-      }
-      panel.classList.remove('is-leaving');
-      if (active){
-        panel.classList.add('is-entering');
-        stepTimers[i] = setTimeout(function(){ panel.classList.remove('is-entering'); }, ENTER_TIME);
-      } else if (i === previous){
-        panel.classList.add('is-leaving');
-        stepTimers[i] = setTimeout(function(){ panel.classList.remove('is-leaving'); }, LEAVE_TIME);
-      }
-      panel.classList.toggle('is-active', active);
-      panel.setAttribute('aria-hidden', String(!active));
-      if (previewSets[i]){
-        previewSets[i].classList.toggle('is-active', active);
-        previewSets[i].setAttribute('aria-hidden', String(!active));
-      }
+      setStepState(panel, i === index, i === previous);
+      if (previewSets[i]) setStepState(previewSets[i], i === index, i === previous);
     });
   }
 

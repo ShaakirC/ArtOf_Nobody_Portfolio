@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portfolio — ArtOf_Nobody</title>
+<meta name="description" content="Selected VFX, CGI and motion graphics projects by ArtOf_Nobody.">
+<script>
+  // Apply the saved theme before first paint so light-theme visitors never see a dark flash.
+  try {
+    if (localStorage.getItem('artofnobody-theme') === 'light') document.documentElement.setAttribute('data-theme', 'light');
+  } catch (error) {}
+</script>
+<link id="site-favicon" rel="icon" type="image/png" href="assets/images/logo_bl_96.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Roboto:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+
+<canvas id="grid-canvas" aria-hidden="true"></canvas>
+
+<header>
+  <a href="index.html" class="logo" aria-label="ArtOf_Nobody home">
+    <img class="logo-dark" src="assets/images/logo_wh_96.png" width="96" height="96" alt="ArtOf_Nobody">
+    <img class="logo-light" src="assets/images/logo_bl_96.png" width="96" height="96" alt="ArtOf_Nobody">
+  </a>
+  <div class="header-actions">
+    <nav class="header-nav" aria-label="Main">
+      <a href="index.html#work">Work</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
+    <button class="theme-toggle" type="button" aria-label="Switch to light theme" aria-pressed="false">
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M20.5 15.4A8.5 8.5 0 0 1 8.6 3.5 8.5 8.5 0 1 0 20.5 15.4Z"></path>
+      </svg>
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <circle cx="12" cy="12" r="3.5"></circle>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<main class="portfolio">
+  <p class="section-label">Portfolio</p>
+  <h1 class="portfolio-title">Selected work</h1>
+  <!-- Tabs and project tiles are filled in from js/projects.js. -->
+  <div class="portfolio-tabs" id="portfolioTabs" role="group" aria-label="Filter by service"></div>
+  <div class="portfolio-grid" id="portfolioGrid"></div>
+</main>
+
+<footer>
+  <span>© <span id="year"></span> ArtOf_Nobody. All rights reserved.</span>
+  <span>Compositing · CGI · Motion Graphics</span>
+</footer>
+
+<script type="module" src="assets/js/portfolio-main.js"></script>
+
+</body>
+</html>

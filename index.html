@@ -77,7 +77,7 @@
     </div>
     <div class="text-col">
       <div class="panels">
-        <div class="panel" data-i="0" data-model="assets/models/3D_Icon_VFX_COMP.glb">
+        <div class="panel" data-i="0" data-service="vfx" data-model="assets/models/3D_Icon_VFX_COMP.glb">
           <p class="tag">VFX &amp; Compositing</p>
           <h2 data-split aria-label="Visual effects that hold up frame by frame.">Visual effects that hold up frame by frame.</h2>
           <p>Rotoscoping, tracking, keying and cleanup, plus seamless integration of CG elements into live-action plates. I work in Nuke and After Effects to match grain, light and lens so the fix is invisible.</p>
@@ -88,7 +88,7 @@
             <li>Set extension &amp; cleanup</li>
           </ul>
         </div>
-        <div class="panel" data-i="1" data-model="assets/models/3D_Icon_3D_CGI.glb">
+        <div class="panel" data-i="1" data-service="cgi" data-model="assets/models/3D_Icon_3D_CGI.glb">
           <p class="tag">CGI &amp; 3D</p>
           <h2 data-split aria-label="Full CG assets, built and lit from scratch.">Full CG assets, built and lit from scratch.</h2>
           <p>Modeling, texturing, lighting and rendering for product shots, hero assets and environments. Every asset is built to survive a close-up, with render times kept honest for real production schedules.</p>
@@ -99,7 +99,7 @@
             <li>Render optimization</li>
           </ul>
         </div>
-        <div class="panel" data-i="2" data-model="assets/models/3D_Icon_MoGraph.glb">
+        <div class="panel" data-i="2" data-service="mograph" data-model="assets/models/3D_Icon_MoGraph.glb">
           <p class="tag">Motion Graphics</p>
           <h2 data-split aria-label="Graphics that carry a brand in motion.">Graphics that carry a brand in motion.</h2>
           <p>Title sequences, kinetic type and broadcast packages designed to read at a glance and hold up on a loop. Built modular, so a system scales from a 6-second bumper to a full open.</p>
@@ -111,6 +111,10 @@
           </ul>
         </div>
       </div>
+    </div>
+    <!-- Project previews, one 2x2 set per service; filled in from js/projects.js. -->
+    <div class="preview-col">
+      <div class="preview-sets" id="servicePreviews"></div>
     </div>
   </div>
 </section>

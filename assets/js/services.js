@@ -1,4 +1,6 @@
 import * as ModelStage from './model-stage.js';
+import { PREVIEWS_PER_SERVICE, projectsFor, serviceUrl } from './projects.js';
+import { createProjectTile } from './project-tiles.js';
 
 // options.modelsAfter: a promise to wait for before loading the service models (the hero
 // logo), so they don't compete for bandwidth. The first service shows as soon as the page
@@ -7,7 +9,8 @@ export function initServices(options){
   options = options || {};
   // ---------- services scroll ----------
   // Each .panel is one service step. Its model comes from data-model, and
-  // data-model-behavior optionally names a ModelStage behavior.
+  // data-model-behavior optionally names a ModelStage behavior. data-service names the
+  // service in js/projects.js whose projects it previews.
   // Fraction of each model's animation that overlaps the next service's model.
   var MODEL_OVERLAP = 0.25;
 
@@ -17,6 +20,7 @@ export function initServices(options){
   var modelCanvas = document.getElementById('serviceModels');
   var wrap = document.querySelector('.services-wrap');
   var serviceSections = Math.max(1, panels.length);
+  var previewSets = [];
   var progressSteps = [];
   var progressSegments = [];
   var modelStage = null;
@@ -41,6 +45,33 @@ export function initServices(options){
     progressSteps.push(step);
     progressSegments.push(segmentFill);
   });
+
+  // ---------- project previews ----------
+  var previewContainer = document.getElementById('servicePreviews');
+  panels.forEach(function(panel){
+    var serviceId = panel.dataset.service;
+    var set = document.createElement('div');
+    set.className = 'preview-set';
+    projectsFor(serviceId).slice(0, PREVIEWS_PER_SERVICE).forEach(function(project){
+      set.appendChild(createProjectTile(project));
+    });
+    previewContainer.appendChild(set);
+    previewSets.push(set);
+
+    // Previews are hidden on small screens, so each service links to its portfolio tab there.
+    var link = document.createElement('a');
+    link.className = 'panel-portfolio-link';
+    link.href = serviceUrl(serviceId);
+    link.textContent = 'View projects';
+    panel.appendChild(link);
+  });
+
+  // Fades a step's text or previews; faded-out steps can't be clicked or read out.
+  function showStep(element, opacity){
+    element.style.opacity = opacity;
+    element.style.pointerEvents = opacity > 0.6 ? 'auto' : 'none';
+    element.setAttribute('aria-hidden', opacity < 0.4 ? 'true' : 'false');
+  }
 
   function sizeServices(){
     var segmentHeight = window.innerWidth <= 860 ? 121.3333 : 134.6667;
@@ -102,9 +133,8 @@ export function initServices(options){
       var opacity = idx === segments - 1
         ? (i === idx ? 1 : 0)
         : (i === idx ? 1 - textTransitionT : (i === idx + 1 ? textTransitionT : 0));
-      panel.style.opacity = opacity;
-      panel.style.pointerEvents = opacity > 0.6 ? 'auto' : 'none';
-      panel.setAttribute('aria-hidden', opacity < 0.4 ? 'true' : 'false');
+      showStep(panel, opacity);
+      if (previewSets[i]) showStep(previewSets[i], opacity);
     });
   }
 

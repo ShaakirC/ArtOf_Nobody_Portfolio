@@ -201,21 +201,18 @@ a:active{ opacity:0.72; }
   top:100vh; left:0;
   width:1px; height:1px;
 }
+/* Three columns: the icon (a quarter of the screen), then the text and the project
+   previews at equal widths. */
 .services-sticky{
   position:sticky; top:0;
   height:100vh;
-  display:flex;
+  display:grid;
+  grid-template-columns:25vw minmax(0,1fr) minmax(0,1fr);
   border-bottom:1px solid var(--line);
-}
-.services-sticky{
   --progress-left:clamp(10px,2vw,24px);
   --progress-width:28px;
-  --shape-col-width:25vw;
-  --shape-pad:clamp(24px,4vw,64px);
-  --text-gap:clamp(24px,6vw,90px);
-}
-@supports (width: round(nearest, 1px, 1px)){
-  .services-sticky{ --shape-col-width:round(nearest, 25vw, 64px); }
+  --shape-pad:clamp(24px,3vw,48px);
+  --col-pad:clamp(20px,3vw,48px);
 }
 .services-progress{
   position:absolute;
@@ -265,10 +262,8 @@ a:active{ opacity:0.72; }
   transition:color 0.2s ease;
 }
 .services-progress-step.active{ color:var(--ink); }
-/* The column spans from the progress bar's right edge to the start of the text,
-   so the centered stage sits exactly midway between the two. */
+/* The stage is centered between the progress bar's right edge and the text column. */
 .shape-col{
-  width:calc(var(--shape-col-width) + var(--text-gap));
   min-width:0;
   display:flex; flex-direction:column;
   justify-content:center;
@@ -276,7 +271,7 @@ a:active{ opacity:0.72; }
   position:relative;
 }
 .shape-stage{
-  width:min(340px, calc(var(--shape-col-width) - 2 * var(--shape-pad)));
+  width:min(340px, calc(25vw - var(--progress-left) - var(--progress-width) - 2 * var(--shape-pad)));
   max-width:100%;
   aspect-ratio:1/1;
   margin:0 auto;
@@ -284,9 +279,9 @@ a:active{ opacity:0.72; }
 .shape-stage canvas{ width:100%; height:100%; display:block; }
 
 .text-col{
-  flex:1;
+  min-width:0;
   display:flex; align-items:center;
-  padding:0 var(--text-gap) 0 0;
+  padding:0 var(--col-pad);
   position:relative;
 }
 .panels{ position:relative; width:100%; max-width:560px; }
@@ -307,6 +302,7 @@ a:active{ opacity:0.72; }
   font-family:var(--disp);
   font-weight:600;
   font-size:clamp(1.7rem,3vw,2.5rem);
+  line-height:1.15;
   letter-spacing:-0.01em;
   margin:0 0 18px;
 }
@@ -353,6 +349,83 @@ a:active{ opacity:0.72; }
   display:flex; gap:10px; align-items:baseline;
 }
 .panel ul li::before{ content:"·"; color:var(--ink-dim); }
+
+/* Shown in place of the previews on small screens. */
+.panel-portfolio-link{
+  display:none;
+  margin-top:22px;
+  font-family:var(--mono);
+  font-size:12.5px;
+  color:var(--ink);
+  text-decoration:none;
+  border-bottom:1px solid var(--line-bright);
+  padding-bottom:4px;
+  transition:border-color 0.2s ease;
+}
+.panel-portfolio-link::after{ content:" →"; }
+.panel-portfolio-link:hover{ border-bottom-color:var(--ink); }
+
+.preview-col{
+  min-width:0;
+  display:flex; align-items:center; justify-content:center;
+  padding:0 var(--col-pad);
+  position:relative;
+}
+/* Square, and short enough to fit the screen height with room for the header. */
+.preview-sets{
+  position:relative;
+  width:min(100%, 68vh);
+  aspect-ratio:1/1;
+}
+.preview-set{
+  position:absolute;
+  inset:0;
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0,1fr));
+  grid-template-rows:repeat(2, minmax(0,1fr));
+  gap:clamp(8px,1vw,14px);
+  opacity:0;
+  pointer-events:none;
+}
+
+/* ---------- project tiles ---------- */
+.project-tile{
+  position:relative;
+  min-width:0;
+  aspect-ratio:1/1;
+  overflow:hidden;
+  background:var(--panel);
+  border:1px solid var(--line);
+}
+.project-tile-media{ position:absolute; inset:0; }
+.project-tile-media img{ width:100%; height:100%; object-fit:cover; }
+.project-tile-media.is-placeholder{
+  background:
+    linear-gradient(135deg, transparent calc(50% - 0.5px), var(--line) calc(50% - 0.5px), var(--line) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+    var(--bg-alt);
+}
+.project-tile-caption{
+  position:absolute;
+  left:0; right:0; bottom:0;
+  padding:12px 14px;
+  background:linear-gradient(to top, var(--panel), transparent);
+}
+.project-tile-service{
+  margin:0 0 2px;
+  font-family:var(--mono);
+  font-size:10.5px;
+  color:var(--ink-faint);
+}
+.project-tile-title{
+  margin:0;
+  font-family:var(--disp);
+  font-weight:600;
+  font-size:clamp(0.9rem,1.1vw,1.05rem);
+  line-height:1.2;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
 
 /* ---------- about ---------- */
 .about{
@@ -435,6 +508,44 @@ a:active{ opacity:0.72; }
 .contact-list .v{ text-decoration:none; font-size:14px; }
 .contact-list .v:hover{ text-decoration:underline; }
 
+/* ---------- portfolio page ---------- */
+.portfolio{
+  position:relative; z-index:1;
+  min-height:100vh;
+  padding:clamp(110px,16vh,160px) clamp(20px,5vw,56px) 90px;
+}
+.portfolio-title{
+  font-family:var(--disp);
+  font-weight:600;
+  font-size:clamp(2.1rem,5vw,3.6rem);
+  letter-spacing:-0.02em;
+  line-height:1.05;
+  margin:0 0 36px;
+}
+.portfolio-tabs{
+  display:flex; flex-wrap:wrap; gap:10px;
+  margin:0 0 32px;
+}
+.portfolio-tab{
+  padding:8px 14px;
+  font-family:var(--mono);
+  font-size:12.5px;
+  color:var(--ink-dim);
+  background:transparent;
+  border:1px solid var(--line-bright);
+  border-radius:999px;
+  cursor:pointer;
+  transition:color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+.portfolio-tab:hover{ color:var(--ink); border-color:var(--ink); }
+.portfolio-tab[aria-pressed="true"]{ color:var(--bg); background:var(--ink); border-color:var(--ink); }
+.portfolio-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap:clamp(10px,1.4vw,18px);
+}
+.portfolio-grid .project-tile[hidden]{ display:none; }
+
 footer{
   position:relative; z-index:1;
   padding:26px clamp(20px,5vw,56px);
@@ -444,10 +555,25 @@ footer{
 }
 
 @media (max-width: 860px){
-  .services-sticky{ flex-direction:column; }
-  .shape-col{ width:100%; min-width:0; border:none; padding:20px clamp(20px,5vw,40px); justify-content:flex-start; }
-  .shape-stage{ width:100%; max-width:180px; }
-  .text-col{ padding:20px clamp(20px,5vw,40px); align-items:flex-start; }
+  /* Stacked: the icon row (a quarter of the screen height) above the text, below the fixed
+     header (22px padding top and bottom around a 32px row), and right of the progress bar. */
+  .services-sticky{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:25vh minmax(0,1fr);
+    padding:76px 0 0 calc(var(--progress-left) + var(--progress-width));
+  }
+  .shape-col{ padding:0; justify-content:center; }
+  .shape-stage{ width:auto; height:100%; max-width:100%; }
+  .text-col{ padding:16px clamp(20px,5vw,40px) 0 12px; align-items:flex-start; }
+  .panel{ top:0; transform:none; }
+  /* Tighter type so a whole step fits on short phones. */
+  .panel .tag{ margin-bottom:10px; }
+  .panel h2{ margin-bottom:12px; }
+  .panel p{ font-size:0.95rem; line-height:1.55; }
+  .panel ul{ margin-top:12px; gap:4px; }
+  .panel-portfolio-link{ margin-top:16px; }
+  .preview-col{ display:none; }
+  .panel-portfolio-link{ display:inline-block; }
   .services-wrap{ height:366vh; }
   .about{ grid-template-columns:1fr; }
   .about-figure{ max-width:220px; }

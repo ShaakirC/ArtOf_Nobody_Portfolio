@@ -46,7 +46,8 @@ export function initGrid(){
   }
 
   function updateHeroBottom(){
-    heroBottom = hero.getBoundingClientRect().bottom;
+    // Pages without a hero (the portfolio) react everywhere.
+    heroBottom = hero ? hero.getBoundingClientRect().bottom : 0;
   }
 
   function alignToDevicePixel(value){

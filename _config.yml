@@ -1,0 +1,5 @@
+# GitHub Pages (Jekyll) settings. The site itself is plain HTML; this only keeps developer
+# and agent notes out of the published site. Folders starting with _ (like _notes) are
+# skipped automatically.
+exclude:
+  - CLAUDE.md

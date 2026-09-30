@@ -192,26 +192,6 @@ html[data-theme="light"] .theme-toggle:hover .sun{ display:none; }
 .theme-toggle:active{ transform:scale(0.92); }
 a:active{ opacity:0.72; }
 
-/* Phones that need permission for the motion sensors (iOS): a label over the logo until the
-   first tap. Placed on the logo's centre by hero-motion.js. */
-.hero-motion-hint{
-  position:absolute;
-  z-index:1;
-  margin:0;
-  transform:translate(-50%,-50%);
-  padding:6px 12px;
-  font-family:var(--mono);
-  font-size:12px;
-  color:var(--ink-dim);
-  white-space:nowrap;
-  background:color-mix(in srgb, var(--bg) 70%, transparent);
-  border:1px solid var(--line-bright);
-  border-radius:999px;
-  pointer-events:none;
-  transition:opacity 0.4s ease;
-}
-.hero-motion-hint.is-hidden{ opacity:0; }
-
 .hero-scroll-cue{
   position:absolute; left:clamp(20px,5vw,56px); bottom:36px; z-index:1;
   font-family:var(--mono); font-size:12px; color:var(--ink-faint);

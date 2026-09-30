@@ -59,16 +59,6 @@ function triangleEdges(geometry){
   return edges;
 }
 
-// Drives the pieces from a virtual pointer (canvas px) as well as the mouse, e.g. the phone's
-// motion sensors (hero-motion.js). strength (0-1) scales its proximity; 0 turns it off, and
-// grown pieces then hold and recede as they do when the mouse leaves. A piece only grows when
-// its scaled proximity is above threshold (0-1).
-export function setVirtualPointer(entry, x, y, strength, threshold, stage){
-  if (!entry.state.proximity) return;
-  entry.state.proximity.setVirtual(x, y, strength, threshold);
-  stage.startLoop(entry);
-}
-
 registerBehavior('morph-near-pointer', {
   setup: function(entry){
     var state = entry.state;

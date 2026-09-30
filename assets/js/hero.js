@@ -2,9 +2,11 @@
 // scattered pieces on its surface that grow near the pointer.
 // The logo is centered, then nudged down (and only if needed, shrunk) until it
 // clears the text, so the heading never sits on top of it at any screen size.
+// Touch-first phones have no pointer to follow, so there it loops on its own like the about
+// logo instead: it sways to its mirrored angle and back, its lights lead the turn, and the
+// pieces grow in a random order (the 'sway' and 'grow-cycle' behaviors).
 import * as ModelStage from './model-stage.js';
 import { createLogoLights } from './logo-lights.js';
-import { initHeroMotion } from './hero-motion.js';
 
 var LOGO_SRC = 'assets/models/3D_Icon_Logo.glb';
 // Low-poly stand-in for pointer hits, in the logo's coordinates: every mouse move over the
@@ -41,35 +43,69 @@ var SAMPLE_STEP = 4;
 // tilting smooth on weaker GPUs; antialiasing hides the difference.
 var MAX_PIXEL_RATIO = 1.5;
 
+// Phones: seconds for one full swing there and back, and degrees the lights turn further at
+// the mirrored end. Both match about.js.
+var SWAY_PERIOD = 8;
+var LIGHT_LEAD = -20;
+// Poses sampled across the swing to find the space it sweeps.
+var SWING_SAMPLES = 8;
+
 var AVOID_SELECTOR = '.hero-eyebrow, .hero h1, .hero-scroll-cue';
 
 // Returns a promise that settles once the logo has loaded or failed.
 export function initHero(){
   var hero = document.querySelector('.hero');
   var canvas = document.getElementById('heroModel');
+  var looping = window.matchMedia('(pointer: coarse)').matches;
   // The canvas sits behind the text, so pointer events are read from the whole hero.
   var lights = createLogoLights();
-  var stage = ModelStage.create(canvas, { pointerTarget: hero, lights: lights.addTo, maxPixelRatio: MAX_PIXEL_RATIO });
+  var stage = ModelStage.create(canvas, {
+    pointerTarget: looping ? null : hero,
+    lights: lights.addTo,
+    maxPixelRatio: MAX_PIXEL_RATIO
+  });
   lights.watchTheme(stage);
 
   stage.ready.catch(function(error){
     console.error('Unable to start the hero model stage:', error);
   });
-  var motion = null;
-  var logoLoaded = stage.load(LOGO_SRC, { behavior: 'tilt', data: { restRotation: LOGO_REST_ROTATION } });
-  var piecesLoaded = stage.load(PIECES_SRC, { behavior: PIECES_BEHAVIOR, colorVar: '--hero-pieces-color' });
+  var logoLoaded = looping
+    ? stage.load(LOGO_SRC, { behavior: 'sway', data: { rest: LOGO_REST_ROTATION, period: SWAY_PERIOD } })
+    : stage.load(LOGO_SRC, { behavior: 'tilt', data: { restRotation: LOGO_REST_ROTATION } });
+  var piecesLoaded = stage.load(PIECES_SRC, {
+    behavior: looping ? 'grow-cycle' : PIECES_BEHAVIOR,
+    colorVar: '--hero-pieces-color'
+  });
 
   logoLoaded.then(function(entry){
     var THREE = stage.THREE;
-    lights.attach(entry.root);
-    var box = new THREE.Box3().setFromObject(entry.root);
+    var rig = lights.attach(entry.root);
+    // The turns the logo takes about the screen's vertical axis: just its rest, or on phones
+    // samples across the whole swing, so the fit keeps every pose clear of the text.
+    var restZ = entry.root.rotation.z;
+    var turns = [restZ];
+    if (looping){
+      entry.data.follower = { object: rig, degrees: LIGHT_LEAD };
+      for (var step = 1; step <= SWING_SAMPLES; step++){
+        turns.push(restZ * Math.cos(Math.PI * step / SWING_SAMPLES));
+      }
+    }
+    var box = new THREE.Box3();
+    var pose = new THREE.Box3();
+    turns.forEach(function(turn){
+      entry.root.rotation.z = turn;
+      entry.root.updateMatrixWorld(true);
+      box.union(pose.setFromObject(entry.root));
+    });
+    entry.root.rotation.z = restZ;
+    entry.root.updateMatrixWorld(true);
     var size = box.getSize(new THREE.Vector3());
     // The camera looks down the Y axis, so on screen the width is X and the height is Z.
     var viewSize = function(aspect){
       return Math.max(size.z / LOGO_HEIGHT_SHARE, size.x / (LOGO_MAX_WIDTH_SHARE * aspect));
     };
     stage.setViewSize(viewSize);
-    var footprint = captureFootprint(stage, entry, box, size);
+    var footprint = captureFootprint(stage, entry, box, size, turns);
     var fitFrame = 0;
 
     function fit(){
@@ -84,24 +120,24 @@ export function initHero(){
     stage.setEntryVisible(entry, true);
     new ResizeObserver(requestFit).observe(hero);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(requestFit);
-    // Phones: the motion sensors drive the same tilt and pieces (null on other devices).
-    motion = initHeroMotion({ stage: stage, hero: hero, logo: entry });
   }, function(error){
     console.error('Unable to load model ' + LOGO_SRC + ':', error);
   });
 
-  var hitLoaded = stage.ready.then(function(){ return stage.loader.loadAsync(HIT_SRC); });
-  Promise.all([logoLoaded, hitLoaded]).then(function(results){
-    useHitProxy(results[0].root, results[1].scene);
-  }, function(error){
-    // The logo keeps answering raycasts itself.
-    console.error('Unable to load hit mesh ' + HIT_SRC + ':', error);
-  });
+  // Phones never raycast the logo, so they skip the hit mesh.
+  if (!looping){
+    var hitLoaded = stage.ready.then(function(){ return stage.loader.loadAsync(HIT_SRC); });
+    Promise.all([logoLoaded, hitLoaded]).then(function(results){
+      useHitProxy(results[0].root, results[1].scene);
+    }, function(error){
+      // The logo keeps answering raycasts itself.
+      console.error('Unable to load hit mesh ' + HIT_SRC + ':', error);
+    });
+  }
 
   Promise.all([logoLoaded, piecesLoaded]).then(function(entries){
     entries[0].root.add(entries[1].root);
     stage.setEntryVisible(entries[1], true);
-    if (motion) motion.setPieces(entries[1]);
   }, function(error){
     console.error('Unable to load model ' + PIECES_SRC + ':', error);
   });
@@ -121,9 +157,10 @@ function useHitProxy(root, proxy){
   root.add(proxy);
 }
 
-// Renders the resting logo straight down into a small offscreen image and keeps
-// which pixels it covers, so overlap checks are simple lookups.
-function captureFootprint(stage, entry, box, size){
+// Renders the logo straight down into a small offscreen image at each of `turns` (z
+// rotations in radians) and keeps which pixels any of them covers, so overlap checks are
+// simple lookups.
+function captureFootprint(stage, entry, box, size, turns){
   var THREE = stage.THREE;
   var width = FOOTPRINT_WIDTH;
   var height = Math.max(1, Math.round(width * size.z / size.x));
@@ -135,23 +172,27 @@ function captureFootprint(stage, entry, box, size){
   camera.lookAt(0, 0, 0);
 
   var wasVisible = entry.root.visible;
+  var restZ = entry.root.rotation.z;
   entry.root.visible = true;
-  stage.renderer.setRenderTarget(target);
-  stage.renderer.clear();
-  stage.renderer.render(stage.scene, camera);
   var pixels = new Uint8Array(width * height * 4);
-  stage.renderer.readRenderTargetPixels(target, 0, 0, width, height, pixels);
+  var covered = new Uint8Array(width * height);
+  stage.renderer.setRenderTarget(target);
+  turns.forEach(function(turn){
+    entry.root.rotation.z = turn;
+    stage.renderer.clear();
+    stage.renderer.render(stage.scene, camera);
+    stage.renderer.readRenderTargetPixels(target, 0, 0, width, height, pixels);
+    // WebGL rows start at the bottom; store rows top-down to match the screen.
+    for (var row = 0; row < height; row++){
+      for (var column = 0; column < width; column++){
+        if (pixels[((height - 1 - row) * width + column) * 4 + 3] > 0) covered[row * width + column] = 1;
+      }
+    }
+  });
   stage.renderer.setRenderTarget(null);
   target.dispose();
+  entry.root.rotation.z = restZ;
   entry.root.visible = wasVisible;
-
-  // WebGL rows start at the bottom; store rows top-down to match the screen.
-  var covered = new Uint8Array(width * height);
-  for (var row = 0; row < height; row++){
-    for (var column = 0; column < width; column++){
-      covered[row * width + column] = pixels[((height - 1 - row) * width + column) * 4 + 3] > 0 ? 1 : 0;
-    }
-  }
   return { width: width, height: height, covered: covered, runs: columnRuns(covered, width, height) };
 }
 

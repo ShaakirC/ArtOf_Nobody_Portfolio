@@ -51,8 +51,8 @@ assets/js/
   project-tiles.js      Builds a project tile element (services previews + portfolio grid)
   portfolio.js          Portfolio page: tabs, tiles, ?service= and #slug handling
   services.js           Services section: scroll steps, transitions, icons, previews
-  hero.js               Hero: logo model, fitting around the text, lighting, pieces, hit proxy
-  hero-motion.js        Phones: motion sensors drive the hero's tilt and pieces (CONFIG at top)
+  hero.js               Hero: logo model, fitting around the text, lighting, pieces, hit proxy;
+                        on phones, the about section's loop instead
   about.js              About section: the model beside the text (a static stand-in for now)
   logo-lights.js        The logo's lighting rig (Blender sun lamps, per-theme strengths),
                         shared by the hero and about stages
@@ -256,7 +256,7 @@ scene without moving the logo:
 | File | Role |
 |---|---|
 | `3D_Icon_Logo.glb` | The visible logo (keep it light: ~12k triangles, no UVs, ~200 KB) |
-| `3D_Icon_Logo_LP.glb` | A hidden low-poly copy (~200 triangles) used only for mouse hit tests |
+| `3D_Icon_Logo_LP.glb` | A hidden low-poly copy (~200 triangles) used only for mouse hit tests (not loaded on phones) |
 | `3D_Icon_Logo_Inst.glb` | The "pieces" on its surface, with shape keys (morph-near-pointer) |
 
 If you rename them, also update the `<link rel="preload">` tags in index.html's `<head>`,
@@ -288,12 +288,13 @@ hero.js:
   `.about-text`. The stats predate the current copy and haven't been confirmed.
 - **About model:** `LOGO_SRC` / `PIECES_SRC` in about.js. It's a stand-in: the hero logo and
   its pieces, lit by the shared rig in logo-lights.js, looping on its own. Its lights turn
-  with the logo like the hero's, plus up to `LIGHT_LEAD` (30°) further toward the logo's left
+  with the logo like the hero's, plus up to `LIGHT_LEAD` (−20°) further toward the logo's left
   as it swings to the mirrored angle (the `sway` behaviour's `follower` option).
   - The logo sways (`sway`) between the hero's resting angle and its mirror every
     `SWAY_PERIOD` (8s).
-  - The whole model also bobs up and down (the `sway` behaviour's `bob` option): ±`BOB_AMOUNT`
-    (2%) of its height every `BOB_PERIOD` (5s).
+  - The whole model can also bob up and down (the `sway` behaviour's `bob` option):
+    ±`BOB_AMOUNT` of its height every `BOB_PERIOD` (5s). `BOB_AMOUNT` is 0 for now, so it
+    doesn't.
   - The pieces (`grow-cycle`) grow, hold 1s and recede, a new random one every 0.6s.
   - The framing covers the whole swing. The timings are constants at the top of each
     behaviour file.
@@ -328,21 +329,11 @@ the top of the file. What matters:
 3. Attaches the lights to the logo, so they turn with it, and sets their strengths per theme.
 4. Attaches the low-poly hit mesh (hidden) and turns off raycasting on the full mesh.
 5. Attaches the pieces (`morph-near-pointer`).
-6. On touch-first phones (`pointer: coarse`, no reduced motion), starts hero-motion.js, which
-   drives the same systems from the motion sensors instead of the mouse:
-   - **Tilt:** how fast the phone turns (`devicemotion` rotationRate, or changes in
-     `deviceorientation` as a fallback) adds impulses via `addTiltImpulse` in tilt.js, so the
-     logo springs back when the phone is still.
-   - **Pieces:** a virtual cursor, pushed by the motion and sprung back to the logo's centre,
-     feeds the proximity helper's virtual channel via `setVirtualPointer` in
-     morph-near-pointer.js. It's scaled by an activity value that decays when the phone is
-     still, with a bloom threshold, so pieces bloom only while it moves.
-   - **Permission:** asked quietly on load. Where a gesture is required (iOS), a
-     "Tap to interact" hint shows until the first tap on the hero.
-   - **Idle:** with no sensor data (or permission), the logo drifts via `setTiltOffset`.
-   - **Pausing:** it pauses off screen or in a hidden tab.
-   - **Tuning:** every value is in `CONFIG` at the top of the file; the tilt spring itself
-     is shared with the mouse, in tilt.js.
+6. **Touch-first phones** (`pointer: coarse`) get no interaction, on purpose: the owner wants
+   a simpler mobile interface. The logo loops on its own like the about model instead: `sway`
+   (the same `SWAY_PERIOD`, 8s, and `LIGHT_LEAD`, −20°, as about.js, but no bob) and
+   `grow-cycle` pieces. The fit in step 2 uses the silhouettes of poses sampled across the
+   whole swing (`SWING_SAMPLES`), so no pose covers the text. The hit mesh isn't loaded.
 
 ### Services scroll (services.js)
 - **Progress:** progress 0–1 runs over the `.services-wrap` scroll track and is split into N
@@ -469,9 +460,7 @@ These came out of the 2026-09-29 audit (`_notes/performance-review.md`). Don't r
     from a wrapper page instead.
   - **Touch-first phones:** add
     `--blink-settings=primaryPointerType=2,availablePointerTypes=2,primaryHoverType=1,availableHoverTypes=1`
-    to emulate one, then dispatch
-    `new DeviceMotionEvent('devicemotion', { rotationRate: {…}, interval: 16 })` to test
-    hero-motion.js.
+    to emulate one (the hero then loops instead of following the mouse).
   - **Starved animation frames:** under `--virtual-time-budget`, `requestAnimationFrame`
     barely fires, so scroll-driven code seems not to run. From the wrapper, replace the
     iframe's `requestAnimationFrame` with a 16ms `setTimeout`.

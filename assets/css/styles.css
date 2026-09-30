@@ -393,7 +393,9 @@ a:active{ opacity:0.72; }
   0%, 45%{ opacity:0; }
   100%{ opacity:1; }
 }
-@media (prefers-reduced-motion: reduce){
+/* Instant swaps with reduced motion, and on small screens, where the transitions made
+   scrolling stutter on phones. Keep the breakpoint in step with MOBILE_QUERY in services.js. */
+@media (prefers-reduced-motion: reduce), (max-width: 860px){
   .panel .panel-portfolio-link,
   .panel li::before{ transition:none; }
   .panel.is-leaving{ opacity:0; }
@@ -402,6 +404,12 @@ a:active{ opacity:0.72; }
   .panel.is-leaving h2,
   .panel.is-leaving h2 .split-base,
   .panel .zip-glyph{ animation:none; }
+  /* Skip the blended red/cyan copies the transition would otherwise create for nothing.
+     (.panels raises these above the rules that create them, further down.) */
+  .panels .panel.is-entering .split-letter::before,
+  .panels .panel.is-entering .split-letter::after,
+  .panels .panel.is-leaving .split-letter::before,
+  .panels .panel.is-leaving .split-letter::after{ content:none; }
 }
 .panel .tag{
   font-family:var(--mono);

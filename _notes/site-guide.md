@@ -99,7 +99,8 @@ Inside `.services-sticky` (desktop: a 3-column grid of `25vw | 1fr | 1fr`):
 
 On screens ≤ 860px wide the section stacks: header clearance, the icon row at `25vh`, then the
 text. The previews are hidden, and each panel shows a "View projects →" link to that service's
-portfolio tab instead. Phones under 700px tall (e.g. iPhone SE) get a smaller icon row (18vh)
+portfolio tab instead. The services also swap instantly there, with no transition (see
+[Services scroll](#services-scroll-servicesjs)). Phones under 700px tall (e.g. iPhone SE) get a smaller icon row (18vh)
 and tighter type, so a whole service fits on the pinned screen. Check this when service copy
 gets longer.
 
@@ -385,6 +386,10 @@ the top of the file. What matters:
     get the same classes from `setStepState`.
   - **The owner tuned the feel of this by hand.** Don't change timing, distance (8px) or
     opacity (0.7 peak) without asking.
+- **Small screens (≤ 860px):** no transition; services swap instantly, as with reduced
+  motion. The zipper and the heading's channel copies made phone scrolling stutter. The
+  breakpoint lives in both `MOBILE_QUERY` (services.js, which skips building the zip letters)
+  and the instant-swap media query in styles.css. The icons still scrub with the scroll.
 - **First service:** it doesn't show until the hero's bottom edge has scrolled above the
   first heading, then it plays the entrance. Scrolling back up resets it.
 - **Icons:** each plays across its own step (see `modelSpan`); hand-offs overlap in a window

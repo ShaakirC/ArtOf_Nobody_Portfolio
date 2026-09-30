@@ -55,8 +55,12 @@ export function initServices(options){
 
   // ---------- zipper text ----------
   // Each panel's tag, paragraph and list items zip in and out letter by letter with the
-  // heading's transition. Left as plain text when the visitor prefers reduced motion.
-  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+  // heading's transition. Left as plain text when the visitor prefers reduced motion, and on
+  // small screens, where the services swap instantly (hundreds of letter boxes made phone
+  // scrolling stutter). Matches the breakpoint of the instant-swap rules in styles.css.
+  var MOBILE_QUERY = '(max-width: 860px)';
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches &&
+      !window.matchMedia(MOBILE_QUERY).matches){
     panels.forEach(function(panel){
       zipText(panel.querySelectorAll(':scope > p, li'));
     });

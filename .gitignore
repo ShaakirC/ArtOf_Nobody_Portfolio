@@ -1,0 +1,3 @@
+# Unoptimised stand-in reels: kept out of git until they are re-exported, then moved to
+# assets/reels/ (and the paths in assets/js/projects.js updated).
+assets/reels-draft/

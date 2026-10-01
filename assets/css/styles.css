@@ -490,53 +490,105 @@ a:active{ opacity:0.72; }
   padding:0 var(--col-pad);
   position:relative;
 }
-/* Square, and short enough to fit the screen height with room for the header. */
-.preview-sets{
+/* The reels' 16:9 frame: as wide as the column, and short enough to fit the screen height with
+   room for the header. */
+.reel-frame{
   position:relative;
-  width:min(100%, 68vh);
-  aspect-ratio:1/1;
+  width:min(100%, calc(68vh * 16 / 9));
+  aspect-ratio:16/9;
+  overflow:hidden;
+  border:1px solid var(--line);
+  /* Carousel timing: how long the push takes, and its easing. */
+  --tile-slide:0.5s;
+  --tile-ease:cubic-bezier(0.65,0,0.35,1);
+  /* Hover: the label slides in from the left edge while the video zooms slightly and a
+     gradient in the panel colour fades up behind the label. The gradient covers this share
+     of the frame, at this strength at the bottom edge. */
+  --tile-hover-time:0.6s;
+  --tile-hover-zoom:1.06;
+  --tile-shade-height:40%;
+  --tile-shade-strength:85%;
 }
-.preview-set{
+.reel{
   position:absolute;
   inset:0;
-  display:grid;
-  grid-template-columns:repeat(2, minmax(0,1fr));
-  grid-template-rows:repeat(2, minmax(0,1fr));
-  gap:clamp(8px,1vw,14px);
+  display:block;
+  color:var(--ink);
+  text-decoration:none;
   opacity:0;
   pointer-events:none;
-  /* Carousel timing, like the text zipper: --tile-slide is how long each tile's push takes;
-     --tile-total is how long all four take, kept equal to the heading's 0.8s. Tiles start one
-     after another in reading order, spread over the time left. */
-  --tile-slide:0.5s;
-  --tile-total:0.8s;
-  --tile-ease:cubic-bezier(0.65,0,0.35,1);
 }
-/* Place of each tile in reading order, 0 to 1. */
-.preview-set .project-tile:nth-child(1){ --tile:0; }
-.preview-set .project-tile:nth-child(2){ --tile:0.3333; }
-.preview-set .project-tile:nth-child(3){ --tile:0.6667; }
-.preview-set .project-tile:nth-child(4){ --tile:1; }
-/* Switching services, each tile works like a carousel: its frame stays put while the
-   outgoing and incoming projects slide through it together, edge to edge, so the next one
-   pushes the current one out. Scrolling down pushes left to right, scrolling back up right
-   to left: services.js sets --slide-dir (1 or -1) on #servicePreviews for each switch. */
-.preview-set.is-active,
-.preview-set.is-leaving{ opacity:1; }
-.preview-set.is-active{ pointer-events:auto; }
-.preview-set.is-leaving .project-tile-inner{
-  animation:tile-out var(--tile-slide) var(--tile-ease)
-    calc(var(--tile, 0) * (var(--tile-total) - var(--tile-slide))) forwards;
+/* The reel is a link filling the frame; the inner layer carries the video and label (and the
+   background, so two reels mid-transition don't cover each other). */
+.reel-inner{ position:absolute; inset:0; overflow:hidden; background:var(--panel); }
+.reel-inner.is-placeholder{
+  background:
+    linear-gradient(160deg, transparent calc(50% - 0.5px), var(--line) calc(50% - 0.5px), var(--line) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+    var(--bg-alt);
 }
-.preview-set.is-entering .project-tile-inner{
-  animation:tile-in var(--tile-slide) var(--tile-ease)
-    calc(var(--tile, 0) * (var(--tile-total) - var(--tile-slide))) backwards;
+.reel video{
+  display:block;
+  width:100%; height:100%;
+  object-fit:cover;
+  transition:transform var(--tile-hover-time) cubic-bezier(0.2,0.7,0.2,1);
 }
+/* Switching services works like a carousel: the frame stays put while the outgoing and
+   incoming reels slide through it together, edge to edge, so the next one pushes the current
+   one out. Scrolling down pushes left to right, scrolling back up right to left: services.js
+   sets --slide-dir (1 or -1) on #serviceReels for each switch. */
+.reel.is-active,
+.reel.is-leaving{ opacity:1; }
+.reel.is-active{ pointer-events:auto; }
+.reel.is-leaving .reel-inner{ animation:tile-out var(--tile-slide) var(--tile-ease) forwards; }
+.reel.is-entering .reel-inner{ animation:tile-in var(--tile-slide) var(--tile-ease) backwards; }
 @keyframes tile-out{ to{ transform:translateX(calc(var(--slide-dir, 1) * 100%)); } }
 @keyframes tile-in{ from{ transform:translateX(calc(var(--slide-dir, 1) * -100%)); } }
+.reel-inner::after{
+  content:"";
+  position:absolute;
+  left:0; right:0; bottom:0;
+  height:var(--tile-shade-height);
+  background:linear-gradient(to top,
+    color-mix(in srgb, var(--panel) var(--tile-shade-strength), transparent),
+    transparent);
+  pointer-events:none;
+}
+.reel-label{
+  position:absolute;
+  left:0; bottom:0;
+  z-index:1;
+  padding:clamp(12px,1.4vw,20px);
+  font-family:var(--mono);
+  font-size:13px;
+  white-space:nowrap;
+}
+.reel-label::after{ content:" →"; }
+/* Only on devices that can hover (and for keyboard focus); elsewhere the label just shows. */
+@media (hover: hover){
+  .reel-inner::after{
+    opacity:0;
+    transform:translateY(25%);
+    transition:opacity var(--tile-hover-time) ease,
+      transform var(--tile-hover-time) cubic-bezier(0.2,0.7,0.2,1);
+  }
+  .reel-label{
+    transform:translateX(-100%);
+    transition:transform var(--tile-hover-time) cubic-bezier(0.2,0.7,0.2,1);
+  }
+  .reel:hover .reel-inner::after,
+  .reel:focus-visible .reel-inner::after{ opacity:1; transform:none; }
+  .reel:hover .reel-label,
+  .reel:focus-visible .reel-label{ transform:none; }
+  .reel:hover video,
+  .reel:focus-visible video{ transform:scale(var(--tile-hover-zoom)); }
+}
 @media (prefers-reduced-motion: reduce){
-  .preview-set.is-leaving{ opacity:0; }
-  .preview-set .project-tile-inner{ animation:none; }
+  .reel.is-leaving{ opacity:0; }
+  .reel.is-leaving .reel-inner,
+  .reel.is-entering .reel-inner{ animation:none; }
+  .reel video,
+  .reel-label,
+  .reel-inner::after{ transition:none; }
 }
 
 /* ---------- project tiles ---------- */
@@ -578,52 +630,6 @@ a:active{ opacity:0.72; }
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
-}
-.project-tile-media img{ transition:transform var(--tile-hover-time, 0.6s) cubic-bezier(0.2,0.7,0.2,1); }
-
-/* Services previews: the title stays out of sight until the tile is hovered, then slides in
-   from the left edge (clipped by the tile) while the image zooms slightly and a gradient in
-   the panel colour fades up from the bottom behind it, for legibility on bright images.
-   Only on devices that can hover; elsewhere the title and gradient just show. */
-.preview-set{
-  --tile-hover-time:0.6s;
-  --tile-hover-zoom:1.06;
-  /* Share of the tile the gradient covers, and its strength at the bottom edge. */
-  --tile-shade-height:55%;
-  --tile-shade-strength:85%;
-}
-.preview-set .project-tile-caption{ background:none; }
-.preview-set .project-tile-inner::after{
-  content:"";
-  position:absolute;
-  left:0; right:0; bottom:0;
-  height:var(--tile-shade-height);
-  background:linear-gradient(to top,
-    color-mix(in srgb, var(--panel) var(--tile-shade-strength), transparent),
-    transparent);
-  pointer-events:none;
-}
-/* The caption sits above the gradient. */
-.preview-set .project-tile-caption{ z-index:1; }
-@media (hover: hover){
-  .preview-set .project-tile-inner::after{
-    opacity:0;
-    transform:translateY(25%);
-    transition:opacity var(--tile-hover-time) ease,
-      transform var(--tile-hover-time) cubic-bezier(0.2,0.7,0.2,1);
-  }
-  .preview-set .project-tile-title{
-    transform:translateX(calc(-100% - 14px));
-    transition:transform var(--tile-hover-time) cubic-bezier(0.2,0.7,0.2,1);
-  }
-  .preview-set .project-tile:hover .project-tile-inner::after{ opacity:1; transform:none; }
-  .preview-set .project-tile:hover .project-tile-title{ transform:none; }
-  .preview-set .project-tile:hover .project-tile-media img{ transform:scale(var(--tile-hover-zoom)); }
-}
-@media (prefers-reduced-motion: reduce){
-  .preview-set .project-tile-title,
-  .preview-set .project-tile-inner::after,
-  .preview-set .project-tile-media img{ transition:none; }
 }
 
 /* ---------- about ---------- */
@@ -737,29 +743,21 @@ a:active{ opacity:0.72; }
   line-height:1.05;
   margin:0 0 36px;
 }
-.portfolio-tabs{
-  display:flex; flex-wrap:wrap; gap:10px;
-  margin:0 0 32px;
+/* Scaffolding until the page is built out: one section per service, anchored by its id so
+   the home page reels land on it. The scroll margin clears the fixed header. */
+.portfolio-section{ margin:0 0 clamp(48px,8vh,80px); scroll-margin-top:100px; }
+.portfolio-section-title{
+  font-family:var(--disp);
+  font-weight:600;
+  font-size:clamp(1.4rem,2.6vw,2rem);
+  letter-spacing:-0.01em;
+  margin:0 0 20px;
 }
-.portfolio-tab{
-  padding:8px 14px;
-  font-family:var(--mono);
-  font-size:12.5px;
-  color:var(--ink-dim);
-  background:transparent;
-  border:1px solid var(--line-bright);
-  border-radius:999px;
-  cursor:pointer;
-  transition:color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
-}
-.portfolio-tab:hover{ color:var(--ink); border-color:var(--ink); }
-.portfolio-tab[aria-pressed="true"]{ color:var(--bg); background:var(--ink); border-color:var(--ink); }
 .portfolio-grid{
   display:grid;
   grid-template-columns:repeat(auto-fill, minmax(min(100%, 260px), 1fr));
   gap:clamp(10px,1.4vw,18px);
 }
-.portfolio-grid .project-tile[hidden]{ display:none; }
 
 footer{
   position:relative; z-index:1;

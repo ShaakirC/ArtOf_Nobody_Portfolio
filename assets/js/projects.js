@@ -2,16 +2,14 @@
 // The titles are placeholders and the images are stand-ins. Set image to a path under
 // assets/images/content/ (any file name), or null for an empty placeholder tile. Tiles are
 // square and crop to fill, so wide images lose their sides.
-// The services section previews the first PREVIEWS_PER_SERVICE projects of each service,
-// in list order.
+// Each service's reel is the looping 16:9 video beside its text on the home page; it links to
+// that service's section of the portfolio page.
 
 export var SERVICES = [
-  { id: 'vfx', label: 'VFX & Compositing' },
-  { id: 'cgi', label: 'CGI & 3D' },
-  { id: 'mograph', label: 'Motion Graphics' }
+  { id: 'vfx', label: 'VFX & Compositing', reel: 'assets/reels-draft/REEL_VFX.webm' },
+  { id: 'cgi', label: 'CGI & 3D', reel: 'assets/reels-draft/REEL_CGI.webm' },
+  { id: 'mograph', label: 'Motion Graphics', reel: 'assets/reels-draft/REEL_MOGRAPH.webm' }
 ];
-
-export var PREVIEWS_PER_SERVICE = 4;
 
 export var PROJECTS = [
   { slug: 'vfx-01', title: 'VFX project 01', service: 'vfx', image: 'assets/images/content/VFX_Comp_1.webp' },
@@ -41,7 +39,7 @@ export function projectUrl(slug){
   return 'portfolio.html#' + encodeURIComponent(slug);
 }
 
-// The portfolio page opened on one service's tab.
+// One service's section of the portfolio page.
 export function serviceUrl(serviceId){
-  return 'portfolio.html?service=' + encodeURIComponent(serviceId);
+  return 'portfolio.html#' + encodeURIComponent(serviceId);
 }

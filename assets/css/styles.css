@@ -223,6 +223,8 @@ a:active{ opacity:0.72; }
   --progress-width:28px;
   --shape-pad:clamp(24px,3vw,48px);
   --col-pad:clamp(20px,3vw,48px);
+  /* The text block's widest; the reel's position depends on it (see .preview-col). */
+  --panel-max:560px;
 }
 .services-progress{
   position:absolute;
@@ -298,7 +300,7 @@ a:active{ opacity:0.72; }
    the tallest panel and centered as one. Sharing a top keeps the lines of consecutive
    services on the same heights, so during a transition each incoming line rises into the
    slot an outgoing line is leaving instead of landing between them. */
-.panels{ position:relative; width:100%; max-width:560px; display:grid; }
+.panels{ position:relative; width:100%; max-width:var(--panel-max); display:grid; }
 .panel{
   grid-area:1 / 1;
   align-self:start;
@@ -489,6 +491,11 @@ a:active{ opacity:0.72; }
   display:flex; align-items:center; justify-content:center;
   padding:0 var(--col-pad);
   position:relative;
+  /* The text stops at --panel-max, leaving empty space at the end of its column that grows
+     with the screen. Shifting this column left by half of that space (plus half a column
+     padding) centres the reel between the text and the screen edge, with equal gaps either
+     side. Percentages here are of the grid column's width, the same as the text column's. */
+  left:calc(-0.5 * (var(--col-pad) + max(0px, 100% - 2 * var(--col-pad) - var(--panel-max))));
 }
 /* The reels' 16:9 frame: as wide as the column, and short enough to fit the screen height with
    room for the header. */

@@ -17,7 +17,7 @@ pipeline or any timing that's mirrored between files, update this guide in the s
 - **Static site, no build step.** Plain HTML, one stylesheet, native ES modules. There is no
   npm, no bundler and no framework, so a file saved is a file shipped.
 - **Libraries:** three.js `0.161.0` (with `GLTFLoader`) from jsDelivr, mapped in an import map
-  in each HTML page's `<head>`. Google Fonts: Archivo (display), Roboto (body), IBM Plex Mono
+  in each HTML page's `<head>`. Fonts (self-hosted in `assets/fonts/`): Archivo 600 (display), Roboto 400 (body), IBM Plex Mono 400
   (labels).
 - **Hosting:** GitHub Pages from `main` of `github.com/ShaakirC/ArtOf_Nobody_Portfolio`. A
   push to `main` deploys.
@@ -43,6 +43,7 @@ _notes/                 Developer notes (not published: Jekyll skips folders sta
   site-guide.md         This file
   performance-review.md The performance audit and what was done about each item
 assets/css/styles.css   All styles, both themes, both pages
+assets/fonts/           Self-hosted WOFF2 fonts (Archivo, Roboto, IBM Plex Mono; Latin + Latin Ext)
 assets/images/          Header logos and favicon (logo_wh_96 / logo_bl_96 are used; the
                         _LR files are high-res originals kept for reference, not loaded)
   content/              Project tile images (WebP), referenced from projects.js
@@ -317,7 +318,7 @@ hero.js:
   `html[data-theme="light"]`.
 - 3D colours come from `--model-color` and `--hero-pieces-color`, which the models re-read
   whenever the theme changes.
-- Fonts are loaded in each page's `<head>` and set by `--disp`, `--sans` and `--mono`.
+- Fonts are `@font-face` rules at the top of styles.css (files in `assets/fonts/`, two preloaded in each page's `<head>`) and are set by `--disp`, `--sans` and `--mono`. To add a weight, download its Latin and Latin Extended WOFF2 from Google Fonts and add a rule for each.
 - The theme choice is saved in `localStorage['artofnobody-theme']`. An inline script in each
   `<head>` applies it before first paint.
 
@@ -436,6 +437,11 @@ the top of the file. What matters:
 - **Which headings:** any element with `data-split` gets its letters wrapped in spans. Each
   letter has red and cyan `::before` / `::after` copies, which only exist while needed (to
   keep blended layers down).
+- **When:** the service headings are split at load (their transition needs the letters).
+  Every other heading, the hero's included, stays plain text until a mouse first moves, so
+  touch screens never split them. Rebuilding the hero heading at load made it the page's
+  largest paint (LCP), which then waited on three.js; Lighthouse mobile scored 72 because of
+  it. Keep the hero heading out of anything that rewrites it at load.
 - **Two uses:**
   - Fast mouse movement near a heading splits the nearby letters, then they decay.
   - The services transition drives the same copies through the inherited custom properties
@@ -474,6 +480,10 @@ These came out of the 2026-09-29 audit (`_notes/performance-review.md`). Don't r
   service icons deferred.
 - **Preloads:** `<head>` preloads three.js and the hero models. Keep those URLs in sync with
   the import map and file names, or the browser downloads everything twice.
+- **Fonts:** self-hosted in `assets/fonts/` (no Google Fonts connections before first paint).
+  Each page preloads the Archivo and Plex Mono Latin files; keep those links in sync with the
+  `@font-face` rules at the top of styles.css. Don't add weights the CSS doesn't use.
+- **Largest paint:** the hero heading. Nothing should rewrite it at load (see Split text).
 - **Header:** no `backdrop-filter` on the fixed header.
 - **Idea, not done:** Meshopt-compress every model with `gltfpack` and add the decoder to
   `GLTFLoader`, once all the models are final.

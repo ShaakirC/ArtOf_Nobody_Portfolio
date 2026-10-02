@@ -1,6 +1,9 @@
 // Red/cyan split effect on [data-split] headings that reacts to pointer speed.
 // The same red/cyan copies also carry the services step transition (see .panel in the stylesheet),
-// so letter positions are measured up front rather than on the first pointer move.
+// so the service headings are split and measured up front. Every other heading (the hero's
+// included) stays plain text until a mouse first moves: rebuilding the hero heading at load
+// made it the page's largest paint, so that paint waited on three.js and the other modules.
+// Touch screens never get the pointer effect, so there they're never split.
 export function initSplitText(){
   // Effect tuning: radius in px; maximum red/cyan offset in px.
   var SPLIT_RADIUS = 120; // Distance from the pointer where the effect fades out.
@@ -19,6 +22,7 @@ export function initSplitText(){
   if (!states.length) return;
 
   var activeLetters = new Set();
+  var mouseSeen = false;
   var frameId = 0;
   var measureFrameId = 0;
 
@@ -152,6 +156,10 @@ export function initSplitText(){
 
   function onPointerMove(event){
     if (event.pointerType !== 'mouse' || reducedMotion.matches) return;
+    if (!mouseSeen){
+      mouseSeen = true;
+      applyMotionPreference();
+    }
     var now = performance.now();
     var elapsed = Math.max(1, now - (onPointerMove.lastTime || now));
     var distanceMoved = onPointerMove.lastX === undefined ? 0 : Math.hypot(event.clientX - onPointerMove.lastX, event.clientY - onPointerMove.lastY);
@@ -188,7 +196,7 @@ export function initSplitText(){
     states.forEach(function(state){
       if (reducedMotion.matches){
         clearLetters(state);
-      } else if (!state.letters.length){
+      } else if (!state.letters.length && (state.panel || mouseSeen)){
         buildLetters(state);
       }
     });

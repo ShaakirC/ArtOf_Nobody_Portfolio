@@ -944,35 +944,6 @@ a.pf-row-inner:focus-visible .pf-col-action{ color:var(--ink-dim); }
 .pf-empty a:hover,
 .pf-error a:hover{ border-bottom-color:var(--ink); }
 
-/* ---------- portfolio: cursor preview ---------- */
-/* Positioned by portfolio-preview.js (transform); two image layers crossfade between rows. */
-.pf-preview{
-  position:fixed;
-  top:0; left:0;
-  z-index:40;
-  width:280px;
-  height:157.5px;
-  overflow:hidden;
-  pointer-events:none;
-  opacity:0;
-  background:var(--bg-alt);
-  border:1px solid var(--line-bright);
-  transition:opacity 0.25s ease, height 0.3s ease;
-  will-change:transform;
-}
-.pf-preview.is-visible{ opacity:1; }
-.pf-preview img{
-  position:absolute; inset:0;
-  width:100%; height:100%;
-  object-fit:cover;
-  opacity:0;
-  transition:opacity 0.3s ease;
-}
-.pf-preview img.is-front{ opacity:1; }
-@media (hover: none), (prefers-reduced-motion: reduce){
-  .pf-preview{ display:none; }
-}
-
 /* ---------- portfolio: detail view ---------- */
 .pf-detail{
   width:min(1100px, calc(100vw - 32px));

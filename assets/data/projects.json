@@ -20,390 +20,6 @@
   ],
   "projects": [
     {
-      "id": "vfx-01",
-      "title": "VFX project 01",
-      "year": null,
-      "client": {
-        "name": null,
-        "via": null,
-        "display": "name",
-        "anonymisedLabel": null,
-        "highlight": false
-      },
-      "role": [],
-      "categories": [
-        "film"
-      ],
-      "summary": null,
-      "tools": [],
-      "featured": {
-        "order": 1,
-        "layout": "wide"
-      },
-      "detail": "lightbox",
-      "media": {
-        "thumb": "assets/images/content/VFX_Comp_1.webp",
-        "thumbAlt": null,
-        "poster": null,
-        "hoverLoop": null,
-        "video": null,
-        "breakdown": []
-      },
-      "serviceReel": false,
-      "concept": false,
-      "draft": false
-    },
-    {
-      "id": "vfx-02",
-      "title": "VFX project 02",
-      "year": null,
-      "client": {
-        "name": null,
-        "via": null,
-        "display": "name",
-        "anonymisedLabel": null,
-        "highlight": false
-      },
-      "role": [],
-      "categories": [
-        "film"
-      ],
-      "summary": null,
-      "tools": [],
-      "featured": null,
-      "detail": "lightbox",
-      "media": {
-        "thumb": "assets/images/content/VFX_Comp_2.webp",
-        "thumbAlt": null,
-        "poster": null,
-        "hoverLoop": null,
-        "video": null,
-        "breakdown": []
-      },
-      "serviceReel": false,
-      "concept": false,
-      "draft": false
-    },
-    {
-      "id": "vfx-03",
-      "title": "VFX project 03",
-      "year": null,
-      "client": {
-        "name": null,
-        "via": null,
-        "display": "name",
-        "anonymisedLabel": null,
-        "highlight": false
-      },
-      "role": [],
-      "categories": [
-        "film"
-      ],
-      "summary": null,
-      "tools": [],
-      "featured": null,
-      "detail": "lightbox",
-      "media": {
-        "thumb": "assets/images/content/VFX_Comp_3.webp",
-        "thumbAlt": null,
-        "poster": null,
-        "hoverLoop": null,
-        "video": null,
-        "breakdown": []
-      },
-      "serviceReel": false,
-      "concept": false,
-      "draft": false
-    },
-    {
-      "id": "vfx-04",
-      "title": "VFX project 04",
-      "year": null,
-      "client": {
-        "name": null,
-        "via": null,
-        "display": "name",
-        "anonymisedLabel": null,
-        "highlight": false
-      },
-      "role": [],
-      "categories": [
-        "film"
-      ],
-      "summary": null,
-      "tools": [],
-      "featured": null,
-      "detail": "lightbox",
-      "media": {
-        "thumb": "assets/images/content/VFX_Comp_4.webp",
-        "thumbAlt": null,
-        "poster": null,
-        "hoverLoop": null,
-        "video": null,
-        "breakdown": []
-      },
-      "serviceReel": false,
-      "concept": false,
-      "draft": false
-    },
-    {
-      "id": "cgi-01",
-      "title": "CGI project 01",
-      "year": null,
-      "client": {
-        "name": null,
-        "via": null,
-        "display": "name",
-        "anonymisedLabel": null,
-        "highlight": false
-      },
-      "role": [],
-      "categories": [
-        "viz"
-      ],
-      "summary": null,
-      "tools": [],
-      "featured": {
-        "order": 2,
-        "layout": "tall"
-      },
-      "detail": "lightbox",
-      "media": {
-        "thumb": "assets/images/content/3D_CGI_1.webp",
-        "thumbAlt": null,
-        "poster": null,
-        "hoverLoop": null,
-        "video": null,
-        "breakdown": []
-      },
-      "serviceReel": false,
-      "concept": false,
-      "draft": false
-    },
-    {
-      "id": "cgi-02",
-      "title": "CGI project 02",
-      "year": null,
-      "client": {
-        "name": null,
-        "via": null,
-        "display": "name",
-        "anonymisedLabel": null,
-        "highlight": false
-      },
-      "role": [],
-      "categories": [
-        "viz"
-      ],
-      "summary": null,
-      "tools": [],
-      "featured": {
-        "order": 4,
-        "layout": "standard"
-      },
-      "detail": "lightbox",
-      "media": {
-        "thumb": "assets/images/content/3D_CGI_2.webp",
-        "thumbAlt": null,
-        "poster": null,
-        "hoverLoop": null,
-        "video": null,
-        "breakdown": []
-      },
-      "serviceReel": false,
-      "concept": false,
-      "draft": false
-    },
-    {
-      "id": "cgi-03",
-      "title": "CGI project 03",
-      "year": null,
-      "client": {
-        "name": null,
-        "via": null,
-        "display": "name",
-        "anonymisedLabel": null,
-        "highlight": false
-      },
-      "role": [],
-      "categories": [
-        "viz"
-      ],
-      "summary": null,
-      "tools": [],
-      "featured": null,
-      "detail": "lightbox",
-      "media": {
-        "thumb": "assets/images/content/3D_CGI_3.webp",
-        "thumbAlt": null,
-        "poster": null,
-        "hoverLoop": null,
-        "video": null,
-        "breakdown": []
-      },
-      "serviceReel": false,
-      "concept": false,
-      "draft": false
-    },
-    {
-      "id": "cgi-04",
-      "title": "CGI project 04",
-      "year": null,
-      "client": {
-        "name": null,
-        "via": null,
-        "display": "name",
-        "anonymisedLabel": null,
-        "highlight": false
-      },
-      "role": [],
-      "categories": [
-        "viz"
-      ],
-      "summary": null,
-      "tools": [],
-      "featured": null,
-      "detail": "lightbox",
-      "media": {
-        "thumb": "assets/images/content/3D_CGI_4.webp",
-        "thumbAlt": null,
-        "poster": null,
-        "hoverLoop": null,
-        "video": null,
-        "breakdown": []
-      },
-      "serviceReel": false,
-      "concept": false,
-      "draft": false
-    },
-    {
-      "id": "mograph-01",
-      "title": "Motion project 01",
-      "year": null,
-      "client": {
-        "name": null,
-        "via": null,
-        "display": "name",
-        "anonymisedLabel": null,
-        "highlight": false
-      },
-      "role": [],
-      "categories": [
-        "film"
-      ],
-      "summary": null,
-      "tools": [],
-      "featured": {
-        "order": 3,
-        "layout": "standard"
-      },
-      "detail": "lightbox",
-      "media": {
-        "thumb": "assets/images/content/MoGraph_1.webp",
-        "thumbAlt": null,
-        "poster": null,
-        "hoverLoop": null,
-        "video": null,
-        "breakdown": []
-      },
-      "serviceReel": false,
-      "concept": false,
-      "draft": false
-    },
-    {
-      "id": "mograph-02",
-      "title": "Motion project 02",
-      "year": null,
-      "client": {
-        "name": null,
-        "via": null,
-        "display": "name",
-        "anonymisedLabel": null,
-        "highlight": false
-      },
-      "role": [],
-      "categories": [
-        "film"
-      ],
-      "summary": null,
-      "tools": [],
-      "featured": null,
-      "detail": "lightbox",
-      "media": {
-        "thumb": "assets/images/content/MoGraph_2.webp",
-        "thumbAlt": null,
-        "poster": null,
-        "hoverLoop": null,
-        "video": null,
-        "breakdown": []
-      },
-      "serviceReel": false,
-      "concept": false,
-      "draft": false
-    },
-    {
-      "id": "mograph-03",
-      "title": "Motion project 03",
-      "year": null,
-      "client": {
-        "name": null,
-        "via": null,
-        "display": "name",
-        "anonymisedLabel": null,
-        "highlight": false
-      },
-      "role": [],
-      "categories": [
-        "film"
-      ],
-      "summary": null,
-      "tools": [],
-      "featured": null,
-      "detail": "lightbox",
-      "media": {
-        "thumb": "assets/images/content/MoGraph_3.webp",
-        "thumbAlt": null,
-        "poster": null,
-        "hoverLoop": null,
-        "video": null,
-        "breakdown": []
-      },
-      "serviceReel": false,
-      "concept": false,
-      "draft": false
-    },
-    {
-      "id": "mograph-04",
-      "title": "Motion project 04",
-      "year": null,
-      "client": {
-        "name": null,
-        "via": null,
-        "display": "name",
-        "anonymisedLabel": null,
-        "highlight": false
-      },
-      "role": [],
-      "categories": [
-        "film"
-      ],
-      "summary": null,
-      "tools": [],
-      "featured": null,
-      "detail": "lightbox",
-      "media": {
-        "thumb": "assets/images/content/MoGraph_4.webp",
-        "thumbAlt": null,
-        "poster": null,
-        "hoverLoop": null,
-        "video": null,
-        "breakdown": []
-      },
-      "serviceReel": false,
-      "concept": false,
-      "draft": false
-    },
-    {
       "id": "residential-complex-site-model",
       "title": "Residential complex site model",
       "year": null,
@@ -558,6 +174,381 @@
         "breakdown": []
       },
       "serviceReel": true,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "samsung-anamorphic-billboards",
+      "title": "Samsung Anamorphic Billboards",
+      "year": 2026,
+      "client": {
+        "name": "SAMSUNG",
+        "via": "Sociocom",
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [
+        "3D Anamorphic billboards"
+      ],
+      "categories": [
+        "film"
+      ],
+      "summary": "Supplied CG assets reformatted for multiple different anamorphic displays in various locations around South Africa.",
+      "tools": [
+        "Blender",
+        "DaVinci Resolve"
+      ],
+      "featured": {
+        "order": 1,
+        "layout": "standard"
+      },
+      "detail": "lightbox",
+      "media": {
+        "thumb": null,
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "savannah-emojis",
+      "title": "Savannah Brand Activation",
+      "year": 2024,
+      "client": {
+        "name": "Savannah",
+        "via": "Bad Weather",
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [
+        "3D Looping Animations"
+      ],
+      "categories": [
+        "film"
+      ],
+      "summary": "Looping 3D background for display on an interactive projector",
+      "tools": [
+        "Blender"
+      ],
+      "featured": null,
+      "detail": "lightbox",
+      "media": {
+        "thumb": null,
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "betway-ugc",
+      "title": "Betway UGC advertisement",
+      "year": 2025,
+      "client": {
+        "name": "Betway",
+        "via": "UGC Studios",
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [
+        "CGI",
+        "Compositing"
+      ],
+      "categories": [
+        "film"
+      ],
+      "summary": "Rotoscoped the talent and placed them in various CG backgrounds for the ad.",
+      "tools": [
+        "Blender",
+        "DaVinci Resolve"
+      ],
+      "featured": null,
+      "detail": "lightbox",
+      "media": {
+        "thumb": null,
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "cell-c-brand-reveal",
+      "title": "Cell C Brand Reveal: Live Performance Visuals",
+      "year": 2025,
+      "client": {
+        "name": "Cell C",
+        "via": "TULU Entertainment",
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [
+        "3D Interactive Visuals"
+      ],
+      "categories": [
+        "film",
+        "web"
+      ],
+      "summary": "Interactive screen visuals for the unveiling of Cell C's new logo. Created for a live dance performance by TULU Entertainment, the visuals played across the stage screens alongside the dancers, building toward the reveal of the new brand mark.",
+      "tools": [
+        "Blender"
+      ],
+      "featured": null,
+      "detail": "lightbox",
+      "media": {
+        "thumb": null,
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "assupol-sanlam-headquarters-reveal",
+      "title": "Assupol × Sanlam: Headquarters Rebrand Reveal",
+      "year": 2025,
+      "client": {
+        "name": "Assupol|Sanlam",
+        "via": "BSV_Creative",
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [
+        "3D VFX",
+        "Tracking",
+        "Compositing"
+      ],
+      "categories": [
+        "film"
+      ],
+      "summary": "A reveal film for Assupol's headquarters after the company joined the Sanlam group. The old signage peels away from the facade and the new branding builds itself out of the building as protruding blocks, with CG tracked and composited onto live footage of the real building.",
+      "tools": [
+        "Blender",
+        "DaVinci Resolve"
+      ],
+      "featured": {
+        "order": 2,
+        "layout": "standard"
+      },
+      "detail": "lightbox",
+      "media": {
+        "thumb": null,
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "takealot-diski-legends",
+      "title": "Takealot Diski Legends Campaign",
+      "year": 2026,
+      "client": {
+        "name": "Takealot",
+        "via": "BSV_Creative",
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [
+        "3D VFX",
+        "Tracking",
+        "Compositing"
+      ],
+      "categories": [
+        "film"
+      ],
+      "summary": "VFX for Takealot's World Cup campaign. As football legends take shots at targets in the stands, the target seats transform from white to Takealot blue.",
+      "tools": [
+        "DaVinci Resolve"
+      ],
+      "featured": null,
+      "detail": "lightbox",
+      "media": {
+        "thumb": null,
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "yfm-2026-lineup-reveal",
+      "title": "YFM 2026 Line-Up Reveal",
+      "year": 2026,
+      "client": {
+        "name": "YFM",
+        "via": "BSV_Creative",
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [
+        "3D environment",
+        "Lighting",
+        "Rendering"
+      ],
+      "categories": [
+        "film"
+      ],
+      "summary": "A sci-fi 3D environment for YFM's line-up reveal, introducing the station's presenters and shows for the new season. I designed, lit and rendered the world as a backdrop, built to sit behind the presenters and give the announcement a bold, futuristic look.",
+      "tools": [
+        "Blender",
+        "DaVinci Resolve"
+      ],
+      "featured": null,
+      "detail": "lightbox",
+      "media": {
+        "thumb": null,
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "galxboy-campaign",
+      "title": "GALXBOY Campaign",
+      "year": 2025,
+      "client": {
+        "name": "GALXBOY",
+        "via": "BSV_Creative",
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [
+        "3D VFX",
+        "Tracking",
+        "Compositing"
+      ],
+      "categories": [
+        "film"
+      ],
+      "summary": null,
+      "tools": [
+        "DaVinci Resolve"
+      ],
+      "featured": null,
+      "detail": "lightbox",
+      "media": {
+        "thumb": null,
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "casper-toyota-activation",
+      "title": "Casper Nyovest Concert Activation: Toyota Stadium",
+      "year": 2025,
+      "client": {
+        "name": null,
+        "via": null,
+        "display": "anonymised",
+        "anonymisedLabel": "BSV_Creative",
+        "highlight": false
+      },
+      "role": [
+        "CGI",
+        "Tracking",
+        "Compositing"
+      ],
+      "categories": [
+        "viz"
+      ],
+      "summary": null,
+      "tools": [
+        "Blender",
+        "DaVinci Resolve"
+      ],
+      "featured": null,
+      "detail": "lightbox",
+      "media": {
+        "thumb": null,
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "friends-like-me-loftus",
+      "title": "Friends Like Me Lifestyle Event Announcement",
+      "year": 2024,
+      "client": {
+        "name": null,
+        "via": null,
+        "display": "anonymised",
+        "anonymisedLabel": "BSV_Creative",
+        "highlight": false
+      },
+      "role": [
+        "CGI",
+        "Compositing"
+      ],
+      "categories": [
+        "viz"
+      ],
+      "summary": null,
+      "tools": [
+        "Blender",
+        "DaVinci Resolve"
+      ],
+      "featured": null,
+      "detail": "lightbox",
+      "media": {
+        "thumb": null,
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
       "concept": false,
       "draft": false
     }

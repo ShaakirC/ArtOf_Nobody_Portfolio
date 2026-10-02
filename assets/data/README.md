@@ -77,7 +77,7 @@ The top level holds `version` (currently `1`), `categories` and `projects`.
 | `tools` | Software used, such as `["Blender", "DaVinci Resolve"]` (detail view). |
 | `featured` | `null`, or `{ "order": 1, "layout": "wide" }` to put it in the featured grid at the top of the portfolio. `layout` is `"wide"` (two columns), `"standard"` (one cell) or `"tall"` (two rows). Featured projects also appear in the index. |
 | `detail` | What clicking it opens: `"page"` (the full write-up: credits, summary, video, breakdown images), `"lightbox"` (just the video, or the image when there's no video) or `"none"` (an unclickable credit). |
-| `media.thumb` | Still image for the index preview and the featured card. Required for featured projects. |
+| `media.thumb` | Still image for the featured card, and the lightbox when there's no video or poster. Required for featured projects. |
 | `media.thumbAlt` | What the thumbnail shows, for screen readers. |
 | `media.poster` | A still shown before the video plays (falls back to `thumb`). |
 | `media.hoverLoop` | A short silent loop that plays while hovering a featured card. Keep it a small WebM, under 2 MB. |

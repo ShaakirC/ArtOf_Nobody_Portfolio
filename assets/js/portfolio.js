@@ -4,13 +4,12 @@
 // - the index: one row per visible project, filtered by category and sorted by year or
 //   client, with both kept in the URL (?category=film&sort=client) so views can be shared,
 // - the detail view (portfolio-detail.js), opened from cards and rows and deep-linked as
-//   #project-<id>, and the cursor preview over the index (portfolio-preview.js).
+//   #project-<id>.
 import {
   loadProjects, visibleProjects, featuredProjects, indexProjects, highlightedClients,
   clientLabel, primaryCategory
 } from './projects.js';
 import { createDetail } from './portfolio-detail.js';
-import { initPreview } from './portfolio-preview.js';
 
 var ALL = 'all';
 var DEFAULT_SORT = 'year-desc';
@@ -158,8 +157,6 @@ function render(data){
   }
   window.addEventListener('hashchange', openFromHash);
   openFromHash();
-
-  initPreview(list, function(id){ return byId[id]; });
 }
 
 function sortFromParam(value){
@@ -284,8 +281,6 @@ function createRow(data, project){
   } else {
     item.classList.add('is-static');
   }
-  // The preview reads this (rows with no detail view still preview their thumb).
-  item.dataset.project = project.id;
 
   row.appendChild(cell('year', typeof project.year === 'number' ? String(project.year) : ''));
   row.appendChild(cell('client', clientLabel(project)));

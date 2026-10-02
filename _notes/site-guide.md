@@ -66,7 +66,6 @@ assets/js/
                         module that fetches it)
   project-rules.js      The data checks, shared with tools/csv-to-projects.mjs (no DOM)
   portfolio.js          Portfolio page: clients line, featured grid, index, filters, sort, URLs
-  portfolio-preview.js  The thumbnail that follows the cursor over the index
   portfolio-detail.js   The detail view (<dialog>): page or lightbox, video embeds
   services.js           Services section: scroll steps, transitions, icons, reels
   hero.js               Hero: logo model, fitting around the text, lighting, pieces, hit proxy;
@@ -127,7 +126,7 @@ gets longer.
 
 ### portfolio.html
 
-`header` → `main.portfolio` → `#pfPreview` (cursor preview) → `dialog#pfDetail` → `footer`.
+`header` → `main.portfolio` → `dialog#pfDetail` → `footer`.
 `main` holds static shells that portfolio.js fills from the data:
 
 1. `.pf-intro`: label, `h1`, lede, and `#pfClients` ("Clients include A, B and C.", up to
@@ -162,11 +161,9 @@ meanwhile (`html.is-scroll-locked`), with the scrollbar's width (`--scrollbar-co
 back to the body, header and grid canvas so nothing shifts. The close event arrives
 asynchronously, so the handler ignores it if the dialog has already reopened.
 
-**Cursor preview** (portfolio-preview.js): only for a fine pointer without reduced motion. It
-sits above the hovered row (below it near the top of the screen), eases after the cursor in
-one rAF loop that stops when it settles, leans with the cursor's speed (`MAX_TILT`), and
-crossfades two image layers. Keyboard focus on a row anchors it beside the row. Tunables are
-at the top of the file; a TODO notes the optional three.js ripple version.
+**Row hover:** a row with a detail view brightens and its text steps 6px right on hover and
+keyboard focus (CSS only). There was a thumbnail that followed the cursor over the index; the
+owner removed it (2026-10-02) as too gimmicky for the site, so don't bring it back unasked.
 
 **Loading:** `main` starts as `.is-loading`, which keeps the index invisible (but in place)
 until the data has rendered, so the featured grid appearing above it isn't a layout shift. If
@@ -196,7 +193,7 @@ the JSON fails to load, a `.pf-error` message replaces the content.
             services.js                  portfolio.js
   each .panel[data-service=id] gets   clients line, featured grid, index,
   reelProjects(data, id)[0]'s loop,   detail view (portfolio-detail.js),
-  or the category's reelPlaceholder   cursor preview (portfolio-preview.js)
+  or the category's reelPlaceholder
 ```
 
 **The field reference and the client-crediting rules are in `assets/data/README.md`.** Keep

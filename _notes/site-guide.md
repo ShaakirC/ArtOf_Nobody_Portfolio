@@ -84,7 +84,7 @@ assets/js/
 | Element | id / anchor | Built by | Notes |
 |---|---|---|---|
 | `#grid-canvas` | – | grid.js | Fixed, full-screen background grid; reacts to the mouse below the hero |
-| `<header>` | – | static + site.js | Fixed. Logo, nav (Work → `#work`, About → `#about`, Contact → `#contact`), theme toggle |
+| `<header>` | – | static + site.js | Fixed. Logo, nav (Work → `portfolio.html`, About → `#about`, Contact → `#contact`), theme toggle |
 | `.hero` | `#top` | static + hero.js | Eyebrow, `h1[data-split]`, scroll cue, and `#heroModel` canvas behind them |
 | `.services-wrap` | `#work` (via `.services-anchor`) | static + services.js | Tall scroll track; its `.services-sticky` child pins to the screen |
 | `.about` | `#about` | static + about.js | Same column layout as services: `#aboutModel` canvas in the left 25vw (the hero logo for now), `.about-text` across the rest, stats |

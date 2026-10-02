@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Portfolio — ArtOf_Nobody | Interactive 3D, CGI &amp; Visual Effects</title>
-<meta name="description" content="Selected interactive 3D, product and architectural visualisation, and film, VFX and motion work by ArtOf_Nobody, a 3D studio in Cape Town.">
+<title>Work — ArtOf_Nobody | Interactive 3D, Visualisation, Film &amp; Motion</title>
+<meta name="description" content="Selected projects and client work by ArtOf_Nobody: interactive 3D websites, product and site visualisation, and VFX and motion for film and broadcast.">
 <script>
   // Apply the saved theme before first paint so light-theme visitors never see a dark flash.
   try {
@@ -43,17 +43,43 @@
   </div>
 </header>
 
-<main class="portfolio">
-  <p class="section-label">Portfolio</p>
-  <h1 class="portfolio-title">Selected work</h1>
-  <!-- Filter buttons and project tiles, filled in from js/projects.js. -->
-  <div class="portfolio-filters" id="portfolioFilters" role="group" aria-label="Filter projects"></div>
-  <div class="portfolio-grid" id="portfolioGrid"></div>
-  <div class="portfolio-empty" id="portfolioEmpty" hidden>
-    <p id="portfolioEmptyText">Nothing here yet. New work is on the way.</p>
-    <a href="index.html#top">Back to the home page</a>
-  </div>
+<main class="portfolio is-loading">
+  <section class="pf-intro">
+    <p class="section-label">Work</p>
+    <h1 class="portfolio-title">Selected work</h1>
+    <p class="pf-lede">Interactive 3D, visualisation, and film &amp; motion, for brands, agencies and productions.</p>
+    <p class="pf-clients" id="pfClients" hidden></p>
+  </section>
+
+  <!-- Filled in from assets/data/projects.json by js/portfolio.js. -->
+  <section class="pf-featured" id="pfFeaturedSection" aria-labelledby="pfFeaturedTitle" hidden>
+    <h2 class="sr-only" id="pfFeaturedTitle">Featured projects</h2>
+    <div class="pf-featured-grid" id="pfFeatured"></div>
+  </section>
+
+  <section class="pf-index" aria-labelledby="pfIndexTitle">
+    <div class="pf-index-head">
+      <h2 id="pfIndexTitle" class="section-label">Index</h2>
+      <div class="pf-filters" id="pfFilters" role="group" aria-label="Filter by service"></div>
+      <p class="pf-count" id="pfCount" aria-live="polite"></p>
+    </div>
+    <div class="pf-index-cols">
+      <button type="button" class="pf-sort" data-sort="year">Year</button>
+      <button type="button" class="pf-sort" data-sort="client">Client</button>
+      <span>Project</span>
+      <span>Role</span>
+      <span>Pillar</span>
+    </div>
+    <ul class="pf-index-list" id="pfIndex" role="list"></ul>
+    <div class="pf-empty" id="pfEmpty" hidden>
+      <p>New work in progress. In the meantime, the site you're on is the first example.</p>
+      <a href="index.html#top">Back to the home page</a>
+    </div>
+  </section>
 </main>
+
+<div class="pf-preview" id="pfPreview" aria-hidden="true"></div>
+<dialog class="pf-detail" id="pfDetail" aria-labelledby="pfDetailTitle"></dialog>
 
 <footer>
   <span>© <span id="year"></span> ArtOf_Nobody. All rights reserved.</span>

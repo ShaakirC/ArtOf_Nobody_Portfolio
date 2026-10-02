@@ -1,0 +1,565 @@
+{
+  "version": 1,
+  "categories": [
+    {
+      "id": "film",
+      "label": "Film & Motion"
+    },
+    {
+      "id": "viz",
+      "label": "Visualisation"
+    },
+    {
+      "id": "web",
+      "label": "Interactive 3D",
+      "reelPlaceholder": {
+        "title": "You're looking at it.",
+        "note": "Client and concept builds coming soon."
+      }
+    }
+  ],
+  "projects": [
+    {
+      "id": "vfx-01",
+      "title": "VFX project 01",
+      "year": null,
+      "client": {
+        "name": null,
+        "via": null,
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [],
+      "categories": [
+        "film"
+      ],
+      "summary": null,
+      "tools": [],
+      "featured": {
+        "order": 1,
+        "layout": "wide"
+      },
+      "detail": "lightbox",
+      "media": {
+        "thumb": "assets/images/content/VFX_Comp_1.webp",
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "vfx-02",
+      "title": "VFX project 02",
+      "year": null,
+      "client": {
+        "name": null,
+        "via": null,
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [],
+      "categories": [
+        "film"
+      ],
+      "summary": null,
+      "tools": [],
+      "featured": null,
+      "detail": "lightbox",
+      "media": {
+        "thumb": "assets/images/content/VFX_Comp_2.webp",
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "vfx-03",
+      "title": "VFX project 03",
+      "year": null,
+      "client": {
+        "name": null,
+        "via": null,
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [],
+      "categories": [
+        "film"
+      ],
+      "summary": null,
+      "tools": [],
+      "featured": null,
+      "detail": "lightbox",
+      "media": {
+        "thumb": "assets/images/content/VFX_Comp_3.webp",
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "vfx-04",
+      "title": "VFX project 04",
+      "year": null,
+      "client": {
+        "name": null,
+        "via": null,
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [],
+      "categories": [
+        "film"
+      ],
+      "summary": null,
+      "tools": [],
+      "featured": null,
+      "detail": "lightbox",
+      "media": {
+        "thumb": "assets/images/content/VFX_Comp_4.webp",
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "cgi-01",
+      "title": "CGI project 01",
+      "year": null,
+      "client": {
+        "name": null,
+        "via": null,
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [],
+      "categories": [
+        "viz"
+      ],
+      "summary": null,
+      "tools": [],
+      "featured": {
+        "order": 2,
+        "layout": "tall"
+      },
+      "detail": "lightbox",
+      "media": {
+        "thumb": "assets/images/content/3D_CGI_1.webp",
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "cgi-02",
+      "title": "CGI project 02",
+      "year": null,
+      "client": {
+        "name": null,
+        "via": null,
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [],
+      "categories": [
+        "viz"
+      ],
+      "summary": null,
+      "tools": [],
+      "featured": {
+        "order": 4,
+        "layout": "standard"
+      },
+      "detail": "lightbox",
+      "media": {
+        "thumb": "assets/images/content/3D_CGI_2.webp",
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "cgi-03",
+      "title": "CGI project 03",
+      "year": null,
+      "client": {
+        "name": null,
+        "via": null,
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [],
+      "categories": [
+        "viz"
+      ],
+      "summary": null,
+      "tools": [],
+      "featured": null,
+      "detail": "lightbox",
+      "media": {
+        "thumb": "assets/images/content/3D_CGI_3.webp",
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "cgi-04",
+      "title": "CGI project 04",
+      "year": null,
+      "client": {
+        "name": null,
+        "via": null,
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [],
+      "categories": [
+        "viz"
+      ],
+      "summary": null,
+      "tools": [],
+      "featured": null,
+      "detail": "lightbox",
+      "media": {
+        "thumb": "assets/images/content/3D_CGI_4.webp",
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "mograph-01",
+      "title": "Motion project 01",
+      "year": null,
+      "client": {
+        "name": null,
+        "via": null,
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [],
+      "categories": [
+        "film"
+      ],
+      "summary": null,
+      "tools": [],
+      "featured": {
+        "order": 3,
+        "layout": "standard"
+      },
+      "detail": "lightbox",
+      "media": {
+        "thumb": "assets/images/content/MoGraph_1.webp",
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "mograph-02",
+      "title": "Motion project 02",
+      "year": null,
+      "client": {
+        "name": null,
+        "via": null,
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [],
+      "categories": [
+        "film"
+      ],
+      "summary": null,
+      "tools": [],
+      "featured": null,
+      "detail": "lightbox",
+      "media": {
+        "thumb": "assets/images/content/MoGraph_2.webp",
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "mograph-03",
+      "title": "Motion project 03",
+      "year": null,
+      "client": {
+        "name": null,
+        "via": null,
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [],
+      "categories": [
+        "film"
+      ],
+      "summary": null,
+      "tools": [],
+      "featured": null,
+      "detail": "lightbox",
+      "media": {
+        "thumb": "assets/images/content/MoGraph_3.webp",
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "mograph-04",
+      "title": "Motion project 04",
+      "year": null,
+      "client": {
+        "name": null,
+        "via": null,
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [],
+      "categories": [
+        "film"
+      ],
+      "summary": null,
+      "tools": [],
+      "featured": null,
+      "detail": "lightbox",
+      "media": {
+        "thumb": "assets/images/content/MoGraph_4.webp",
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "residential-complex-site-model",
+      "title": "Residential complex site model",
+      "year": null,
+      "client": {
+        "name": "Self-initiated",
+        "via": null,
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [],
+      "categories": [
+        "viz",
+        "web"
+      ],
+      "summary": "Interactive 3D model of a 32-unit sectional title complex for planning parking, bins and future development.",
+      "tools": [],
+      "featured": null,
+      "detail": "page",
+      "media": {
+        "thumb": null,
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": true,
+      "draft": true
+    },
+    {
+      "id": "craft-gin-hero-page",
+      "title": "Craft gin hero page",
+      "year": null,
+      "client": {
+        "name": "Self-initiated",
+        "via": null,
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [],
+      "categories": [
+        "web",
+        "viz"
+      ],
+      "summary": "3D bottle hero section concept for a craft distillery.",
+      "tools": [],
+      "featured": null,
+      "detail": "page",
+      "media": {
+        "thumb": null,
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": true,
+      "draft": true
+    },
+    {
+      "id": "table-configurator",
+      "title": "Solid wood table configurator",
+      "year": null,
+      "client": {
+        "name": "Self-initiated",
+        "via": null,
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [],
+      "categories": [
+        "web",
+        "viz"
+      ],
+      "summary": "Geometry Nodes–driven configurator for size and timber choice.",
+      "tools": [],
+      "featured": null,
+      "detail": "page",
+      "media": {
+        "thumb": null,
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": true,
+      "draft": true
+    },
+    {
+      "id": "showreel-film",
+      "title": "Film & Motion showreel",
+      "year": null,
+      "client": {
+        "name": null,
+        "via": null,
+        "display": "hidden",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [],
+      "categories": [
+        "film"
+      ],
+      "summary": null,
+      "tools": [],
+      "featured": null,
+      "detail": "none",
+      "media": {
+        "thumb": null,
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": "assets/reels-draft/REEL_VFX.webm",
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": true,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "showreel-viz",
+      "title": "Visualisation showreel",
+      "year": null,
+      "client": {
+        "name": null,
+        "via": null,
+        "display": "hidden",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [],
+      "categories": [
+        "viz"
+      ],
+      "summary": null,
+      "tools": [],
+      "featured": null,
+      "detail": "none",
+      "media": {
+        "thumb": null,
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": "assets/reels-draft/REEL_CGI.webm",
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": true,
+      "concept": false,
+      "draft": false
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+id,title,year,client_name,client_via,client_display,client_anonymised_label,client_highlight,role,categories,summary,tools,featured_order,featured_layout,detail,thumb,thumb_alt,poster,hover_loop,video,breakdown,service_reel,concept,draft,private_notes
+example-project,Example project,2024,Example Brand,Example Agency,name,,TRUE,Compositing|Tracking,film|viz,"One or two sentences on the brief and what was delivered, in plain words.",Blender|DaVinci Resolve,1,wide,page,assets/images/content/VFX_Comp_1.webp,Describe what the image shows,,,,,FALSE,FALSE,FALSE,Spreadsheet-only notes: never written to the JSON
+samsung-anamorphic-billboards,Samsung Anamorphic Billboards,2026,SAMSUNG,Sociocom,name,,,,,,,,,,,,,,,,,,,
+savannah-emojis,Savannah activation,2024,Savannah,Bad Weather,name,,,,,,,,,,,,,,,,,,,

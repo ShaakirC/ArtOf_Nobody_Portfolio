@@ -1,5 +1,5 @@
 import * as ModelStage from './model-stage.js';
-import { findService, serviceUrl } from './projects.js';
+import { loadProjects, findCategory, reelProjects, isLocalVideo, serviceUrl } from './projects.js';
 import { zipText } from './zip-text.js';
 
 // options.modelsAfter: a promise to wait for before loading the service models (the hero
@@ -10,7 +10,7 @@ export function initServices(options){
   // ---------- services scroll ----------
   // Each .panel is one service step. Its model comes from data-model, and
   // data-model-behavior optionally names a ModelStage behavior. data-service names the
-  // service in js/projects.js whose reel it shows.
+  // category in assets/data/projects.json whose reel it shows.
   // The scroll splits into one equal step per service; the progress fill, the step number and
   // the text all change at the same step boundaries. Each model plays across its own step, and
   // hands over to the next one in a window centered on the boundary, this share of a step wide.
@@ -66,47 +66,28 @@ export function initServices(options){
   }
 
   // ---------- reels ----------
-  // One looping 16:9 reel per service (SERVICES[].reel in js/projects.js), all in one frame.
-  // Each is a link to its service's section of the portfolio page, labelled on hover.
+  // One looping 16:9 reel per service, all in one frame. Each is a link to the portfolio
+  // filtered to that service, labelled on hover. The frames are built straight away (so the
+  // step transitions have them from the start) and filled in once the project data arrives
+  // (fillReels, below): the loop of the project flagged serviceReel for that category, or the
+  // category's reelPlaceholder text when it has none.
   var reelFrame = document.getElementById('serviceReels');
   panels.forEach(function(panel){
     var serviceId = panel.dataset.service;
-    var service = findService(serviceId);
     var reel = document.createElement('a');
     reel.className = 'reel';
     reel.href = serviceUrl(serviceId);
     reel.tabIndex = -1;
+    reel.serviceId = serviceId;
     var inner = document.createElement('div');
-    inner.className = 'reel-inner';
-    if (service && service.reel){
-      var video = document.createElement('video');
-      video.muted = true;
-      video.loop = true;
-      video.playsInline = true;
-      video.preload = 'none';
-      video.setAttribute('aria-hidden', 'true');
-      video.dataset.src = service.reel;
-      inner.appendChild(video);
-      reel.video = video;
-    } else if (service && service.placeholder){
-      // No reel yet: a line of text in the frame instead (SERVICES[].placeholder).
-      inner.classList.add('is-placeholder', 'has-text');
-      var title = document.createElement('span');
-      title.className = 'reel-placeholder-title';
-      title.textContent = service.placeholder.title;
-      var note = document.createElement('span');
-      note.className = 'reel-placeholder-note';
-      note.textContent = service.placeholder.note;
-      inner.appendChild(title);
-      inner.appendChild(note);
-    } else {
-      inner.classList.add('is-placeholder');
-    }
+    inner.className = 'reel-inner is-placeholder';
     var label = document.createElement('span');
     label.className = 'reel-label';
-    label.textContent = 'View ' + (service ? service.label : 'all') + ' projects';
+    label.textContent = 'View projects';
     inner.appendChild(label);
     reel.appendChild(inner);
+    reel.inner = inner;
+    reel.label = label;
     reelFrame.appendChild(reel);
     reels.push(reel);
 
@@ -209,8 +190,50 @@ export function initServices(options){
     });
   }
 
+  function fillReels(data){
+    reels.forEach(function(reel){
+      var category = findCategory(data, reel.serviceId);
+      var project = reelProjects(data, reel.serviceId)[0];
+      var inner = reel.inner;
+      if (category) reel.label.textContent = 'View ' + category.label + ' projects';
+      if (project){
+        var video = document.createElement('video');
+        video.muted = true;
+        video.loop = true;
+        video.playsInline = true;
+        video.preload = 'none';
+        video.setAttribute('aria-hidden', 'true');
+        video.dataset.src = project.media.hoverLoop || project.media.video;
+        inner.classList.remove('is-placeholder');
+        inner.insertBefore(video, reel.label);
+        reel.video = video;
+        // The page may already have started loading the reels.
+        if (reelsLoaded){
+          video.preload = 'metadata';
+          video.src = video.dataset.src;
+        }
+      } else if (category && category.reelPlaceholder){
+        // No reel yet: a line of text in the frame instead.
+        inner.classList.add('has-text');
+        var title = document.createElement('span');
+        title.className = 'reel-placeholder-title';
+        title.textContent = category.reelPlaceholder.title;
+        var note = document.createElement('span');
+        note.className = 'reel-placeholder-note';
+        note.textContent = category.reelPlaceholder.note;
+        inner.insertBefore(title, reel.label);
+        inner.insertBefore(note, reel.label);
+      }
+    });
+    syncReels();
+  }
+
   window.addEventListener('scroll', loadReels, { passive: true });
   loadReels();
+  // Without the data the frames stay empty, linking to the portfolio as before.
+  loadProjects().then(fillReels, function(error){
+    console.error('Unable to load the service reels:', error);
+  });
   smallScreen.addEventListener('change', function(){
     loadReels();
     syncReels();

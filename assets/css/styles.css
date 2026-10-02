@@ -46,6 +46,7 @@
   --hero-pieces-color: #c9ccd1; /* a step off the logo so the pieces read as separate */
   --header-solid: rgba(14,15,17,0.85);
   --header-gradient: linear-gradient(to bottom, rgba(14,15,17,0.9), rgba(14,15,17,0));
+  --backdrop: rgba(5,6,8,0.78);
   --mono: 'IBM Plex Mono', monospace;
   --sans: 'Roboto', sans-serif;
   --disp: 'Archivo', sans-serif;
@@ -71,6 +72,7 @@ html[data-theme="light"]{
   --split-offset-scale: 0.65;
   --header-solid: rgba(245,243,239,0.88);
   --header-gradient: linear-gradient(to bottom, rgba(245,243,239,0.94), rgba(245,243,239,0));
+  --backdrop: rgba(23,25,28,0.55);
 }
 
 *{ box-sizing:border-box; }
@@ -643,60 +645,6 @@ a:active{ opacity:0.72; }
   .reel-inner::after{ transition:none; }
 }
 
-/* ---------- project tiles ---------- */
-.project-tile{
-  position:relative;
-  min-width:0;
-  aspect-ratio:1/1;
-  overflow:hidden;
-  border:1px solid var(--line);
-}
-/* The tile is a frame that clips; the inner layer carries the content (and the background,
-   so two stacked tiles mid-transition don't cover each other's content). */
-.project-tile-inner{ position:absolute; inset:0; background:var(--panel); }
-.project-tile-media{ position:absolute; inset:0; }
-.project-tile-media img{ width:100%; height:100%; object-fit:cover; }
-.project-tile-media.is-placeholder{
-  background:
-    linear-gradient(135deg, transparent calc(50% - 0.5px), var(--line) calc(50% - 0.5px), var(--line) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
-    var(--bg-alt);
-}
-/* Self-initiated work is always labelled. */
-.concept-badge{
-  position:absolute;
-  top:10px; left:10px;
-  z-index:1;
-  padding:3px 7px;
-  font-family:var(--mono);
-  font-size:10.5px;
-  line-height:1.3;
-  color:var(--ink);
-  background:var(--panel);
-  border:1px solid var(--line-bright);
-}
-.project-tile-caption{
-  position:absolute;
-  left:0; right:0; bottom:0;
-  padding:12px 14px;
-  background:linear-gradient(to top, var(--panel), transparent);
-}
-.project-tile-service{
-  margin:0 0 2px;
-  font-family:var(--mono);
-  font-size:10.5px;
-  color:var(--ink-faint);
-}
-.project-tile-title{
-  margin:0;
-  font-family:var(--disp);
-  font-weight:600;
-  font-size:clamp(0.9rem,1.1vw,1.05rem);
-  line-height:1.2;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-
 /* ---------- about ---------- */
 /* Laid out like the services section: a left column a quarter of the screen wide with the
    model, then the text, with an empty quarter on the right to balance the model's column.
@@ -809,12 +757,96 @@ a:active{ opacity:0.72; }
   line-height:1.05;
   margin:0 0 36px;
 }
-/* Filter buttons (portfolio.js): the pressed one is filled. */
-.portfolio-filters{
-  display:flex; flex-wrap:wrap; gap:8px;
-  margin:0 0 clamp(24px,4vh,36px);
+/* ---------- portfolio: intro ---------- */
+/* Until the project data has rendered, the index keeps its space but stays invisible, so the
+   featured grid appearing above it doesn't visibly push it down (a layout shift). */
+.portfolio.is-loading .pf-index{ visibility:hidden; }
+.pf-intro{ margin:0 0 clamp(48px,8vh,88px); }
+.pf-intro .portfolio-title{ margin-bottom:20px; }
+.pf-lede{ margin:0 0 12px; max-width:52ch; color:var(--ink-dim); font-size:1.08rem; }
+.pf-clients{ margin:0; max-width:70ch; font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); }
+
+/* Small labels: "Concept" on self-initiated work, and the detail view's category tags. */
+.pf-tag{
+  display:inline-block;
+  padding:2px 7px;
+  font-family:var(--mono);
+  font-size:10.5px;
+  font-weight:400;
+  line-height:1.4;
+  letter-spacing:0;
+  white-space:nowrap;
+  color:var(--ink);
+  background:var(--panel);
+  border:1px solid var(--line-bright);
 }
-.portfolio-filter{
+.pf-tag--quiet{ color:var(--ink-dim); background:transparent; }
+
+/* ---------- portfolio: featured ---------- */
+/* Three columns of fixed-height rows: a wide card spans two columns, a tall one two rows, and
+   dense packing fills the gaps they leave. Each card is its image with a caption under it. */
+.pf-featured{ margin:0 0 clamp(64px,10vh,110px); }
+.pf-featured-grid{
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0,1fr));
+  grid-auto-rows:clamp(220px,22vw,340px);
+  grid-auto-flow:dense;
+  gap:clamp(18px,2vw,28px) clamp(14px,1.6vw,24px);
+}
+.pf-card{
+  display:flex; flex-direction:column; gap:12px;
+  min-width:0;
+  color:inherit;
+  text-decoration:none;
+}
+.pf-card--wide{ grid-column:span 2; }
+.pf-card--tall{ grid-row:span 2; }
+.pf-card-media{
+  position:relative;
+  flex:1;
+  min-height:0;
+  overflow:hidden;
+  background:var(--bg-alt);
+  border:1px solid var(--line);
+}
+.pf-card-media img,
+.pf-card-media video{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  object-fit:cover;
+  transition:transform 0.6s cubic-bezier(0.2,0.7,0.2,1), opacity 0.3s ease;
+}
+/* The loop fades in over the still once it's actually playing. */
+.pf-card-media video{ opacity:0; }
+.pf-card-media.is-playing video{ opacity:1; }
+a.pf-card:hover .pf-card-media img,
+a.pf-card:hover .pf-card-media video{ transform:scale(1.03); }
+.pf-card-title{
+  display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px;
+  margin:0;
+  font-family:var(--disp);
+  font-weight:600;
+  font-size:clamp(1.05rem,1.4vw,1.25rem);
+  line-height:1.2;
+}
+.pf-card-meta{ margin:0; font-family:var(--mono); font-size:12px; color:var(--ink-faint); }
+
+/* ---------- portfolio: index ---------- */
+/* The column header and every row share one grid: year, client, project, role, pillar, icon. */
+.pf-index{
+  /* px, not em: the header's smaller type would otherwise narrow its first column. */
+  --pf-cols:64px minmax(0,1.1fr) minmax(0,1.5fr) minmax(0,1.3fr) minmax(0,0.8fr) 20px;
+  --pf-col-gap:clamp(14px,2vw,28px);
+  --pf-row-pad:10px;
+}
+.pf-index-head{
+  display:flex; flex-wrap:wrap; align-items:center;
+  gap:14px 24px;
+  margin:0 0 28px;
+}
+.pf-index-head .section-label{ margin:0; font-weight:400; }
+.pf-filters{ display:flex; flex-wrap:wrap; gap:8px; }
+.pf-filter{
   padding:7px 14px;
   font-family:var(--mono);
   font-size:12.5px;
@@ -825,11 +857,81 @@ a:active{ opacity:0.72; }
   cursor:pointer;
   transition:color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
 }
-.portfolio-filter:hover{ color:var(--ink); border-color:var(--ink); }
-.portfolio-filter[aria-pressed="true"]{ color:var(--bg); background:var(--ink); border-color:var(--ink); }
-.portfolio-empty{ max-width:52ch; padding:clamp(24px,6vh,60px) 0; color:var(--ink-dim); }
-.portfolio-empty p{ margin:0 0 14px; }
-.portfolio-empty a{
+.pf-filter:hover{ color:var(--ink); border-color:var(--ink); }
+.pf-filter[aria-pressed="true"]{ color:var(--bg); background:var(--ink); border-color:var(--ink); }
+.pf-count{ margin:0 0 0 auto; font-family:var(--mono); font-size:12px; color:var(--ink-faint); }
+
+.pf-index-cols{
+  display:grid;
+  grid-template-columns:var(--pf-cols);
+  column-gap:var(--pf-col-gap);
+  padding:0 var(--pf-row-pad) 10px;
+  border-bottom:1px solid var(--line-bright);
+  font-family:var(--mono);
+  font-size:11.5px;
+  color:var(--ink-faint);
+}
+.pf-sort{
+  padding:0;
+  font:inherit;
+  color:inherit;
+  text-align:left;
+  background:none;
+  border:0;
+  cursor:pointer;
+  transition:color 0.2s ease;
+}
+.pf-sort:hover,
+.pf-sort[aria-pressed="true"]{ color:var(--ink); }
+.pf-sort[data-dir="asc"]::after{ content:" ↑"; }
+.pf-sort[data-dir="desc"]::after{ content:" ↓"; }
+
+.pf-index-list{ margin:0; padding:0; list-style:none; }
+.pf-row{ border-bottom:1px solid var(--line); }
+.pf-row-inner{
+  display:grid;
+  grid-template-columns:var(--pf-cols);
+  column-gap:var(--pf-col-gap);
+  align-items:baseline;
+  padding:clamp(16px,2.4vh,22px) var(--pf-row-pad);
+  color:var(--ink-dim);
+  text-decoration:none;
+  transition:color 0.25s ease;
+}
+.pf-row-inner > *{ min-width:0; transition:transform 0.35s cubic-bezier(0.2,0.7,0.2,1), color 0.25s ease; }
+a.pf-row-inner:focus-visible{ outline-offset:-2px; }
+/* Hover and focus: the row brightens and its text steps right. */
+a.pf-row-inner:hover,
+a.pf-row-inner:focus-visible{ color:var(--ink); }
+a.pf-row-inner:hover > *,
+a.pf-row-inner:focus-visible > *{ transform:translateX(6px); }
+a.pf-row-inner:hover .pf-col-role,
+a.pf-row-inner:hover .pf-col-pillar,
+a.pf-row-inner:hover .pf-col-action,
+a.pf-row-inner:focus-visible .pf-col-role,
+a.pf-row-inner:focus-visible .pf-col-pillar,
+a.pf-row-inner:focus-visible .pf-col-action{ color:var(--ink-dim); }
+.pf-col-year{ font-family:var(--mono); font-size:12.5px; }
+.pf-col-client{ font-size:0.98rem; }
+.pf-col-title{
+  display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 10px;
+  font-family:var(--disp);
+  font-weight:600;
+  font-size:1.05rem;
+  line-height:1.3;
+  color:var(--ink);
+}
+.pf-col-role,
+.pf-col-pillar{ font-family:var(--mono); font-size:12px; color:var(--ink-faint); }
+.pf-col-action{ align-self:center; color:var(--ink-faint); }
+.pf-col-action svg{ display:block; width:18px; height:18px; }
+
+.pf-empty,
+.pf-error{ max-width:52ch; padding:clamp(24px,6vh,60px) 0; color:var(--ink-dim); }
+.pf-empty p,
+.pf-error p{ margin:0 0 14px; }
+.pf-empty a,
+.pf-error a{
   font-family:var(--mono);
   font-size:12.5px;
   color:var(--ink);
@@ -837,12 +939,145 @@ a:active{ opacity:0.72; }
   border-bottom:1px solid var(--line-bright);
   padding-bottom:4px;
 }
-.portfolio-empty a::after{ content:" →"; }
-.portfolio-empty a:hover{ border-bottom-color:var(--ink); }
-.portfolio-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill, minmax(min(100%, 260px), 1fr));
-  gap:clamp(10px,1.4vw,18px);
+.pf-empty a::after,
+.pf-error a::after{ content:" →"; }
+.pf-empty a:hover,
+.pf-error a:hover{ border-bottom-color:var(--ink); }
+
+/* ---------- portfolio: cursor preview ---------- */
+/* Positioned by portfolio-preview.js (transform); two image layers crossfade between rows. */
+.pf-preview{
+  position:fixed;
+  top:0; left:0;
+  z-index:40;
+  width:280px;
+  height:157.5px;
+  overflow:hidden;
+  pointer-events:none;
+  opacity:0;
+  background:var(--bg-alt);
+  border:1px solid var(--line-bright);
+  transition:opacity 0.25s ease, height 0.3s ease;
+  will-change:transform;
+}
+.pf-preview.is-visible{ opacity:1; }
+.pf-preview img{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  object-fit:cover;
+  opacity:0;
+  transition:opacity 0.3s ease;
+}
+.pf-preview img.is-front{ opacity:1; }
+@media (hover: none), (prefers-reduced-motion: reduce){
+  .pf-preview{ display:none; }
+}
+
+/* ---------- portfolio: detail view ---------- */
+.pf-detail{
+  width:min(1100px, calc(100vw - 32px));
+  max-width:none;
+  max-height:calc(100vh - 32px);
+  padding:0;
+  overflow:auto;
+  color:var(--ink);
+  background:var(--bg);
+  border:1px solid var(--line-bright);
+}
+.pf-detail.is-lightbox{ width:min(1400px, calc(100vw - 32px)); }
+.pf-detail::backdrop{ background:var(--backdrop); }
+.pf-detail-body{ position:relative; padding:clamp(20px,3vw,40px); }
+.pf-detail-close{
+  position:absolute;
+  top:clamp(14px,2vw,26px); right:clamp(14px,2vw,26px);
+  width:36px; height:36px;
+  display:grid; place-items:center;
+  padding:0;
+  color:var(--ink-dim);
+  background:var(--bg);
+  border:1px solid var(--line-bright);
+  border-radius:50%;
+  cursor:pointer;
+  transition:color 0.2s ease, border-color 0.2s ease;
+}
+.pf-detail-close:hover{ color:var(--ink); border-color:var(--ink); }
+.pf-detail-close svg{ width:16px; height:16px; }
+.pf-detail-header{ padding-right:52px; margin:0 0 clamp(18px,3vh,28px); }
+.pf-detail-title{
+  margin:0;
+  font-family:var(--disp);
+  font-weight:600;
+  font-size:clamp(1.5rem,3vw,2.4rem);
+  line-height:1.1;
+  letter-spacing:-0.01em;
+}
+.pf-detail-meta{ margin:10px 0 0; font-family:var(--mono); font-size:12.5px; color:var(--ink-dim); }
+.pf-detail-tags{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.pf-detail-content{ display:grid; gap:clamp(18px,3vh,28px); }
+.pf-detail-summary{ margin:0; max-width:65ch; color:var(--ink-dim); }
+.pf-detail-credits{
+  display:grid; grid-template-columns:auto 1fr; gap:6px 20px;
+  margin:0;
+  font-family:var(--mono); font-size:12.5px;
+}
+.pf-detail-credits dt{ color:var(--ink-faint); }
+.pf-detail-credits dd{ margin:0; color:var(--ink-dim); }
+.pf-detail-video,
+.pf-detail-embed,
+.pf-detail-image{ display:block; width:100%; background:var(--bg-alt); }
+.pf-detail-video,
+.pf-detail-embed{ aspect-ratio:16/9; }
+.pf-detail-embed iframe{ display:block; width:100%; height:100%; border:0; }
+.is-lightbox .pf-detail-video,
+.is-lightbox .pf-detail-image{ max-height:calc(100vh - 200px); object-fit:contain; }
+
+/* While the detail view is open the page behind it doesn't scroll. The scrollbar's width
+   (--scrollbar-comp, set by portfolio-detail.js) is given back so nothing shifts sideways. */
+html.is-scroll-locked{ overflow:hidden; }
+html.is-scroll-locked body{ padding-right:var(--scrollbar-comp, 0px); }
+html.is-scroll-locked header{ right:var(--scrollbar-comp, 0px); }
+html.is-scroll-locked #grid-canvas{ width:calc(100% - var(--scrollbar-comp, 0px)); }
+
+@media (prefers-reduced-motion: reduce){
+  .pf-card-media img,
+  .pf-row-inner > *{ transition:none; }
+  a.pf-card:hover .pf-card-media img,
+  a.pf-row-inner:hover > *,
+  a.pf-row-inner:focus-visible > *{ transform:none; }
+}
+
+/* Two columns on tablets; a wide card then fills a row. */
+@media (max-width: 1023px){
+  .pf-featured-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); grid-auto-rows:clamp(200px,30vw,300px); }
+}
+@media (max-width: 719px){
+  /* One full-width card after another, all the same shape. */
+  .pf-featured-grid{ grid-template-columns:minmax(0,1fr); grid-auto-rows:auto; }
+  .pf-card--wide,
+  .pf-card--tall{ grid-column:auto; grid-row:auto; }
+  .pf-card-media{ flex:none; aspect-ratio:16/10; }
+  .pf-count{ margin-left:0; width:100%; }
+
+  /* Rows fold into two lines: "Client — Project", then "Year · Role · Pillar". */
+  .pf-index-cols{ display:none; }
+  .pf-row-inner{
+    position:relative;
+    display:flex; flex-wrap:wrap; align-items:baseline;
+    gap:4px 0;
+    padding-right:calc(var(--pf-row-pad) + 28px);
+  }
+  .pf-row-inner > :empty{ display:none; }
+  .pf-col-client{ order:1; margin-right:0.45em; color:var(--ink); }
+  .pf-col-client::after{ content:" —"; color:var(--ink-faint); }
+  .pf-col-title{ order:2; }
+  .pf-row-inner::after{ content:""; order:3; flex-basis:100%; }
+  .pf-col-year{ order:4; font-size:11.5px; color:var(--ink-faint); }
+  .pf-col-role{ order:5; font-size:11.5px; }
+  .pf-col-pillar{ order:6; font-size:11.5px; }
+  .pf-col-action{ position:absolute; right:var(--pf-row-pad); top:50%; margin-top:-9px; }
+  /* Separators end the item before them, so a wrapped line never starts with one. */
+  .pf-col-year:has(~ .pf-col-role:not(:empty), ~ .pf-col-pillar:not(:empty))::after,
+  .pf-col-role:has(~ .pf-col-pillar:not(:empty))::after{ content:"·"; margin:0 0.6em; }
 }
 
 footer{

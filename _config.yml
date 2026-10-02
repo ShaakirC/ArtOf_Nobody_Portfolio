@@ -1,5 +1,12 @@
 # GitHub Pages (Jekyll) settings. The site itself is plain HTML; this only keeps developer
-# and agent notes out of the published site. Folders starting with _ (like _notes) are
+# notes, docs and tools out of the published site. Folders starting with _ (like _notes) are
 # skipped automatically.
+#
+# There's deliberately no .nojekyll file: without Jekyll, _notes/ and everything listed below
+# would be published. Nothing the site serves starts with _ or ., which is all Jekyll would
+# otherwise skip, so it doesn't change the site's own files.
 exclude:
   - CLAUDE.md
+  - README.md
+  - tools
+  - assets/data/README.md

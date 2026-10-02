@@ -3,7 +3,7 @@
 The single reference for how this site is built, where its content lives, and how to change
 it safely. Read this before touching the code; it should save you from scanning the repo.
 
-Last verified 2026-10-02, after the move to three kinds of work (web, viz, film) and the portfolio filters. **If you change the structure, the data
+Last verified 2026-10-02, after the portfolio rebuild (featured grid, index, detail view) and the move of project data to assets/data/projects.json. **If you change the structure, the data
 pipeline or any timing that's mirrored between files, update this guide in the same commit.**
 
 ---
@@ -36,8 +36,9 @@ python -m http.server 8000   # then open http://localhost:8000/
 
 ```
 index.html              Home page: header, hero, services, about, contact, footer
-portfolio.html          Portfolio page: every project in one grid, with service filters
-_config.yml             GitHub Pages settings; only excludes developer notes from the build
+portfolio.html          Portfolio page: intro, featured grid, project index, detail view
+README.md               How to run the site locally (not published)
+_config.yml             GitHub Pages settings; keeps notes, docs and tools out of the build
 CLAUDE.md               Entry point for AI agents; points here
 _notes/                 Developer notes (not published: Jekyll skips folders starting with _)
   site-guide.md         This file
@@ -46,16 +47,27 @@ assets/css/styles.css   All styles, both themes, both pages
 assets/fonts/           Self-hosted WOFF2 fonts (Archivo, Roboto, IBM Plex Mono; Latin + Latin Ext)
 assets/images/          Header logos and favicon (logo_wh_96 / logo_bl_96 are used; the
                         _LR files are high-res originals kept for reference, not loaded)
-  content/              Project tile images (WebP), referenced from projects.js
-assets/reels-draft/     Looping service reels (WebM), referenced from projects.js. Ignored by
+  content/              Stand-in project images (WebP), referenced from projects.json
+assets/data/
+  projects.json         ★ THE CONTENT: categories and every project, for both pages
+  README.md             Every field, and the client-crediting rules (not published)
+assets/reels-draft/     Looping service reels (WebM), referenced from projects.json. Ignored by
                         git (.gitignore) until optimised; then they move to assets/reels/
+tools/                  Not published
+  csv-to-projects.mjs   Node script: master spreadsheet (CSV) → assets/data/projects.json
+  update-projects.cmd   Double-click wrapper for it (default input tools/data/projects.private.csv)
+  data/                 Git-ignored: the owner's master spreadsheet, projects.private.csv
+  projects-template.csv The spreadsheet's columns, with one example row
 assets/models/          glTF (.glb) models: hero logo set and service icons
 assets/js/
   main.js               Entry point for index.html
   portfolio-main.js     Entry point for portfolio.html
-  projects.js           ★ THE CONTENT LIST: services and projects, shared by both pages
-  project-tiles.js      Builds a project tile element (portfolio grid)
-  portfolio.js          Portfolio page: filters, empty state, #id and #slug handling
+  projects.js           Loads and checks projects.json; helpers both pages use (the only
+                        module that fetches it)
+  project-rules.js      The data checks, shared with tools/csv-to-projects.mjs (no DOM)
+  portfolio.js          Portfolio page: clients line, featured grid, index, filters, sort, URLs
+  portfolio-preview.js  The thumbnail that follows the cursor over the index
+  portfolio-detail.js   The detail view (<dialog>): page or lightbox, video embeds
   services.js           Services section: scroll steps, transitions, icons, reels
   hero.js               Hero: logo model, fitting around the text, lighting, pieces, hit proxy;
                         on phones, the about section's loop instead
@@ -115,14 +127,50 @@ gets longer.
 
 ### portfolio.html
 
-`header` → `main.portfolio` (label, `h1`, `#portfolioFilters`, `#portfolioGrid`,
-`#portfolioEmpty`) → `footer`. portfolio.js builds a filter button per service plus **All**
-(`aria-pressed` marks the current one) and one tile per visible project. A `#<id>` hash opens
-on that service's filter (the home page reels and mobile links go there), and picking a filter
-writes the hash back with `history.replaceState`. A `#<slug>` hash shows All and centres that
-tile. When a filter has no visible projects, `#portfolioEmpty` shows the service's `empty`
-text (or the default in the HTML) and a link back to the home page. There is no hero here, so
-the grid background reacts everywhere.
+`header` → `main.portfolio` → `#pfPreview` (cursor preview) → `dialog#pfDetail` → `footer`.
+`main` holds static shells that portfolio.js fills from the data:
+
+1. `.pf-intro`: label, `h1`, lede, and `#pfClients` ("Clients include A, B and C.", up to
+   `MAX_CLIENTS` brands; stays `hidden` with none).
+2. `#pfFeaturedSection > #pfFeatured`: the featured cards, in a 3-column grid of fixed-height
+   rows (`wide` spans two columns, `tall` two rows, dense packing); 2 columns below 1024px,
+   one full-width 16:10 card each below 720px. Hidden when nothing is featured. Hover loops
+   play only on a fine pointer without reduced motion, and their video isn't created (so
+   nothing downloads) until the first hover.
+3. `.pf-index`: `#pfFilters` (All + one per category, `aria-pressed`), `#pfCount` (live
+   region), the column header (Year and Client are sort buttons), `#pfIndex` (one `li.pf-row`
+   per project) and `#pfEmpty`. The rows and header share one grid, `--pf-cols`; below 720px
+   each row folds into "Client — Project" over "Year · Role · Pillar".
+
+**URL state:** `?category=<id>&sort=<sort>` holds the filter and sort (`sort` is omitted for
+the default, year newest first; `client`, `client-desc` and `year-asc` otherwise), written
+with `history.replaceState`. Old `#<category>` links still select that filter.
+`#project-<id>` opens the detail view, on load too; opening and closing swap the hash without
+adding history entries.
+
+**Opening projects:** cards and rows with a detail view are `<a href="#project-<id>"
+data-project>`; a plain click is intercepted to open the dialog in place (modified clicks still
+work as links). Rows with `detail: "none"` are a plain `div`, not focusable.
+
+**Detail view** (portfolio-detail.js): a native `<dialog>` with `showModal()`, rebuilt for
+each project. `"page"` shows credits, tags, summary, the video and breakdown images;
+`"lightbox"` just the video (or poster/thumb). `media.video` can be a local file (`<video
+controls>`) or a YouTube/Vimeo URL (a lazy iframe: youtube-nocookie.com, Vimeo with
+`dnt=1`). Escape, the close button and a backdrop click close it; closing empties it (stopping
+playback), returns focus to the opener and clears the hash. The page scroll is locked
+meanwhile (`html.is-scroll-locked`), with the scrollbar's width (`--scrollbar-comp`) given
+back to the body, header and grid canvas so nothing shifts. The close event arrives
+asynchronously, so the handler ignores it if the dialog has already reopened.
+
+**Cursor preview** (portfolio-preview.js): only for a fine pointer without reduced motion. It
+sits above the hovered row (below it near the top of the screen), eases after the cursor in
+one rAF loop that stops when it settles, leans with the cursor's speed (`MAX_TILT`), and
+crossfades two image layers. Keyboard focus on a row anchors it beside the row. Tunables are
+at the top of the file; a TODO notes the optional three.js ripple version.
+
+**Loading:** `main` starts as `.is-loading`, which keeps the index invisible (but in place)
+until the data has rendered, so the featured grid appearing above it isn't a layout shift. If
+the JSON fails to load, a `.pf-error` message replaces the content.
 
 ### Script start-up
 
@@ -138,77 +186,50 @@ the grid background reacts everywhere.
 ## 4. The content pipeline
 
 ```
-                   assets/js/projects.js
-     SERVICES [{ id, label, reel, …}]   PROJECTS [{ slug, title, categories, image, …}]
-                                        projectsFor(), findService(), visibleProjects(),
-                                        projectUrl(slug), serviceUrl(id)
-                 │                                   │
-     ┌───────────┴──────────────┐          ┌─────────┴──────────┐
-     ▼                          ▼          ▼                    │
- index.html                services.js  portfolio.js            │
- .panel[data-service=id] ──►  for each panel:  a filter per SERVICES entry
- (text, data-model)           its service's    (#id), and every visible
-                              reel, linking to project as a tile (id = slug)
-                              serviceUrl(id)
-                                                        │
-                                          project-tiles.js
-                                          createProjectTile(project)
+                    assets/data/projects.json
+         { version, categories: [{ id, label, reelPlaceholder? }], projects: [...] }
+                               │  (fetched and checked once)
+                    assets/js/projects.js   ◄── project-rules.js (checks; also used by
+                    loadProjects() + helpers         tools/csv-to-projects.mjs)
+                 ┌─────────────┴──────────────┐
+                 ▼                            ▼
+            services.js                  portfolio.js
+  each .panel[data-service=id] gets   clients line, featured grid, index,
+  reelProjects(data, id)[0]'s loop,   detail view (portfolio-detail.js),
+  or the category's reelPlaceholder   cursor preview (portfolio-preview.js)
 ```
 
-### projects.js: the one place for project data
+**The field reference and the client-crediting rules are in `assets/data/README.md`.** Keep
+that file up to date with any schema change. In short: each project has `id`, `title`, `year`,
+`client` (`name`, `via`, `display`: `name` / `anonymised` / `hidden`, `anonymisedLabel`,
+`highlight`), `role`, `categories` (first = primary), `summary`, `tools`, `featured`,
+`detail` (`page` / `lightbox` / `none`), `media` (`thumb`, `thumbAlt`, `poster`,
+`hoverLoop`, `video`, `breakdown`), `serviceReel`, `concept` and `draft`.
 
-- `SERVICES`: one entry per service, currently `film`, `viz` and `web`, in panel order.
-  - `id` joins everything together: it must match the `data-service` attribute of a service
-    panel in index.html, and `portfolio.html#<id>` opens the portfolio on its filter.
-  - `label` names the filter button and goes in the reel's hover text ("View <label>
-    projects →").
-  - `reel` is the looping video beside the service's text: a path under `assets/reels/`
-    (stand-ins: `assets/reels-draft/`), or `null`. The frame is 16:9 and crops to fill.
-  - `placeholder` (`{ title, note }`, optional) is shown in the frame while `reel` is `null`;
-    `web` uses it ("You're looking at it."). Without one, the frame is empty.
-  - `empty` (optional) is what its portfolio filter says when none of its projects are
-    visible.
-- `PROJECTS`: `{ slug, title, categories, image }` per project, plus optional `concept`,
-  `draft` and `summary`. **List order is display order** everywhere.
-  - `slug`: unique and URL-safe (lowercase, hyphens). It becomes the tile's `id` on the
-    portfolio page and the link `portfolio.html#<slug>`.
-  - `categories`: an array of one or more `SERVICES` ids. A project shows under each of their
-    filters, and once under All.
-  - `concept: true`: self-initiated work. The tile gets a "Concept" badge; it must always be
-    labelled this way.
-  - `draft: true`: kept off the site entirely (`visibleProjects()` drops it).
-  - `summary`: a line about the project, for a project view once there is one. Nothing shows
-    it yet.
-  - `image`: a path under `assets/images/content/` (any file name; the current stand-ins
-    are `VFX_Comp_1.webp`, `3D_CGI_1.webp`, `MoGraph_1.webp` and so on), or `null` for an
-    empty placeholder tile. Tiles are square and crop with `object-fit: cover`, so a 16:9
-    image loses about 22% off each side. Use WebP, at least 800px on the short side, at
-    quality 75–80, with the subject centred.
-- Helpers: `projectsFor(serviceId)` and `visibleProjects()` (both skip drafts),
-  `findService(id)`, `projectUrl(slug)`, `serviceUrl(id)`.
-  **Always build portfolio links with these**, so the URL scheme lives in one place.
-
-### project-tiles.js: the tile contract
-
-`createProjectTile(project, options)` returns the markup below. The small label lists the
-project's service labels (e.g. "Visualisation · Interactive 3D"); pass `{ showService: false }`
-to leave it out.
-
-```html
-<article class="project-tile" data-project="<slug>" data-categories="<id> <id>" data-href="portfolio.html#<slug>">
-  <div class="project-tile-inner">   <!-- slides within the tile's frame; carries the background -->
-    <div class="project-tile-media [is-placeholder]"> <img …> (only when image is set) </div>
-    <span class="concept-badge">Concept</span>   <!-- only when concept is true -->
-    <div class="project-tile-caption">
-      <p class="project-tile-service">Service labels</p>
-      <h3 class="project-tile-title">Title</h3>
-    </div>
-  </div>
-</article>
-```
-
-**Clicks are not wired yet, on purpose.** `data-href` holds each tile's destination for when
-they are. The owner wants to design the hover and click behaviour first.
+- **The JSON is public** (anyone can open it on GitHub Pages). Anonymised and hidden projects
+  must have `client.name` and `client.via` set to `null`; the loader warns and the import
+  script refuses to write otherwise.
+- **projects.js** is the only way in. `loadProjects()` fetches the file once (relative to the
+  module, so it works on any base URL), runs `validateProjects()` and logs one grouped
+  `console.warn` for missing or inconsistent data. Helpers: `visibleProjects` (no drafts, no
+  hidden clients), `featuredProjects`, `indexProjects(data, { category, sort })`,
+  `highlightedClients`, `reelProjects(data, category)`, `clientLabel(project)` ("Brand (via
+  Agency)" / anonymised label), `findCategory`, `primaryCategory`, `isLocalVideo`. The URL
+  builders `projectUrl(id)` (`portfolio.html#project-<id>`) and `serviceUrl(id)`
+  (`portfolio.html?category=<id>`) need no data, so the home page uses them straight away.
+- **Categories:** `film`, `viz`, `web`, in the order of the service panels; that order is
+  also the filter order. A category's `reelPlaceholder` (`{ title, note }`) fills its reel
+  frame while no project supplies a reel (`web`: "You're looking at it.").
+- **Home page reels:** a project with `serviceReel: true` lends its `hoverLoop` (or a local
+  `video`) to the reel of its primary category. The current reels come from two hidden-client
+  entries, `showreel-film` and `showreel-viz`, which never show in the index. services.js
+  builds the reel frames straight away and fills them when the data arrives; without data
+  they stay empty frames that still link to the portfolio.
+- **Spreadsheet import:** `node tools/csv-to-projects.mjs <file.csv> [out.json]` (Node 22+, no
+  dependencies) rewrites projects.json from the master spreadsheet, keeping the existing
+  `categories`. It strips client names from anonymised/hidden rows, never writes `private_*`
+  columns, and fails if a confidential name would get through. The spreadsheet must stay out
+  of the repo: `*.private.csv` and `tools/data/` are git-ignored.
 
 ### Service panels (index.html)
 
@@ -223,8 +244,8 @@ Each `.panel` is one service step, in order:
 </div>
 ```
 
-- `data-service`: which service's reel and portfolio section it shows (must be an id in
-  `SERVICES`).
+- `data-service`: which category's reel and portfolio filter it shows (must be a category id
+  in projects.json).
 - `data-model`: the 3D icon for this step. Optional `data-model-behavior="<name>"` attaches
   a registered behaviour. The icons are stand-ins from the old services (film: VFX_COMP, viz:
   3D_CGI, web: MoGraph) until `3D_Icon_Film.glb`, `3D_Icon_Viz.glb` and `3D_Icon_Web.glb`
@@ -238,28 +259,34 @@ Each `.panel` is one service step, in order:
 ## 5. Recipes
 
 ### Add a project
-1. Put the image in `assets/images/content/` (WebP; see the `image` notes above).
-2. Add `{ slug, title, categories, image }` to `PROJECTS` in projects.js, positioned where it
-   should appear. Add `concept: true` for self-initiated work.
-3. That's it. It appears under All and each of its categories' filters. To stage one before
-   it's ready, add `draft: true`; three concept drafts (site model, gin hero, table
-   configurator) are waiting for media this way.
+1. Put its media under `assets/` (WebP stills, small WebM loops under 2 MB; long videos on
+   YouTube or Vimeo instead, since GitHub rejects files over 50 MB). Paths are relative and
+   case-sensitive on GitHub Pages.
+2. Add it to the master spreadsheet (`tools/data/projects.private.csv`, edited by the owner
+   in Tablecruncher) and double-click `tools/update-projects.cmd`, or add an entry to
+   `assets/data/projects.json` directly (see `assets/data/README.md`). List order is the
+   order featured cards fall back to and nothing else: the index sorts by year.
+3. Reload the portfolio and check the console for validation warnings. To stage a project,
+   set `draft: true`; three concept drafts (site model, gin hero, table configurator) wait
+   for media this way.
 
 ### Swap a service's reel
-Put the video in `assets/reels/` and point the service's `reel` in `SERVICES` at it. (`web`
-has none yet; setting its `reel` replaces the placeholder text, which can then be deleted.) The
-current stand-ins live in `assets/reels-draft/`, which `.gitignore` keeps out of the repo, so
-the deployed site has no reels yet (the frame shows the panel colour). When they're
-re-exported, move them to `assets/reels/`, update the paths, and remove that `.gitignore` entry. Use a
-muted 16:9 WebM that loops cleanly. The current reels (9–31 MB) are unoptimised stand-ins:
-re-export them at around 3–6 MB each (720p–1080p, VP9) before going live, and consider an MP4
-alongside for older Safari. Loading is lazy: nothing is fetched until the first scroll (never
-on ≤ 860px screens), then each reel loads its metadata and buffers in full once it plays.
+Point the `hoverLoop` of the project flagged `serviceReel` for that category (currently
+`showreel-film` and `showreel-viz`) at the new file, or flag a different project. `web` has
+none yet, so its frame shows its `reelPlaceholder`. The current stand-ins live in
+`assets/reels-draft/`, which `.gitignore` keeps out of the repo, so the deployed site has no
+reels yet (the frame shows the panel colour). When they're re-exported, move them to
+`assets/reels/`, update the paths, and remove that `.gitignore` entry. Use a muted 16:9 WebM
+that loops cleanly. The current reels (9–31 MB) are unoptimised stand-ins: re-export them at
+around 3–6 MB each (720p–1080p, VP9) before going live, and consider an MP4 alongside for
+older Safari. Loading is lazy: nothing is fetched until the first scroll (never on ≤ 860px
+screens), then each reel loads its metadata and buffers in full once it plays.
 
 ### Replace the placeholder projects
-The first 12 entries in `PROJECTS` (`vfx-01` … `mograph-04`) have placeholder titles and
-stand-in images. Their categories follow the old services (VFX and motion → `film`, CGI →
-`viz`). Replace them outright; nothing else refers to those slugs.
+The 12 entries `vfx-01` … `mograph-04` in projects.json have placeholder titles, stand-in
+images and no year, client or role; four of them are featured only so the grid has something
+to show. Their categories follow the old services (VFX and motion → `film`, CGI → `viz`).
+Replace them outright; nothing else refers to those ids.
 
 ### Edit a service's text
 Edit its `.panel` in index.html. Keep `data-split` and a matching `aria-label` on the `h2`
@@ -268,8 +295,9 @@ it correct before JS runs).
 
 ### Add, remove or reorder a service
 1. Add, remove or move its `.panel` in index.html (order of panels = order of steps).
-2. Add or remove its entry in `SERVICES` (with its `reel`), and update the `categories` of
-   its projects in `PROJECTS`. Its filter button appears by itself.
+2. Add, remove or move its entry in `categories` in projects.json (and the import script's
+   `DEFAULT_CATEGORIES`), and update its projects' `categories`. Its filter button appears by
+   itself.
 3. Give a new service a `data-model` icon (see the next recipe).
 4. The scroll length adjusts itself (`sizeServices` in services.js). Each step gets
    `(2 + N × 134.67)vh − 200vh` ÷ N of scrolling on desktop (121.33 on mobile). That's about
@@ -522,15 +550,27 @@ These came out of the 2026-09-29 audit (`_notes/performance-review.md`). Don't r
     iframe's `requestAnimationFrame` with a 16ms `setTimeout`.
   - **Animation clock:** CSS animations don't advance there either. Inspect a frame with
     `document.getAnimations()`, then `pause()` and set `currentTime`.
+  - **Media and dialogs:** under virtual time, videos never load and a `<dialog>`'s close
+    event never arrives. Test those in real time (below).
   - **Clean up:** delete temporary wrapper pages from the repo root.
+- **Real-time browser tests:** Node isn't installed on the owner's machine. A portable Node
+  in the scratchpad plus `npm install lighthouse` brings `puppeteer-core`, which drives the
+  installed Chrome with real mouse, keyboard and touch input, media-feature emulation and
+  network logging. Swap in a test projects.json that covers every case (back up the real one
+  and restore it afterwards). Lighthouse from the same install gives mobile scores; on the
+  local Python server files aren't compressed, so compare like with like.
 
 ---
 
 ## 10. Deploying and going live
 
 - **Deploy:** `git push` to `main` publishes to GitHub Pages.
-- **Not published:** `_notes/` (underscore folder) and `CLAUDE.md` (excluded in
-  `_config.yml`).
+- **Not published:** `_notes/` (underscore folder), and `CLAUDE.md`, `README.md`, `tools/`
+  and `assets/data/README.md` (excluded in `_config.yml`). **Don't add a `.nojekyll` file:**
+  without Jekyll all of these would be published. Jekyll only skips names starting with `_`
+  or `.`, and the site has none, so it leaves the site's own files alone.
+- **Paths:** keep every asset path relative (`assets/...`, never `/assets/...`) so the site
+  works both on github.io/<repo>/ and the custom domain, and match file-name case exactly.
 - **Going live on `www.artofnobody.com`** (when the owner says so, not before):
   1. Add a `CNAME` file containing `www.artofnobody.com`.
   2. At the DNS provider, point `www` (CNAME) at `shaakirc.github.io`, and the apex domain
@@ -542,13 +582,11 @@ These came out of the 2026-09-29 audit (`_notes/performance-review.md`). Don't r
 
 ## 11. Known gaps and open decisions
 
-- **Project tiles:** hover and click behaviour isn't designed yet (clicks go via `data-href`
-  when they are).
 - **Reels:** stand-in exports, too heavy for go-live (see recipe "Swap a service's reel").
-- **Placeholders:** all projects have placeholder titles and stand-in images. Some contact details and social links are
+- **Placeholders:** all projects have placeholder titles, stand-in images and no year,
+  client or role (26 validation warnings, by design). Which projects to feature and which
+  clients to highlight are still to decide. Some contact details and social links are
   placeholders; see recipe "Contact details".
-- **Portfolio page:** one filtered grid. There's no per-project detail view yet; `#slug` only
-  scrolls to the tile, and `summary` isn't shown anywhere.
 - **Stand-ins awaiting assets:** the three service icons, the `web` reel, the OG image, the
   social links and the three draft concept projects.
 - **Unused images:** the high-res `logo_*_LR.png` files aren't loaded. Keep or delete them

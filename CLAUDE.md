@@ -9,9 +9,11 @@ interactive system works, and headless-testing quirks. Keep it up to date when y
 structure, data flow or mirrored timings.
 
 Quick facts:
-- **Content:** projects and services come from `assets/js/projects.js`, which both
-  `index.html` (services previews) and `portfolio.html` read. Service text and icons are
-  `.panel` elements in `index.html`, joined to the list by `data-service`.
+- **Content:** categories and projects live in `assets/data/projects.json` (fields and
+  client-crediting rules in `assets/data/README.md`), loaded only through
+  `assets/js/projects.js` by both `index.html` (service reels) and `portfolio.html`. Service
+  text and icons are `.panel` elements in `index.html`, joined to a category by
+  `data-service`. The JSON is public: never put a confidential client name in it.
 - **Run locally:** `python -m http.server` from the repo root (modules don't load from
   `file://`).
 - **Style:** ES5-style `var`/`function`, tuning constants at the top of each file, comments that

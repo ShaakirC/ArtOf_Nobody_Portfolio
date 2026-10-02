@@ -1,44 +1,67 @@
-// Portfolio page: one section per service, in SERVICES order, each with its projects as tiles.
-// This is scaffolding until the page is built out. Sections are anchored by service id
-// (#<id>, see serviceUrl in projects.js), which is where the home page reels link to, and
-// tiles by slug (#<slug>, see projectUrl).
-import { SERVICES, projectsFor } from './projects.js';
+// Portfolio page: one grid of every visible project, filtered by service. The filters are
+// All plus one per SERVICES entry. #<service id> opens on that filter (see serviceUrl in
+// projects.js; the home page reels link there), and #<slug> centres that project's tile
+// (see projectUrl). Picking a filter updates the hash, so a filtered view can be shared.
+import { SERVICES, findService, visibleProjects } from './projects.js';
 import { createProjectTile } from './project-tiles.js';
 
+var ALL = 'all';
+
 export function initPortfolio(){
-  var container = document.getElementById('portfolioSections');
+  var filterBar = document.getElementById('portfolioFilters');
+  var grid = document.getElementById('portfolioGrid');
+  var empty = document.getElementById('portfolioEmpty');
+  var emptyText = document.getElementById('portfolioEmptyText');
+  var defaultEmptyText = emptyText.textContent;
+  var buttons = [];
+  var tiles = [];
 
-  SERVICES.forEach(function(service){
-    var section = document.createElement('section');
-    section.className = 'portfolio-section';
-    section.id = service.id;
-    var heading = document.createElement('h2');
-    heading.className = 'portfolio-section-title';
-    heading.id = service.id + '-title';
-    heading.textContent = service.label;
-    section.setAttribute('aria-labelledby', heading.id);
-    section.appendChild(heading);
-
-    var grid = document.createElement('div');
-    grid.className = 'portfolio-grid';
-    projectsFor(service.id).forEach(function(project){
-      // The section heading already names the service.
-      var tile = createProjectTile(project, { showService: false });
-      // The anchor a project link lands on.
-      tile.id = project.slug;
-      grid.appendChild(tile);
+  [{ id: ALL, label: 'All' }].concat(SERVICES).forEach(function(service){
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'portfolio-filter';
+    button.dataset.filter = service.id;
+    button.textContent = service.label;
+    button.addEventListener('click', function(){
+      setFilter(service.id);
+      // Shareable, without adding a history entry per click.
+      history.replaceState(null, '', service.id === ALL ? location.pathname + location.search : '#' + service.id);
     });
-    section.appendChild(grid);
-    container.appendChild(section);
+    filterBar.appendChild(button);
+    buttons.push(button);
   });
 
-  // The sections are built after load, so the browser's own jump to the hash has already
-  // missed them. A service lands at the top of the screen, a project in the middle.
-  if (location.hash){
-    var target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
-    if (target){
-      var isSection = target.classList.contains('portfolio-section');
-      target.scrollIntoView({ block: isSection ? 'start' : 'center' });
-    }
+  visibleProjects().forEach(function(project){
+    var tile = createProjectTile(project);
+    // The anchor a project link lands on.
+    tile.id = project.slug;
+    grid.appendChild(tile);
+    tiles.push({ element: tile, project: project });
+  });
+
+  function setFilter(id){
+    var shown = 0;
+    buttons.forEach(function(button){
+      button.setAttribute('aria-pressed', String(button.dataset.filter === id));
+    });
+    tiles.forEach(function(tile){
+      var match = id === ALL || tile.project.categories.indexOf(id) !== -1;
+      tile.element.hidden = !match;
+      if (match) shown++;
+    });
+    var service = findService(id);
+    emptyText.textContent = (service && service.empty) || defaultEmptyText;
+    empty.hidden = shown > 0;
+  }
+
+  // The grid is built after load, so the browser's own jump to the hash has already missed
+  // it. A service hash picks its filter; a project hash shows everything and centres it.
+  var hash = location.hash ? decodeURIComponent(location.hash.slice(1)) : '';
+  if (findService(hash)){
+    setFilter(hash);
+  } else {
+    setFilter(ALL);
+    var target = hash && document.getElementById(hash);
+    if (target && target.classList.contains('project-tile')) target.scrollIntoView({ block: 'center' });
   }
 }

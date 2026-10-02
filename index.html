@@ -3,8 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ArtOf_Nobody — VFX &amp; CGI Freelance Artist</title>
-<meta name="description" content="Freelance VFX, CGI and motion graphics artist. Compositing, 3D rendering and broadcast graphics.">
+<title>ArtOf_Nobody — Interactive 3D, CGI &amp; Visual Effects | Cape Town</title>
+<meta name="description" content="Cape Town 3D studio building interactive 3D websites, product configurators, product and architectural visualisation, and VFX and motion graphics for film and broadcast.">
+<link rel="canonical" href="https://www.artofnobody.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ArtOf_Nobody">
+<meta property="og:title" content="ArtOf_Nobody — Interactive 3D, CGI &amp; Visual Effects">
+<meta property="og:description" content="Interactive 3D websites, product and site visualisation, and VFX and motion for film. Based in Cape Town, working worldwide.">
+<meta property="og:url" content="https://www.artofnobody.com/">
+<!-- TODO(Shaakir): export a 1200x630 social preview image to this path -->
+<meta property="og:image" content="https://www.artofnobody.com/assets/images/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "name": "ArtOf_Nobody",
+  "url": "https://www.artofnobody.com/",
+  "email": "info@artofnobody.com",
+  "telephone": "+27605259402",
+  "address": { "@type": "PostalAddress", "addressLocality": "Cape Town", "addressRegion": "Western Cape", "addressCountry": "ZA" },
+  "areaServed": "Worldwide",
+  "description": "Interactive 3D websites, product configurators, product and architectural visualisation, and VFX and motion graphics."
+}
+</script>
 <script>
   // Apply the saved theme before first paint so light-theme visitors never see a dark flash.
   try {
@@ -60,7 +82,7 @@
 
 <section class="hero" id="top">
   <canvas class="hero-model" id="heroModel" aria-hidden="true"></canvas>
-  <p class="hero-eyebrow">Freelance VFX &amp; CGI Artist</p>
+  <p class="hero-eyebrow">Interactive 3D · CGI · Visual Effects</p>
   <h1 data-split aria-label="ArtOf_Nobody">ArtOf_Nobody</h1>
   <div class="hero-scroll-cue"><span class="line"></span> Scroll to explore</div>
 </section>
@@ -78,37 +100,39 @@
     </div>
     <div class="text-col">
       <div class="panels">
-        <div class="panel" data-i="0" data-service="vfx" data-model="assets/models/3D_Icon_VFX_COMP.glb">
-          <p class="tag">VFX &amp; Compositing</p>
+        <!-- TODO(Shaakir): the icons are stand-ins until their own models exist. Swap each data-model for
+             assets/models/3D_Icon_Film.glb, 3D_Icon_Viz.glb and 3D_Icon_Web.glb respectively. -->
+        <div class="panel" data-i="0" data-service="film" data-model="assets/models/3D_Icon_VFX_COMP.glb">
+          <p class="tag">Film, VFX &amp; Motion</p>
           <h2 data-split aria-label="The best effects are the ones Nobody notices.">The best effects are the ones Nobody notices.</h2>
-          <p>From roto and tracking to keying and cleanup, I make CG and live-action plates sit together as if they were shot that way. Working in DaVinci Resolve, I match grain, lighting and lens character until the seams disappear.</p>
+          <p>Compositing, tracking and cleanup that make CG and live action sit together as if they were shot that way, plus title sequences and broadcast graphics built as modular systems, so one look stretches from a six-second bumper to a full opening sequence.</p>
           <ul>
-            <li>Rotoscoping &amp; paint</li>
+            <li>Compositing, roto &amp; cleanup</li>
             <li>Camera &amp; object tracking</li>
-            <li>Green-screen keying</li>
-            <li>Set extensions &amp; cleanup</li>
+            <li>Title sequences &amp; kinetic type</li>
+            <li>Broadcast packages &amp; logo animation</li>
           </ul>
         </div>
-        <div class="panel" data-i="1" data-service="cgi" data-model="assets/models/3D_Icon_3D_CGI.glb">
-          <p class="tag">CGI &amp; 3D</p>
-          <h2 data-split aria-label="Nobody said it had to be real.">Nobody said it had to be real.</h2>
-          <p>Modeling, texturing, lighting and rendering for product shots, hero assets and environments. I build custom procedural setups in Blender's Geometry Nodes, so assets stay flexible, variations come fast, and revisions don't mean starting over. Every piece holds up to a close-up, with render times kept realistic for real production schedules.</p>
+        <div class="panel" data-i="1" data-service="viz" data-model="assets/models/3D_Icon_3D_CGI.glb">
+          <p class="tag">Product &amp; Visualisation</p>
+          <h2 data-split aria-label="Nobody has to imagine it.">Nobody has to imagine it.</h2>
+          <p>Photoreal product renders, and clear visuals of places and plans that don't exist yet: a new layout, a renovation, a development, a "what if we moved it here". I build with procedural setups in Blender's Geometry Nodes, so when someone asks to see option B, it's an afternoon, not a rebuild.</p>
           <ul>
+            <li>Product renders &amp; packshots</li>
+            <li>Architectural &amp; site visualisation</li>
+            <li>Before/after &amp; option comparisons</li>
             <li>Procedural systems in Geometry Nodes</li>
-            <li>Hard-surface &amp; organic modeling</li>
-            <li>PBR texturing &amp; lookdev</li>
-            <li>Lighting &amp; render optimization</li>
           </ul>
         </div>
-        <div class="panel" data-i="2" data-service="mograph" data-model="assets/models/3D_Icon_MoGraph.glb">
-          <p class="tag">Motion Graphics</p>
-          <h2 data-split aria-label="Nobody skips this intro.">Nobody skips this intro.</h2>
-          <p>Title sequences, kinetic type and broadcast packages designed to read in a glance and hold up on repeat. Everything is built as a modular system, so one look can stretch from a six-second bumper to a full opening sequence without losing its shape.</p>
+        <div class="panel" data-i="2" data-service="web" data-model="assets/models/3D_Icon_MoGraph.glb">
+          <p class="tag">Interactive 3D for the Web</p>
+          <h2 data-split aria-label="Nobody scrolls past this.">Nobody scrolls past this.</h2>
+          <p>Websites where the product, the place or the brand is something you can turn, explore and play with, not just look at. Everything on this page, from the logo that grows when you touch it to these icons building themselves as you scroll, was made this way. I model in Blender and build the web side myself, so the 3D stays fast on a phone and light on data.</p>
           <ul>
-            <li>Title sequences &amp; opens</li>
-            <li>Kinetic typography</li>
-            <li>Broadcast packages &amp; lower-thirds</li>
-            <li>Logo animation</li>
+            <li>3D hero sections &amp; landing pages</li>
+            <li>Product viewers &amp; configurators</li>
+            <li>Virtual tours &amp; site walkthroughs</li>
+            <li>Lightweight, mobile-first builds</li>
           </ul>
         </div>
       </div>
@@ -131,7 +155,7 @@
     <p>I'm Shaakir Cassiem, a freelance VFX and CGI artist working under the name ArtOf_Nobody.</p>
     <p>I came to 3D by way of a degree in robotics, and I still approach every project like a system: understand the whole, break it into parts, and make sure every piece works together. That means I'm as comfortable planning scope and pipeline as I am solving the technical problem buried in shot forty-two. Big projects don't intimidate me, and unfamiliar ones are my favourite kind.</p>
     <p>That curiosity has taken me in a lot of directions. I've produced music, played guitar and keys, built apps, tinkered with DIY electronics, and I'm still deep in game development. Every one of them feeds the work. Music taught me timing, which shows up in every animation I make, and years of coaxing hardware and code into behaving means technical challenges feel like puzzles rather than roadblocks.</p>
-    <p>Today I work across VFX &amp; compositing, 3D &amp; CGI, and motion graphics, and I'm expanding into interactive 3D websites and virtual tours. This site is part of that. If your project needs both a creative eye and a technical mind, let's talk.</p>
+    <p>Today that adds up to three kinds of work: interactive 3D for the web, product and spatial visualisation, and film, VFX and motion. This site is an example of the first. If your project needs both a creative eye and a technical mind, let's talk.</p>
     <div class="about-stats">
       <div><b>1</b><span>ROBOTICS<br>DEGREE</span></div>
       <div><b>5+</b><span>YEARS IN<br>PRODUCTION</span></div>
@@ -147,12 +171,13 @@
   <div class="contact-grid">
     <div>
       <a href="mailto:info@artofnobody.com" class="contact-email">info@artofnobody.com</a>
-      <p style="color:var(--ink-dim); max-width:44ch; margin-top:22px;">Tell me a bit about the project — footage or references if you have them, rough timeline, and where it needs to end up. I'll reply within a day with scope and a quote.</p>
+      <p class="contact-intro">Tell me a bit about the project: a link to your current site, photos, references or footage, a rough timeline, and where it needs to end up. I'll reply within a day with scope and a quote.</p>
     </div>
     <ul class="contact-list">
       <li><span class="k">EMAIL</span><a class="v" href="mailto:info@artofnobody.com">info@artofnobody.com</a></li>
       <li><span class="k">PHONE</span><a class="v" href="tel:+27605259402">+27 60 525-9402</a></li>
-      <li><span class="k">LOCATION</span><span class="v">Remote — worldwide (South Africa)</span></li>
+      <li><span class="k">LOCATION</span><span class="v">Cape Town, South Africa — working worldwide</span></li>
+      <!-- TODO(Shaakir): confirm handles and URLs. The live site links instagram.com/artof_nobody. -->
       <li><span class="k">LINKEDIN</span><a class="v" href="#" target="_blank" rel="noopener">linkedin.com/in/artofnobody</a></li>
       <li><span class="k">INSTAGRAM</span><a class="v" href="#" target="_blank" rel="noopener">@artofnobody.vfx</a></li>
     </ul>
@@ -161,7 +186,7 @@
 
 <footer>
   <span>© <span id="year"></span> ArtOf_Nobody. All rights reserved.</span>
-  <span>Compositing · CGI · Motion Graphics</span>
+  <span>Interactive 3D · Visualisation · Film &amp; Motion</span>
 </footer>
 
 <script type="module" src="assets/js/main.js"></script>

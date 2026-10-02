@@ -3,14 +3,17 @@
 The single reference for how this site is built, where its content lives, and how to change
 it safely. Read this before touching the code; it should save you from scanning the repo.
 
-Last verified 2026-10-01, including the services reels and the portfolio sections. **If you change the structure, the data
+Last verified 2026-10-02, after the move to three kinds of work (web, viz, film) and the portfolio filters. **If you change the structure, the data
 pipeline or any timing that's mirrored between files, update this guide in the same commit.**
 
 ---
 
 ## 1. What this is
 
-- **Portfolio site** for ArtOf_Nobody, a freelance VFX, CGI and motion graphics artist.
+- **Portfolio site** for ArtOf_Nobody (Shaakir Cassiem), a Cape Town 3D studio. The work is
+  organised around what clients get, in three kinds: **interactive 3D for the web** (`web`),
+  **product & visualisation** (`viz`), and **film, VFX & motion** (`film`). The site itself is
+  the example of the first, and the copy says so.
 - **Static site, no build step.** Plain HTML, one stylesheet, native ES modules. There is no
   npm, no bundler and no framework, so a file saved is a file shipped.
 - **Libraries:** three.js `0.161.0` (with `GLTFLoader`) from jsDelivr, mapped in an import map
@@ -33,7 +36,7 @@ python -m http.server 8000   # then open http://localhost:8000/
 
 ```
 index.html              Home page: header, hero, services, about, contact, footer
-portfolio.html          Portfolio page: one section per service (scaffolding, to be built out)
+portfolio.html          Portfolio page: every project in one grid, with service filters
 _config.yml             GitHub Pages settings; only excludes developer notes from the build
 CLAUDE.md               Entry point for AI agents; points here
 _notes/                 Developer notes (not published: Jekyll skips folders starting with _)
@@ -51,7 +54,7 @@ assets/js/
   portfolio-main.js     Entry point for portfolio.html
   projects.js           ★ THE CONTENT LIST: services and projects, shared by both pages
   project-tiles.js      Builds a project tile element (portfolio grid)
-  portfolio.js          Portfolio page: a section per service, #id and #slug handling
+  portfolio.js          Portfolio page: filters, empty state, #id and #slug handling
   services.js           Services section: scroll steps, transitions, icons, reels
   hero.js               Hero: logo model, fitting around the text, lighting, pieces, hit proxy;
                         on phones, the about section's loop instead
@@ -111,11 +114,14 @@ gets longer.
 
 ### portfolio.html
 
-`header` → `main.portfolio` (label, `h1`, `#portfolioSections`) → `footer`. **Scaffolding**,
-to be built out properly later: portfolio.js generates one `section.portfolio-section#<id>` per
-service (heading + `.portfolio-grid` of tiles) from `projects.js`. A `#<id>` hash lands the
-section under the header (`scroll-margin-top`), a `#<slug>` hash centres that tile. There is no
-hero here, so the grid background reacts everywhere.
+`header` → `main.portfolio` (label, `h1`, `#portfolioFilters`, `#portfolioGrid`,
+`#portfolioEmpty`) → `footer`. portfolio.js builds a filter button per service plus **All**
+(`aria-pressed` marks the current one) and one tile per visible project. A `#<id>` hash opens
+on that service's filter (the home page reels and mobile links go there), and picking a filter
+writes the hash back with `history.replaceState`. A `#<slug>` hash shows All and centres that
+tile. When a filter has no visible projects, `#portfolioEmpty` shows the service's `empty`
+text (or the default in the HTML) and a link back to the home page. There is no hero here, so
+the grid background reacts everywhere.
 
 ### Script start-up
 
@@ -132,17 +138,17 @@ hero here, so the grid background reacts everywhere.
 
 ```
                    assets/js/projects.js
-     SERVICES [{ id, label, reel }]     PROJECTS [{ slug, title, service, image }]
-                                        projectsFor(), findService(),
+     SERVICES [{ id, label, reel, …}]   PROJECTS [{ slug, title, categories, image, …}]
+                                        projectsFor(), findService(), visibleProjects(),
                                         projectUrl(slug), serviceUrl(id)
                  │                                   │
      ┌───────────┴──────────────┐          ┌─────────┴──────────┐
      ▼                          ▼          ▼                    │
  index.html                services.js  portfolio.js            │
- .panel[data-service=id] ──►  for each panel:  a section per SERVICES entry
- (text, data-model)           its service's    (id = service id), holding
-                              reel, linking to its projects as tiles
-                              serviceUrl(id)   (id = slug)
+ .panel[data-service=id] ──►  for each panel:  a filter per SERVICES entry
+ (text, data-model)           its service's    (#id), and every visible
+                              reel, linking to project as a tile (id = slug)
+                              serviceUrl(id)
                                                         │
                                           project-tiles.js
                                           createProjectTile(project)
@@ -150,37 +156,50 @@ hero here, so the grid background reacts everywhere.
 
 ### projects.js: the one place for project data
 
-- `SERVICES`: `{ id, label, reel }` per service. `id` joins everything together: it must match
-  the `data-service` attribute of a service panel in index.html, and it's the anchor of the
-  service's portfolio section (`portfolio.html#<id>`). `label` is the section heading and goes
-  in the reel's hover text ("View <label> projects →"). `reel` is the looping video beside the
-  service's text (a path under `assets/reels/` (stand-ins: `assets/reels-draft/`), or `null` for an empty placeholder frame).
-  The frame is 16:9 and crops to fill.
-- `PROJECTS`: `{ slug, title, service, image }` per project. **List order is display order**
-  everywhere.
+- `SERVICES`: one entry per service, currently `film`, `viz` and `web`, in panel order.
+  - `id` joins everything together: it must match the `data-service` attribute of a service
+    panel in index.html, and `portfolio.html#<id>` opens the portfolio on its filter.
+  - `label` names the filter button and goes in the reel's hover text ("View <label>
+    projects →").
+  - `reel` is the looping video beside the service's text: a path under `assets/reels/`
+    (stand-ins: `assets/reels-draft/`), or `null`. The frame is 16:9 and crops to fill.
+  - `placeholder` (`{ title, note }`, optional) is shown in the frame while `reel` is `null`;
+    `web` uses it ("You're looking at it."). Without one, the frame is empty.
+  - `empty` (optional) is what its portfolio filter says when none of its projects are
+    visible.
+- `PROJECTS`: `{ slug, title, categories, image }` per project, plus optional `concept`,
+  `draft` and `summary`. **List order is display order** everywhere.
   - `slug`: unique and URL-safe (lowercase, hyphens). It becomes the tile's `id` on the
     portfolio page and the link `portfolio.html#<slug>`.
-  - `service`: one of the `SERVICES` ids.
+  - `categories`: an array of one or more `SERVICES` ids. A project shows under each of their
+    filters, and once under All.
+  - `concept: true`: self-initiated work. The tile gets a "Concept" badge; it must always be
+    labelled this way.
+  - `draft: true`: kept off the site entirely (`visibleProjects()` drops it).
+  - `summary`: a line about the project, for a project view once there is one. Nothing shows
+    it yet.
   - `image`: a path under `assets/images/content/` (any file name; the current stand-ins
     are `VFX_Comp_1.webp`, `3D_CGI_1.webp`, `MoGraph_1.webp` and so on), or `null` for an
     empty placeholder tile. Tiles are square and crop with `object-fit: cover`, so a 16:9
     image loses about 22% off each side. Use WebP, at least 800px on the short side, at
     quality 75–80, with the subject centred.
-- Helpers: `projectsFor(serviceId)`, `findService(id)`, `projectUrl(slug)`, `serviceUrl(id)`.
+- Helpers: `projectsFor(serviceId)` and `visibleProjects()` (both skip drafts),
+  `findService(id)`, `projectUrl(slug)`, `serviceUrl(id)`.
   **Always build portfolio links with these**, so the URL scheme lives in one place.
 
 ### project-tiles.js: the tile contract
 
-`createProjectTile(project, options)` returns the markup below. Pass
-`{ showService: false }` to leave out the service label; the portfolio sections do this, since
-their heading names the service.
+`createProjectTile(project, options)` returns the markup below. The small label lists the
+project's service labels (e.g. "Visualisation · Interactive 3D"); pass `{ showService: false }`
+to leave it out.
 
 ```html
-<article class="project-tile" data-project="<slug>" data-service="<id>" data-href="portfolio.html#<slug>">
+<article class="project-tile" data-project="<slug>" data-categories="<id> <id>" data-href="portfolio.html#<slug>">
   <div class="project-tile-inner">   <!-- slides within the tile's frame; carries the background -->
     <div class="project-tile-media [is-placeholder]"> <img …> (only when image is set) </div>
+    <span class="concept-badge">Concept</span>   <!-- only when concept is true -->
     <div class="project-tile-caption">
-      <p class="project-tile-service">Service label</p>
+      <p class="project-tile-service">Service labels</p>
       <h3 class="project-tile-title">Title</h3>
     </div>
   </div>
@@ -195,8 +214,8 @@ they are. The owner wants to design the hover and click behaviour first.
 Each `.panel` is one service step, in order:
 
 ```html
-<div class="panel" data-i="0" data-service="vfx" data-model="assets/models/3D_Icon_VFX_COMP.glb">
-  <p class="tag">VFX &amp; Compositing</p>
+<div class="panel" data-i="0" data-service="film" data-model="assets/models/3D_Icon_VFX_COMP.glb">
+  <p class="tag">Film, VFX &amp; Motion</p>
   <h2 data-split aria-label="…">Heading text</h2>   <!-- keep data-split: the transition needs it -->
   <p>Paragraph…</p>
   <ul><li>…</li></ul>
@@ -206,7 +225,10 @@ Each `.panel` is one service step, in order:
 - `data-service`: which service's reel and portfolio section it shows (must be an id in
   `SERVICES`).
 - `data-model`: the 3D icon for this step. Optional `data-model-behavior="<name>"` attaches
-  a registered behaviour.
+  a registered behaviour. The icons are stand-ins from the old services (film: VFX_COMP, viz:
+  3D_CGI, web: MoGraph) until `3D_Icon_Film.glb`, `3D_Icon_Viz.glb` and `3D_Icon_Web.glb`
+  exist; a TODO above the panels names them. Each icon's animation lives in its file, so
+  nothing else changes when one is swapped.
 - Everything else (progress steps, reels, the mobile link, the scroll length) is
   generated from the number of panels.
 
@@ -216,12 +238,15 @@ Each `.panel` is one service step, in order:
 
 ### Add a project
 1. Put the image in `assets/images/content/` (WebP; see the `image` notes above).
-2. Add `{ slug, title, service, image }` to `PROJECTS` in projects.js, positioned where it
-   should appear.
-3. That's it. It appears in its service's section of the portfolio page.
+2. Add `{ slug, title, categories, image }` to `PROJECTS` in projects.js, positioned where it
+   should appear. Add `concept: true` for self-initiated work.
+3. That's it. It appears under All and each of its categories' filters. To stage one before
+   it's ready, add `draft: true`; three concept drafts (site model, gin hero, table
+   configurator) are waiting for media this way.
 
 ### Swap a service's reel
-Put the video in `assets/reels/` and point the service's `reel` in `SERVICES` at it. The
+Put the video in `assets/reels/` and point the service's `reel` in `SERVICES` at it. (`web`
+has none yet; setting its `reel` replaces the placeholder text, which can then be deleted.) The
 current stand-ins live in `assets/reels-draft/`, which `.gitignore` keeps out of the repo, so
 the deployed site has no reels yet (the frame shows the panel colour). When they're
 re-exported, move them to `assets/reels/`, update the paths, and remove that `.gitignore` entry. Use a
@@ -231,8 +256,9 @@ alongside for older Safari. Loading is lazy: nothing is fetched until the first 
 on ≤ 860px screens), then each reel loads its metadata and buffers in full once it plays.
 
 ### Replace the placeholder projects
-The 12 entries in `PROJECTS` (`vfx-01` … `mograph-04`) have placeholder titles and stand-in
-images. Replace them outright; nothing else refers to those slugs.
+The first 12 entries in `PROJECTS` (`vfx-01` … `mograph-04`) have placeholder titles and
+stand-in images. Their categories follow the old services (VFX and motion → `film`, CGI →
+`viz`). Replace them outright; nothing else refers to those slugs.
 
 ### Edit a service's text
 Edit its `.panel` in index.html. Keep `data-split` and a matching `aria-label` on the `h2`
@@ -241,7 +267,8 @@ it correct before JS runs).
 
 ### Add, remove or reorder a service
 1. Add, remove or move its `.panel` in index.html (order of panels = order of steps).
-2. Add or remove its entry in `SERVICES` (with its `reel`), and its projects in `PROJECTS`.
+2. Add or remove its entry in `SERVICES` (with its `reel`), and update the `categories` of
+   its projects in `PROJECTS`. Its filter button appears by itself.
 3. Give a new service a `data-model` icon (see the next recipe).
 4. The scroll length adjusts itself (`sizeServices` in services.js). Each step gets
    `(2 + N × 134.67)vh − 200vh` ÷ N of scrolling on desktop (121.33 on mobile). That's about
@@ -295,9 +322,12 @@ hero.js:
   `<head>` applies it before first paint.
 
 ### Contact details, about stats, links
-- **Contact:** static HTML in the `.contact` section of index.html. The phone number, reel,
-  LinkedIn and Instagram links are still **placeholders** (`#`, `+1 (000) 000-0000`).
-- **Email:** `hello@artofnobody.work` appears twice there; check it's the real address.
+- **Contact:** static HTML in the `.contact` section of index.html. The email
+  (`info@artofnobody.com`, twice) and phone are real. The LinkedIn and Instagram links are
+  still **placeholders** (`href="#"`, handles unconfirmed; a TODO marks them).
+- **Search and sharing:** index.html's `<head>` has a canonical URL, Open Graph / Twitter tags
+  and JSON-LD (`ProfessionalService`), all pointing at `https://www.artofnobody.com/`. The OG
+  image (`assets/images/og-image.jpg`, 1200×630) doesn't exist yet.
 - **About copy:** the heading, paragraphs and stats (10+, 140, 3) are static text in
   `.about-text`. The stats predate the current copy and haven't been confirmed.
 - **About model:** `LOGO_SRC` / `PIECES_SRC` in about.js. It's a stand-in: the hero logo and
@@ -507,7 +537,9 @@ These came out of the 2026-09-29 audit (`_notes/performance-review.md`). Don't r
 - **Reels:** stand-in exports, too heavy for go-live (see recipe "Swap a service's reel").
 - **Placeholders:** all projects have placeholder titles and stand-in images. Some contact details and social links are
   placeholders; see recipe "Contact details".
-- **Portfolio page:** scaffolding only (a heading and a tile grid per service). There's no
-  per-project detail view yet; `#slug` only scrolls to the tile.
+- **Portfolio page:** one filtered grid. There's no per-project detail view yet; `#slug` only
+  scrolls to the tile, and `summary` isn't shown anywhere.
+- **Stand-ins awaiting assets:** the three service icons, the `web` reel, the OG image, the
+  social links and the three draft concept projects.
 - **Unused images:** the high-res `logo_*_LR.png` files aren't loaded. Keep or delete them
   as you like.

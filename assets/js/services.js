@@ -88,6 +88,17 @@ export function initServices(options){
       video.dataset.src = service.reel;
       inner.appendChild(video);
       reel.video = video;
+    } else if (service && service.placeholder){
+      // No reel yet: a line of text in the frame instead (SERVICES[].placeholder).
+      inner.classList.add('is-placeholder', 'has-text');
+      var title = document.createElement('span');
+      title.className = 'reel-placeholder-title';
+      title.textContent = service.placeholder.title;
+      var note = document.createElement('span');
+      note.className = 'reel-placeholder-note';
+      note.textContent = service.placeholder.note;
+      inner.appendChild(title);
+      inner.appendChild(note);
     } else {
       inner.classList.add('is-placeholder');
     }

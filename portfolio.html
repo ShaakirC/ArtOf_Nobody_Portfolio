@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Portfolio — ArtOf_Nobody</title>
-<meta name="description" content="Selected VFX, CGI and motion graphics projects by ArtOf_Nobody.">
+<title>Portfolio — ArtOf_Nobody | Interactive 3D, CGI &amp; Visual Effects</title>
+<meta name="description" content="Selected interactive 3D, product and architectural visualisation, and film, VFX and motion work by ArtOf_Nobody, a 3D studio in Cape Town.">
 <script>
   // Apply the saved theme before first paint so light-theme visitors never see a dark flash.
   try {
@@ -47,13 +47,18 @@
 <main class="portfolio">
   <p class="section-label">Portfolio</p>
   <h1 class="portfolio-title">Selected work</h1>
-  <!-- One section per service, with its project tiles; filled in from js/projects.js. -->
-  <div id="portfolioSections"></div>
+  <!-- Filter buttons and project tiles, filled in from js/projects.js. -->
+  <div class="portfolio-filters" id="portfolioFilters" role="group" aria-label="Filter projects"></div>
+  <div class="portfolio-grid" id="portfolioGrid"></div>
+  <div class="portfolio-empty" id="portfolioEmpty" hidden>
+    <p id="portfolioEmptyText">Nothing here yet. New work is on the way.</p>
+    <a href="index.html#top">Back to the home page</a>
+  </div>
 </main>
 
 <footer>
   <span>© <span id="year"></span> ArtOf_Nobody. All rights reserved.</span>
-  <span>Compositing · CGI · Motion Graphics</span>
+  <span>Interactive 3D · Visualisation · Film &amp; Motion</span>
 </footer>
 
 <script type="module" src="assets/js/portfolio-main.js"></script>

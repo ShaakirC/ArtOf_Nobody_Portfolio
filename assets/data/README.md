@@ -75,6 +75,7 @@ The top level holds `version` (currently `1`), `categories` and `projects`.
 | `categories` | One or more of `film`, `viz`, `web`. The first is the project's main category (shown in the index and used for reels). A project shows under every filter it lists. |
 | `summary` | One or two sentences on the brief and what was delivered (detail view). |
 | `tools` | Software used, such as `["Blender", "DaVinci Resolve"]` (detail view). |
+| `link` | Optional. A full `https://` address for the live site, case study or article, or `null`. Shown on a `"page"` detail as a **Link** row under Role and Tools, labelled by its address and opening in a new tab. |
 | `featured` | `null`, or `{ "order": 1, "layout": "wide" }` to put it in the featured grid at the top of the portfolio. `layout` is `"wide"` (two columns), `"standard"` (one cell) or `"tall"` (two rows). Featured projects also appear in the index. |
 | `detail` | What clicking it opens: `"page"` (the full write-up: credits, summary, video, breakdown images), `"lightbox"` (just the video, or the image when there's no video) or `"none"` (an unclickable credit). |
 | `media.thumb` | Still image for the featured card, and the lightbox when there's no video or poster. Required for featured projects. |

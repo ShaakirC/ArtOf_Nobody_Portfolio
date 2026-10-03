@@ -39,6 +39,8 @@ export function validateProjects(data){
     }
     if (display === 'anonymised' && !client.anonymisedLabel) problems.push(name + ': anonymised without client.anonymisedLabel.');
 
+    // A link without its scheme would be treated as a path on this site.
+    if (project.link && !/^https?:\/\//i.test(project.link)) problems.push(name + ': link "' + project.link + '" should start with https://.');
     if (project.detail && DETAIL_MODES.indexOf(project.detail) === -1) problems.push(name + ': unknown detail "' + project.detail + '".');
     if (project.featured){
       if (!(project.media && project.media.thumb)) problems.push(name + ': featured without media.thumb.');

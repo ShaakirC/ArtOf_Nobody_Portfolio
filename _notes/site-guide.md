@@ -152,8 +152,9 @@ data-project>`; a plain click is intercepted to open the dialog in place (modifi
 work as links). Rows with `detail: "none"` are a plain `div`, not focusable.
 
 **Detail view** (portfolio-detail.js): a native `<dialog>` with `showModal()`, rebuilt for
-each project. `"page"` shows credits, tags, summary, the video and breakdown images;
-`"lightbox"` just the video (or poster/thumb). `media.video` can be a local file (`<video
+each project. `"page"` shows credits, tags, summary, the `link` (a "Link" row in the credits:
+http(s) only, opening in a new tab), the video and breakdown images; `"lightbox"` just the
+video (or poster/thumb). `media.video` can be a local file (`<video
 controls>`) or a YouTube/Vimeo URL (a lazy iframe: youtube-nocookie.com, Vimeo with
 `dnt=1`). Escape, the close button and a backdrop click close it; closing empties it (stopping
 playback), returns focus to the opener and clears the hash. The page scroll is locked
@@ -199,9 +200,10 @@ the JSON fails to load, a `.pf-error` message replaces the content.
 **The field reference and the client-crediting rules are in `assets/data/README.md`.** Keep
 that file up to date with any schema change. In short: each project has `id`, `title`, `year`,
 `client` (`name`, `via`, `display`: `name` / `anonymised` / `hidden`, `anonymisedLabel`,
-`highlight`), `role`, `categories` (first = primary), `summary`, `tools`, `featured`,
-`detail` (`page` / `lightbox` / `none`), `media` (`thumb`, `thumbAlt`, `poster`,
-`hoverLoop`, `video`, `breakdown`), `serviceReel`, `concept` and `draft`.
+`highlight`), `role`, `categories` (first = primary), `summary`, `tools`, `link` (optional
+external URL), `featured`, `detail` (`page` / `lightbox` / `none`), `media` (`thumb`,
+`thumbAlt`, `poster`, `hoverLoop`, `video`, `breakdown`), `serviceReel`, `concept` and
+`draft`.
 
 - **The JSON is public** (anyone can open it on GitHub Pages). Anonymised and hidden projects
   must have `client.name` and `client.via` set to `null`; the loader warns and the import

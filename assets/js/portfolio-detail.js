@@ -1,5 +1,5 @@
 // The project detail view: one native <dialog> (#pfDetail), rebuilt for each project.
-// detail "page" shows the full write-up (credits, summary, video, breakdown images);
+// detail "page" shows the full write-up (credits, link, summary, video, breakdown images);
 // "lightbox" just the video, or the poster/thumb when there's no video. A video can be a file
 // on the site or a YouTube/Vimeo URL (embedded, privacy-enhanced), so full-length films don't
 // have to live in the repository.
@@ -67,6 +67,13 @@ function buildPage(data, project){
     credits.appendChild(element('dt', '', pair[0]));
     credits.appendChild(element('dd', '', pair[1].join(' · ')));
   });
+  var link = buildLink(project.link);
+  if (link){
+    credits.appendChild(element('dt', '', 'Link'));
+    var cell = element('dd', '');
+    cell.appendChild(link);
+    credits.appendChild(cell);
+  }
   if (credits.childNodes.length) body.content.appendChild(credits);
 
   var media = project.media || {};
@@ -145,6 +152,19 @@ function buildVideo(media, title){
   iframe.referrerPolicy = 'strict-origin-when-cross-origin';
   frame.appendChild(iframe);
   return frame;
+}
+
+// An external link (live site, case study, ...) labelled by its host and path, opening in a
+// new tab. Anything that isn't http(s) is left out, so a bad cell can't become a script URL.
+function buildLink(href){
+  var url;
+  try { url = new URL(href); } catch (error) { return null; }
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') return null;
+  var anchor = element('a', 'pf-detail-link', url.hostname.replace(/^www\./, '') + url.pathname.replace(/\/$/, ''));
+  anchor.href = url.href;
+  anchor.target = '_blank';
+  anchor.rel = 'noopener';
+  return anchor;
 }
 
 // The embeddable player for a YouTube or Vimeo page URL, or null if it's neither.

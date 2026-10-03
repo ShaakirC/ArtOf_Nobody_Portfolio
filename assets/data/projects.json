@@ -37,6 +37,7 @@
       ],
       "summary": "Interactive 3D model of a 32-unit sectional title complex for planning parking, bins and future development.",
       "tools": [],
+      "link": null,
       "featured": null,
       "detail": "page",
       "media": {
@@ -69,6 +70,7 @@
       ],
       "summary": "3D bottle hero section concept for a craft distillery.",
       "tools": [],
+      "link": null,
       "featured": null,
       "detail": "page",
       "media": {
@@ -101,6 +103,7 @@
       ],
       "summary": "Geometry Nodes–driven configurator for size and timber choice.",
       "tools": [],
+      "link": null,
       "featured": null,
       "detail": "page",
       "media": {
@@ -132,6 +135,7 @@
       ],
       "summary": null,
       "tools": [],
+      "link": null,
       "featured": null,
       "detail": "none",
       "media": {
@@ -163,6 +167,7 @@
       ],
       "summary": null,
       "tools": [],
+      "link": null,
       "featured": null,
       "detail": "none",
       "media": {
@@ -186,7 +191,7 @@
         "via": "Sociocom",
         "display": "name",
         "anonymisedLabel": null,
-        "highlight": false
+        "highlight": true
       },
       "role": [
         "3D Anamorphic billboards"
@@ -199,11 +204,12 @@
         "Blender",
         "DaVinci Resolve"
       ],
+      "link": null,
       "featured": {
         "order": 1,
         "layout": "standard"
       },
-      "detail": "lightbox",
+      "detail": "page",
       "media": {
         "thumb": null,
         "thumbAlt": null,
@@ -225,20 +231,22 @@
         "via": "Bad Weather",
         "display": "name",
         "anonymisedLabel": null,
-        "highlight": false
+        "highlight": true
       },
       "role": [
         "3D Looping Animations"
       ],
       "categories": [
-        "film"
+        "film",
+        "viz"
       ],
       "summary": "Looping 3D background for display on an interactive projector",
       "tools": [
         "Blender"
       ],
+      "link": null,
       "featured": null,
-      "detail": "lightbox",
+      "detail": "page",
       "media": {
         "thumb": null,
         "thumbAlt": null,
@@ -274,8 +282,9 @@
         "Blender",
         "DaVinci Resolve"
       ],
+      "link": null,
       "featured": null,
-      "detail": "lightbox",
+      "detail": "page",
       "media": {
         "thumb": null,
         "thumbAlt": null,
@@ -297,7 +306,7 @@
         "via": "TULU Entertainment",
         "display": "name",
         "anonymisedLabel": null,
-        "highlight": false
+        "highlight": true
       },
       "role": [
         "3D Interactive Visuals"
@@ -310,8 +319,9 @@
       "tools": [
         "Blender"
       ],
+      "link": null,
       "featured": null,
-      "detail": "lightbox",
+      "detail": "page",
       "media": {
         "thumb": null,
         "thumbAlt": null,
@@ -348,6 +358,7 @@
         "Blender",
         "DaVinci Resolve"
       ],
+      "link": null,
       "featured": {
         "order": 2,
         "layout": "standard"
@@ -374,7 +385,7 @@
         "via": "BSV_Creative",
         "display": "name",
         "anonymisedLabel": null,
-        "highlight": false
+        "highlight": true
       },
       "role": [
         "3D VFX",
@@ -388,6 +399,7 @@
       "tools": [
         "DaVinci Resolve"
       ],
+      "link": null,
       "featured": null,
       "detail": "lightbox",
       "media": {
@@ -426,6 +438,7 @@
         "Blender",
         "DaVinci Resolve"
       ],
+      "link": null,
       "featured": null,
       "detail": "lightbox",
       "media": {
@@ -463,6 +476,7 @@
       "tools": [
         "DaVinci Resolve"
       ],
+      "link": null,
       "featured": null,
       "detail": "lightbox",
       "media": {
@@ -485,7 +499,7 @@
         "name": null,
         "via": null,
         "display": "anonymised",
-        "anonymisedLabel": "BSV_Creative",
+        "anonymisedLabel": "Event Solutions Agency",
         "highlight": false
       },
       "role": [
@@ -501,6 +515,7 @@
         "Blender",
         "DaVinci Resolve"
       ],
+      "link": null,
       "featured": null,
       "detail": "lightbox",
       "media": {
@@ -523,7 +538,7 @@
         "name": null,
         "via": null,
         "display": "anonymised",
-        "anonymisedLabel": "BSV_Creative",
+        "anonymisedLabel": "Event Solutions Agency",
         "highlight": false
       },
       "role": [
@@ -538,8 +553,236 @@
         "Blender",
         "DaVinci Resolve"
       ],
+      "link": null,
       "featured": null,
       "detail": "lightbox",
+      "media": {
+        "thumb": null,
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "dr-oetker-mobile-kiosk",
+      "title": "Dr. Oetker Ital Pizza Familia: Mobile Kiosk",
+      "year": 2026,
+      "client": {
+        "name": null,
+        "via": null,
+        "display": "anonymised",
+        "anonymisedLabel": "Event Solutions Agency",
+        "highlight": false
+      },
+      "role": [
+        "3D Modeling",
+        "Texturing",
+        "Fabrication Reference"
+      ],
+      "categories": [
+        "viz"
+      ],
+      "summary": "A fabrication-ready 3D model of a branded pizza kiosk for Dr. Oetker's Ital Pizza Familia range. Starting from an AI-generated concept, I resolved the design into buildable geometry, with consistent proportions, a structurally plausible canopy, and accurate placement of the oven, counter, menu screen and storage, giving the manufacturers a clear reference to fabricate from.",
+      "tools": [
+        "Blender"
+      ],
+      "link": null,
+      "featured": null,
+      "detail": "page",
+      "media": {
+        "thumb": null,
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "structure-generator",
+      "title": "Structure Generator",
+      "year": 2026,
+      "client": {
+        "name": "Self-published (Blender Market)",
+        "via": null,
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [
+        "Geometry Nodes tool development"
+      ],
+      "categories": [
+        "viz"
+      ],
+      "summary": "A procedural Geometry Nodes modifier, sold on Blender Market, that turns any base mesh into a detailed industrial structure. It aligns beams to every edge, adds cross-bracing across faces, converts upward-facing faces into wooden platforms, and grows a pipe network over the frame, all controlled through adjustable parameters, with an option to realise everything into real geometry for further modelling.",
+      "tools": [
+        "Blender",
+        "Geometry Nodes"
+      ],
+      "link": "https://superhivemarket.com/products/utility-structure-generator?search_id=49906032",
+      "featured": null,
+      "detail": "lightbox",
+      "media": {
+        "thumb": null,
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "samsung-galaxy-ai-vooh",
+      "title": "Galaxy AI",
+      "year": 2025,
+      "client": {
+        "name": "SAMSUNG",
+        "via": "Sociocom x BSV_Creative",
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [
+        "3D VFX",
+        "Tracking",
+        "Compositing"
+      ],
+      "categories": [
+        "film"
+      ],
+      "summary": "VFX for Samsung South Africa's Galaxy AI launch ahead of Galaxy Unpacked 2025. As part of a global campaign that filled skies around the world with stars, the South African version showcased Johannesburg and Cape Town's with CG stars composited into the sky over the city.",
+      "tools": [
+        "Blender",
+        "DaVinci Resolve"
+      ],
+      "link": null,
+      "featured": null,
+      "detail": "lightbox",
+      "media": {
+        "thumb": null,
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "rt7-intro-outro-graphics",
+      "title": "RT7 Intro/Outro Logo Animation",
+      "year": 2024,
+      "client": {
+        "name": "RT7",
+        "via": null,
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [
+        "3D Logo Animation"
+      ],
+      "categories": [
+        "viz"
+      ],
+      "summary": "Client logo animated for use as an intro and outro for youtube videos and social media content.",
+      "tools": [
+        "Blender",
+        "DaVinci Resolve"
+      ],
+      "link": null,
+      "featured": null,
+      "detail": "lightbox",
+      "media": {
+        "thumb": null,
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "music-video-VFX",
+      "title": "Misc. Music Video VFX",
+      "year": 2025,
+      "client": {
+        "name": null,
+        "via": "BSV_Creative",
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [
+        "3D VFX",
+        "Tracking",
+        "Compositing"
+      ],
+      "categories": [
+        "film"
+      ],
+      "summary": "Various music video VFX shots. Talent was filmed either on green screen or on location and have been rotoscoped and placed into accompanying 3D environments.",
+      "tools": [
+        "Blender",
+        "DaVinci Resolve"
+      ],
+      "link": null,
+      "featured": null,
+      "detail": "page",
+      "media": {
+        "thumb": null,
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "tt-lifestyle-event",
+      "title": "TT Lifestyle Music Event",
+      "year": 2024,
+      "client": {
+        "name": "TT Lifestyle",
+        "via": "BSV_Creative",
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [
+        "3D Modeling",
+        "Texturing",
+        "Camera Animation"
+      ],
+      "categories": [
+        "film",
+        "viz"
+      ],
+      "summary": null,
+      "tools": [],
+      "link": null,
+      "featured": null,
+      "detail": "none",
       "media": {
         "thumb": null,
         "thumbAlt": null,

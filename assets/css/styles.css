@@ -993,6 +993,15 @@ a.pf-row-inner:focus-visible .pf-col-action{ color:var(--ink-dim); }
 }
 .pf-detail-credits dt{ color:var(--ink-faint); }
 .pf-detail-credits dd{ margin:0; color:var(--ink-dim); }
+.pf-detail-link{
+  color:var(--ink);
+  text-decoration:none;
+  border-bottom:1px solid var(--line-bright);
+  overflow-wrap:anywhere;
+  transition:border-color 0.2s ease;
+}
+.pf-detail-link::after{ content:" ↗"; }
+.pf-detail-link:hover{ border-bottom-color:var(--ink); }
 .pf-detail-video,
 .pf-detail-embed,
 .pf-detail-image{ display:block; width:100%; background:var(--bg-alt); }

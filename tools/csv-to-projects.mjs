@@ -29,8 +29,8 @@ var DEFAULT_CATEGORIES = [
 ];
 var COLUMNS = ['id', 'title', 'year', 'client_name', 'client_via', 'client_display',
   'client_anonymised_label', 'client_highlight', 'role', 'categories', 'summary', 'tools',
-  'featured_order', 'featured_layout', 'detail', 'thumb', 'thumb_alt', 'poster', 'hover_loop',
-  'video', 'breakdown', 'service_reel', 'concept', 'draft'];
+  'link', 'featured_order', 'featured_layout', 'detail', 'thumb', 'thumb_alt', 'poster',
+  'hover_loop', 'video', 'breakdown', 'service_reel', 'concept', 'draft'];
 
 var args = process.argv.slice(2);
 if (!args.length || args[0] === '--help' || args[0] === '-h'){
@@ -105,6 +105,7 @@ function toProject(cell, line){
     categories: list(cell.categories),
     summary: cell.summary || null,
     tools: list(cell.tools),
+    link: cell.link || null,
     featured: order === null || Number.isNaN(order) ? null : { order: order, layout: cell.featured_layout || 'standard' },
     detail: cell.detail || 'none',
     media: {

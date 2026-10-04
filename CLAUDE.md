@@ -1,7 +1,11 @@
 # ArtOf_Nobody portfolio site
 
 Static portfolio site (plain HTML, one CSS file, native ES modules, three.js from a CDN). There
-is no build step, and it deploys to GitHub Pages on push to `main`.
+is no build step, and a push to `main` updates its GitHub Pages build.
+
+**THE SITE IS NOT LIVE YET.** `www.artofnobody.com` still serves the owner's old Wix site, and
+this site isn't public until the owner says so. A push to `main` only updates the work-in-progress
+Pages build; never describe a push as publishing, deploying live or making changes public.
 
 **Read `_notes/site-guide.md` before making changes.** It maps every file, the content
 pipeline, recipes for common edits (projects, services, 3D models, theme), how each

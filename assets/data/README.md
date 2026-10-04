@@ -81,7 +81,7 @@ The top level holds `version` (currently `1`), `categories` and `projects`.
 | `media.thumb` | Still image for the featured card, and the lightbox when there's no video or poster. Required for featured projects. |
 | `media.thumbAlt` | What the thumbnail shows, for screen readers. |
 | `media.poster` | A still shown before the video plays (falls back to `thumb`). |
-| `media.hoverLoop` | A short silent loop that plays while hovering a featured card. Keep it a small WebM, under 2 MB. |
+| `media.hoverLoop` | A short silent loop that plays while hovering a featured card. Keep it a small WebM, under 2 MB. Only featured cards (and home page reels, see `serviceReel`) use it: the project index is text only and shows no media on hover. |
 | `media.video` | The main video: a file on the site, or a YouTube or Vimeo link (embedded in the detail view, YouTube through youtube-nocookie.com). Long films belong on YouTube or Vimeo: GitHub rejects files over 50 MB. |
 | `media.breakdown` | Images shown one after another under the video on a `"page"` detail. |
 | `serviceReel` | `true` makes this project's `hoverLoop` (or a local `video`) the home page reel for its first category. |

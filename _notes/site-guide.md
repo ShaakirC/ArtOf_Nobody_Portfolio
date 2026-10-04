@@ -20,7 +20,8 @@ pipeline or any timing that's mirrored between files, update this guide in the s
   in each HTML page's `<head>`. Fonts (self-hosted in `assets/fonts/`): Archivo 600 (display), Roboto 400 (body), IBM Plex Mono 400
   (labels).
 - **Hosting:** GitHub Pages from `main` of `github.com/ShaakirC/ArtOf_Nobody_Portfolio`. A
-  push to `main` deploys.
+  push to `main` rebuilds it, but **the site is not live yet**: pushing doesn't make anything
+  public, so don't describe it that way.
 - **Domain:** it will replace the current Wix site at `www.artofnobody.com`. It isn't live on
   that domain yet; see [section 10](#10-deploying-and-going-live).
 
@@ -139,7 +140,8 @@ gets longer.
 3. `.pf-index`: `#pfFilters` (All + one per category, `aria-pressed`), `#pfCount` (live
    region), the column header (Year and Client are sort buttons), `#pfIndex` (one `li.pf-row`
    per project) and `#pfEmpty`. The rows and header share one grid, `--pf-cols`; below 720px
-   each row folds into "Client — Project" over "Year · Role · Pillar".
+   each row folds into "Client — Project" over "Year · Role · Pillar". Rows are text only:
+   no thumbnails or hover loops (see *Row hover* below).
 
 **URL state:** `?category=<id>&sort=<sort>` holds the filter and sort (`sort` is omitted for
 the default, year newest first; `client`, `client-desc` and `year-asc` otherwise), written
@@ -203,7 +205,7 @@ that file up to date with any schema change. In short: each project has `id`, `t
 `highlight`), `role`, `categories` (first = primary), `summary`, `tools`, `link` (optional
 external URL), `featured`, `detail` (`page` / `lightbox` / `none`), `media` (`thumb`,
 `thumbAlt`, `poster`, `hoverLoop`, `video`, `breakdown`), `serviceReel`, `concept` and
-`draft`.
+`draft`. `hoverLoop` is used by featured cards and home page reels only, never the index.
 
 - **The JSON is public** (anyone can open it on GitHub Pages). Anonymised and hidden projects
   must have `client.name` and `client.via` set to `null`; the loader warns and the import
@@ -563,7 +565,9 @@ These came out of the 2026-09-29 audit (`_notes/performance-review.md`). Don't r
 
 ## 10. Deploying and going live
 
-- **Deploy:** `git push` to `main` publishes to GitHub Pages.
+- **Deploy:** `git push` to `main` rebuilds the GitHub Pages copy. **The site is not live
+  yet**: the domain still points at Wix, and until the owner says it's time to go live, a push
+  is a work-in-progress update, not a release.
 - **Not published:** `_notes/` (underscore folder), and `CLAUDE.md`, `README.md`, `tools/`
   and `assets/data/README.md` (excluded in `_config.yml`). **Don't add a `.nojekyll` file:**
   without Jekyll all of these would be published. Jekyll only skips names starting with `_`

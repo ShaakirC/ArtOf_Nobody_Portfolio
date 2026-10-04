@@ -20,105 +20,6 @@
   ],
   "projects": [
     {
-      "id": "residential-complex-site-model",
-      "title": "Residential complex site model",
-      "year": null,
-      "client": {
-        "name": "Self-initiated",
-        "via": null,
-        "display": "name",
-        "anonymisedLabel": null,
-        "highlight": false
-      },
-      "role": [],
-      "categories": [
-        "viz",
-        "web"
-      ],
-      "summary": "Interactive 3D model of a 32-unit sectional title complex for planning parking, bins and future development.",
-      "tools": [],
-      "link": null,
-      "featured": null,
-      "detail": "page",
-      "media": {
-        "thumb": null,
-        "thumbAlt": null,
-        "poster": null,
-        "hoverLoop": null,
-        "video": null,
-        "breakdown": []
-      },
-      "serviceReel": false,
-      "concept": true,
-      "draft": true
-    },
-    {
-      "id": "craft-gin-hero-page",
-      "title": "Craft gin hero page",
-      "year": null,
-      "client": {
-        "name": "Self-initiated",
-        "via": null,
-        "display": "name",
-        "anonymisedLabel": null,
-        "highlight": false
-      },
-      "role": [],
-      "categories": [
-        "web",
-        "viz"
-      ],
-      "summary": "3D bottle hero section concept for a craft distillery.",
-      "tools": [],
-      "link": null,
-      "featured": null,
-      "detail": "page",
-      "media": {
-        "thumb": null,
-        "thumbAlt": null,
-        "poster": null,
-        "hoverLoop": null,
-        "video": null,
-        "breakdown": []
-      },
-      "serviceReel": false,
-      "concept": true,
-      "draft": true
-    },
-    {
-      "id": "table-configurator",
-      "title": "Solid wood table configurator",
-      "year": null,
-      "client": {
-        "name": "Self-initiated",
-        "via": null,
-        "display": "name",
-        "anonymisedLabel": null,
-        "highlight": false
-      },
-      "role": [],
-      "categories": [
-        "web",
-        "viz"
-      ],
-      "summary": "Geometry Nodes–driven configurator for size and timber choice.",
-      "tools": [],
-      "link": null,
-      "featured": null,
-      "detail": "page",
-      "media": {
-        "thumb": null,
-        "thumbAlt": null,
-        "poster": null,
-        "hoverLoop": null,
-        "video": null,
-        "breakdown": []
-      },
-      "serviceReel": false,
-      "concept": true,
-      "draft": true
-    },
-    {
       "id": "showreel-film",
       "title": "Film & Motion showreel",
       "year": null,
@@ -207,7 +108,7 @@
       "link": null,
       "featured": {
         "order": 1,
-        "layout": "standard"
+        "layout": "wide"
       },
       "detail": "page",
       "media": {
@@ -360,7 +261,7 @@
       ],
       "link": null,
       "featured": {
-        "order": 2,
+        "order": 3,
         "layout": "standard"
       },
       "detail": "lightbox",
@@ -629,8 +530,11 @@
         "Geometry Nodes"
       ],
       "link": "https://superhivemarket.com/products/utility-structure-generator?search_id=49906032",
-      "featured": null,
-      "detail": "lightbox",
+      "featured": {
+        "order": 4,
+        "layout": "standard"
+      },
+      "detail": "page",
       "media": {
         "thumb": null,
         "thumbAlt": null,
@@ -725,9 +629,9 @@
       "year": 2025,
       "client": {
         "name": null,
-        "via": "BSV_Creative",
-        "display": "name",
-        "anonymisedLabel": null,
+        "via": null,
+        "display": "anonymised",
+        "anonymisedLabel": "Local Music Artists",
         "highlight": false
       },
       "role": [
@@ -778,11 +682,55 @@
         "film",
         "viz"
       ],
-      "summary": null,
-      "tools": [],
+      "summary": "A 3D fly-through of the layout for a lifestyle event used for social media marketting. The layout, design and props were iterated on with the client to give social media viewers a pre-emptive look at the event and amenities that would be provided.",
+      "tools": [
+        "Blender"
+      ],
       "link": null,
       "featured": null,
-      "detail": "none",
+      "detail": "page",
+      "media": {
+        "thumb": null,
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "everyday-impossible",
+      "title": "Everyday Impossible",
+      "year": 2025,
+      "client": {
+        "name": "Self-initiated",
+        "via": null,
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [
+        "3D VFX",
+        "Tracking",
+        "Compositing"
+      ],
+      "categories": [
+        "film"
+      ],
+      "summary": "A series of vertical VFX shorts made for social media, built on casual handheld phone footage. Each piece is tracked, lit and composited to sit naturally in everyday footage, in the format brands now use most.",
+      "tools": [
+        "Blender",
+        "DaVinci Resolve"
+      ],
+      "link": null,
+      "featured": {
+        "order": 2,
+        "layout": "tall"
+      },
+      "detail": "page",
       "media": {
         "thumb": null,
         "thumbAlt": null,

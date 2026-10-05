@@ -353,8 +353,8 @@ hero.js:
 
 ### Contact details, about stats, links
 - **Contact:** static HTML in the `.contact` section of index.html. The email
-  (`info@artofnobody.com`, twice) and phone are real. The LinkedIn and Instagram links are
-  still **placeholders** (`href="#"`, handles unconfirmed; a TODO marks them).
+  (`info@artofnobody.com`, twice) and phone are real. LinkedIn links to Shaakir's profile, YouTube to `youtube.com/@artof_nobody9225` and Instagram to
+  `instagram.com/artof_nobody/`.
 - **Search and sharing:** index.html's `<head>` has a canonical URL, Open Graph / Twitter tags
   and JSON-LD (`ProfessionalService`), all pointing at `https://www.artofnobody.com/`. The OG
   image (`assets/images/og-image.jpg`, 1200×630) doesn't exist yet.

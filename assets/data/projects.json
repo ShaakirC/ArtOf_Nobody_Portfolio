@@ -108,15 +108,15 @@
       "link": null,
       "featured": {
         "order": 1,
-        "layout": "wide"
+        "layout": "standard"
       },
       "detail": "page",
       "media": {
-        "thumb": null,
+        "thumb": "assets/content/images/samsung-anamorphic-billboards/samsung_anamorphic.webp",
         "thumbAlt": null,
         "poster": null,
-        "hoverLoop": null,
-        "video": null,
+        "hoverLoop": "assets/content/videos/samsung-anamorphic-billboards/samsung_anamorphics_VP9.webm",
+        "video": "assets/content/videos/samsung-anamorphic-billboards/samsung_anamorphics_VP9.webm",
         "breakdown": []
       },
       "serviceReel": false,
@@ -153,7 +153,7 @@
         "thumbAlt": null,
         "poster": null,
         "hoverLoop": null,
-        "video": null,
+        "video": "assets/content/videos/savannah-emojis/savannah_emojis_VP9.webm",
         "breakdown": []
       },
       "serviceReel": false,
@@ -191,7 +191,7 @@
         "thumbAlt": null,
         "poster": null,
         "hoverLoop": null,
-        "video": null,
+        "video": "assets/content/videos/betway-ugc/betway_comps_VP9.webm",
         "breakdown": []
       },
       "serviceReel": false,
@@ -228,7 +228,7 @@
         "thumbAlt": null,
         "poster": null,
         "hoverLoop": null,
-        "video": null,
+        "video": "assets/content/videos/cell-c-brand-reveal/cellC_VP9.webm",
         "breakdown": []
       },
       "serviceReel": false,
@@ -244,7 +244,7 @@
         "via": "BSV_Creative",
         "display": "name",
         "anonymisedLabel": null,
-        "highlight": false
+        "highlight": true
       },
       "role": [
         "3D VFX",
@@ -264,13 +264,13 @@
         "order": 3,
         "layout": "standard"
       },
-      "detail": "lightbox",
+      "detail": "page",
       "media": {
-        "thumb": null,
+        "thumb": "assets/content/images/assupol-sanlam-headquarters-reveal/assupol_sanlam_thumb.webp",
         "thumbAlt": null,
         "poster": null,
-        "hoverLoop": null,
-        "video": null,
+        "hoverLoop": "assets/content/videos/assupol-sanlam-headquarters-reveal/assupol_sanlam_VP9.webm",
+        "video": "assets/content/videos/assupol-sanlam-headquarters-reveal/assupol_sanlam_VP9.webm",
         "breakdown": []
       },
       "serviceReel": false,
@@ -302,13 +302,13 @@
       ],
       "link": null,
       "featured": null,
-      "detail": "lightbox",
+      "detail": "page",
       "media": {
         "thumb": null,
         "thumbAlt": null,
         "poster": null,
         "hoverLoop": null,
-        "video": null,
+        "video": "assets/content/videos/takealot-diski-legends/takealot_VP9.webm",
         "breakdown": []
       },
       "serviceReel": false,
@@ -316,9 +316,9 @@
       "draft": false
     },
     {
-      "id": "yfm-2026-lineup-reveal",
-      "title": "YFM 2026 Line-Up Reveal",
-      "year": 2026,
+      "id": "yfm-2025-lineup-reveal",
+      "title": "YFM 2025 Line-Up Reveal",
+      "year": 2025,
       "client": {
         "name": "YFM",
         "via": "BSV_Creative",
@@ -341,13 +341,13 @@
       ],
       "link": null,
       "featured": null,
-      "detail": "lightbox",
+      "detail": "page",
       "media": {
-        "thumb": null,
+        "thumb": "assets/content/images/yfm-2025-lineup-reveal/YFM_1.webp|assets/content/images/yfm-2025-lineup-reveal/YFM_2.webp",
         "thumbAlt": null,
         "poster": null,
         "hoverLoop": null,
-        "video": null,
+        "video": "assets/content/videos/yfm-2025-lineup-reveal/YFM_VP9.webm",
         "breakdown": []
       },
       "serviceReel": false,
@@ -379,13 +379,13 @@
       ],
       "link": null,
       "featured": null,
-      "detail": "lightbox",
+      "detail": "page",
       "media": {
         "thumb": null,
         "thumbAlt": null,
         "poster": null,
         "hoverLoop": null,
-        "video": null,
+        "video": "assets/content/videos/galxboy-campaign/galXboy_VP9.webm",
         "breakdown": []
       },
       "serviceReel": false,
@@ -411,20 +411,20 @@
       "categories": [
         "viz"
       ],
-      "summary": null,
+      "summary": "A full CGI video displaying a virtual walkthrough of Toyota Stadium for use on social media platforms ahead of the event. The content serves to show attendees what the floor layout of the activation area would look like, as well as the stadium set up for the Casper Nyovest concert. Handheld videos of the VIP section were also augmented with CGI to show the layout with couches and additional branding as well as the view of the stage from these exclusive boxes.",
       "tools": [
         "Blender",
         "DaVinci Resolve"
       ],
       "link": null,
       "featured": null,
-      "detail": "lightbox",
+      "detail": "page",
       "media": {
         "thumb": null,
         "thumbAlt": null,
         "poster": null,
         "hoverLoop": null,
-        "video": null,
+        "video": "assets/content/videos/casper-toyota-activation/casper_toyota_VP9.webm",
         "breakdown": []
       },
       "serviceReel": false,
@@ -449,20 +449,20 @@
       "categories": [
         "viz"
       ],
-      "summary": null,
+      "summary": "A 3D fly-through of the layout for a lifestyle event used for social media marketting. The layout, design and props were iterated on with the client to give social media viewers a pre-emptive look at the event and amenities that would be provided.",
       "tools": [
         "Blender",
         "DaVinci Resolve"
       ],
       "link": null,
       "featured": null,
-      "detail": "lightbox",
+      "detail": "page",
       "media": {
         "thumb": null,
         "thumbAlt": null,
         "poster": null,
         "hoverLoop": null,
-        "video": null,
+        "video": "assets/content/videos/friends-like-me-loftus/FLM_VP9.webm",
         "breakdown": []
       },
       "serviceReel": false,
@@ -501,7 +501,12 @@
         "poster": null,
         "hoverLoop": null,
         "video": null,
-        "breakdown": []
+        "breakdown": [
+          "assets/content/images/dr-oetker-mobile-kiosk/Revised.webp",
+          "assets/content/images/dr-oetker-mobile-kiosk/top1.webp",
+          "assets/content/images/dr-oetker-mobile-kiosk/top3.webp",
+          "assets/content/images/dr-oetker-mobile-kiosk/top3_wire.webp"
+        ]
       },
       "serviceReel": false,
       "concept": false,
@@ -536,12 +541,15 @@
       },
       "detail": "page",
       "media": {
-        "thumb": null,
+        "thumb": "assets/content/images/structure-generator/StrucGen-6.webp",
         "thumbAlt": null,
         "poster": null,
         "hoverLoop": null,
-        "video": null,
-        "breakdown": []
+        "video": "assets/content/videos/structure-generator/struc_gen_VP9.webm",
+        "breakdown": [
+          "assets/content/images/structure-generator/StrucGen-6.webp",
+          "assets/content/images/structure-generator/StrucGen-5.webp"
+        ]
       },
       "serviceReel": false,
       "concept": false,
@@ -566,20 +574,20 @@
       "categories": [
         "film"
       ],
-      "summary": "VFX for Samsung South Africa's Galaxy AI launch ahead of Galaxy Unpacked 2025. As part of a global campaign that filled skies around the world with stars, the South African version showcased Johannesburg and Cape Town's with CG stars composited into the sky over the city.",
+      "summary": "VFX for Samsung South Africa's Galaxy AI launch ahead of Galaxy Unpacked 2025. As part of a global campaign that filled skies around the world with stars, the South African version showcased Johannesburg and Cape Town with CG stars composited into the sky over the city.",
       "tools": [
         "Blender",
         "DaVinci Resolve"
       ],
       "link": null,
       "featured": null,
-      "detail": "lightbox",
+      "detail": "page",
       "media": {
         "thumb": null,
         "thumbAlt": null,
         "poster": null,
         "hoverLoop": null,
-        "video": null,
+        "video": "assets/content/videos/samsung-galaxy-ai-vooh/samsung_stars_VP9.webm",
         "breakdown": []
       },
       "serviceReel": false,
@@ -610,13 +618,13 @@
       ],
       "link": null,
       "featured": null,
-      "detail": "lightbox",
+      "detail": "page",
       "media": {
         "thumb": null,
         "thumbAlt": null,
         "poster": null,
         "hoverLoop": null,
-        "video": null,
+        "video": "assets/content/videos/rt7-intro-outro-graphics/rt7_VP9.webm",
         "breakdown": []
       },
       "serviceReel": false,
@@ -648,14 +656,17 @@
         "DaVinci Resolve"
       ],
       "link": null,
-      "featured": null,
+      "featured": {
+        "order": 5,
+        "layout": "standard"
+      },
       "detail": "page",
       "media": {
-        "thumb": null,
+        "thumb": "assets/content/images/music-video-VFX/music_video_thumb.webp",
         "thumbAlt": null,
         "poster": null,
-        "hoverLoop": null,
-        "video": null,
+        "hoverLoop": "assets/content/videos/music-video-VFX/musicVideos_VP9.webm",
+        "video": "assets/content/videos/music-video-VFX/musicVideos_VP9.webm",
         "breakdown": []
       },
       "serviceReel": false,
@@ -694,7 +705,7 @@
         "thumbAlt": null,
         "poster": null,
         "hoverLoop": null,
-        "video": null,
+        "video": "assets/content/videos/tt-lifestyle-event/TT_VP9.webm",
         "breakdown": []
       },
       "serviceReel": false,
@@ -732,11 +743,49 @@
       },
       "detail": "page",
       "media": {
+        "thumb": "assets/content/images/everyday-impossible/everyday-impossible_thumb.webp",
+        "thumbAlt": null,
+        "poster": null,
+        "hoverLoop": "assets/content/videos/everyday-impossible/everydayVFX_hover_VP9.webm",
+        "video": "assets/content/videos/everyday-impossible/everydayVFX_ALL_VP9.webm",
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": false,
+      "draft": false
+    },
+    {
+      "id": "spar-live-performance",
+      "title": "Spar Event: Live Performance",
+      "year": 2024,
+      "client": {
+        "name": "Spar",
+        "via": "TULU Entertainment",
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [
+        "3D Modeling",
+        "Animation"
+      ],
+      "categories": [
+        "film",
+        "viz"
+      ],
+      "summary": "Interactive screen visuals for an event hosted for SPAR. Created for a live dance performance by TULU Entertainment, the visuals played across the stage screens alongside the dancers with interactive elements timed to the performance.",
+      "tools": [
+        "Blender"
+      ],
+      "link": null,
+      "featured": null,
+      "detail": "page",
+      "media": {
         "thumb": null,
         "thumbAlt": null,
         "poster": null,
         "hoverLoop": null,
-        "video": null,
+        "video": "assets/content/videos/spar-live-performance/spar_tulu_VP9.webm",
         "breakdown": []
       },
       "serviceReel": false,

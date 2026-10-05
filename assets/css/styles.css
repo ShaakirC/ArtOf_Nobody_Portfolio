@@ -122,7 +122,8 @@ button:focus-visible{
 }
 
 /* ---------- header ---------- */
-header{
+/* body > only: the portfolio detail dialog has its own <header>, which must not become this fixed bar. */
+body > header{
   position:fixed; top:0; left:0; right:0; z-index:50;
   display:flex; align-items:center; justify-content:space-between;
   padding:22px clamp(20px,5vw,56px);
@@ -132,7 +133,7 @@ header{
   background:var(--header-gradient);
   border-bottom:1px solid transparent;
 }
-header.scrolled{
+body > header.scrolled{
   background:var(--header-solid);
   border-bottom-color:var(--line);
 }
@@ -1010,12 +1011,21 @@ a.pf-row-inner:focus-visible .pf-col-action{ color:var(--ink-dim); }
 .pf-detail-embed iframe{ display:block; width:100%; height:100%; border:0; }
 .is-lightbox .pf-detail-video,
 .is-lightbox .pf-detail-image{ max-height:calc(100vh - 200px); object-fit:contain; }
+/* Breakdown images two to a row. Each keeps its own shape (rows line up at the top), and an
+   odd one out at the end spans the full width rather than leaving a gap beside it. */
+.pf-detail-gallery{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0,1fr));
+  gap:clamp(10px,1.5vw,16px);
+  align-items:start;
+}
+.pf-detail-gallery .pf-detail-image:last-child:nth-child(odd){ grid-column:1 / -1; }
 
 /* While the detail view is open the page behind it doesn't scroll. The scrollbar's width
    (--scrollbar-comp, set by portfolio-detail.js) is given back so nothing shifts sideways. */
 html.is-scroll-locked{ overflow:hidden; }
 html.is-scroll-locked body{ padding-right:var(--scrollbar-comp, 0px); }
-html.is-scroll-locked header{ right:var(--scrollbar-comp, 0px); }
+html.is-scroll-locked body > header{ right:var(--scrollbar-comp, 0px); }
 html.is-scroll-locked #grid-canvas{ width:calc(100% - var(--scrollbar-comp, 0px)); }
 
 @media (prefers-reduced-motion: reduce){
@@ -1037,6 +1047,8 @@ html.is-scroll-locked #grid-canvas{ width:calc(100% - var(--scrollbar-comp, 0px)
   .pf-card--tall{ grid-column:auto; grid-row:auto; }
   .pf-card-media{ flex:none; aspect-ratio:16/10; }
   .pf-count{ margin-left:0; width:100%; }
+  /* Breakdown images go back to one per row. */
+  .pf-detail-gallery{ grid-template-columns:minmax(0,1fr); }
 
   /* Rows fold into two lines: "Client — Project", then "Year · Role · Pillar". */
   .pf-index-cols{ display:none; }

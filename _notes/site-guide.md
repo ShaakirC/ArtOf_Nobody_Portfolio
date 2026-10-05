@@ -46,14 +46,17 @@ _notes/                 Developer notes (not published: Jekyll skips folders sta
   performance-review.md The performance audit and what was done about each item
 assets/css/styles.css   All styles, both themes, both pages
 assets/fonts/           Self-hosted WOFF2 fonts (Archivo, Roboto, IBM Plex Mono; Latin + Latin Ext)
-assets/images/          Header logos and favicon (logo_wh_96 / logo_bl_96 are used; the
-                        _LR files are high-res originals kept for reference, not loaded)
-  content/              Stand-in project images (WebP), referenced from projects.json
+assets/images/          Site branding only: header logos and favicon (logo_wh_96 / logo_bl_96
+                        are used; the _LR files are high-res originals, not loaded)
+assets/content/         ★ Portfolio media, referenced from projects.json (the loader warns about
+                        media paths anywhere else)
+  images/<project-id>/  Stills (WebP): thumb, poster, breakdown images
+  videos/<project-id>/  Hover loops and short local videos (WebM)
 assets/data/
   projects.json         ★ THE CONTENT: categories and every project, for both pages
   README.md             Every field, and the client-crediting rules (not published)
-assets/reels-draft/     Looping service reels (WebM), referenced from projects.json. Ignored by
-                        git (.gitignore) until optimised; then they move to assets/reels/
+assets/reels-draft/     Stand-in service reels (WebM), referenced from projects.json. Ignored by
+                        git (.gitignore) until optimised; then they move to assets/content/videos/
 tools/                  Not published
   csv-to-projects.mjs   Node script: master spreadsheet (CSV) → assets/data/projects.json
   update-projects.cmd   Double-click wrapper for it (default input tools/data/projects.private.csv)
@@ -155,7 +158,7 @@ work as links). Rows with `detail: "none"` are a plain `div`, not focusable.
 
 **Detail view** (portfolio-detail.js): a native `<dialog>` with `showModal()`, rebuilt for
 each project. `"page"` shows credits, tags, summary, the `link` (a "Link" row in the credits:
-http(s) only, opening in a new tab), the video and breakdown images; `"lightbox"` just the
+http(s) only, opening in a new tab), the video and breakdown images (`.pf-detail-gallery`: two per row, one below 720px, an odd last one full width); `"lightbox"` just the
 video (or poster/thumb). `media.video` can be a local file (`<video
 controls>`) or a YouTube/Vimeo URL (a lazy iframe: youtube-nocookie.com, Vimeo with
 `dnt=1`). Escape, the close button and a backdrop click close it; closing empties it (stopping
@@ -179,7 +182,7 @@ the JSON fails to load, a `.pf-error` message replaces the content.
   `initServices({ modelsAfter: heroReady })` and `initAbout({ modelsAfter: heroReady })`. Each starts inside its own try/catch, so one
   failing feature doesn't take the others down. `initHero` returns a promise that settles when
   the logo has loaded; the services wait for it before loading their icons.
-- **portfolio.html → `portfolio-main.js`:** `initSite`, `initGrid`, `initPortfolio`.
+- **portfolio.html → `portfolio-main.js`:** `initSite`, `initGrid`, `initSplitText` (the "Selected work" heading only), `initPortfolio`.
 
 ---
 
@@ -260,9 +263,11 @@ Each `.panel` is one service step, in order:
 ## 5. Recipes
 
 ### Add a project
-1. Put its media under `assets/` (WebP stills, small WebM loops under 2 MB; long videos on
-   YouTube or Vimeo instead, since GitHub rejects files over 50 MB). Paths are relative and
-   case-sensitive on GitHub Pages.
+1. Put its media in `assets/content/images/<project-id>/` (WebP stills) and
+   `assets/content/videos/<project-id>/` (small WebM loops under 2 MB); long videos go on
+   YouTube or Vimeo instead, since GitHub rejects files over 50 MB. Paths are relative,
+   lowercase and case-sensitive on GitHub Pages. `project-rules.js` warns about media paths
+   outside `assets/content/` (its `MEDIA_ROOTS`).
 2. Add it to the master spreadsheet (`tools/data/projects.private.csv`, edited by the owner
    in Tablecruncher) and double-click `tools/update-projects.cmd`, or add an entry to
    `assets/data/projects.json` directly (see `assets/data/README.md`). List order is the
@@ -277,17 +282,12 @@ Point the `hoverLoop` of the project flagged `serviceReel` for that category (cu
 none yet, so its frame shows its `reelPlaceholder`. The current stand-ins live in
 `assets/reels-draft/`, which `.gitignore` keeps out of the repo, so the deployed site has no
 reels yet (the frame shows the panel colour). When they're re-exported, move them to
-`assets/reels/`, update the paths, and remove that `.gitignore` entry. Use a muted 16:9 WebM
+`assets/content/videos/`, update the paths, then remove the `.gitignore` entry and
+`assets/reels-draft/` from `MEDIA_ROOTS` in project-rules.js. Use a muted 16:9 WebM
 that loops cleanly. The current reels (9–31 MB) are unoptimised stand-ins: re-export them at
 around 3–6 MB each (720p–1080p, VP9) before going live, and consider an MP4 alongside for
 older Safari. Loading is lazy: nothing is fetched until the first scroll (never on ≤ 860px
 screens), then each reel loads its metadata and buffers in full once it plays.
-
-### Replace the placeholder projects
-The 12 entries `vfx-01` … `mograph-04` in projects.json have placeholder titles, stand-in
-images and no year, client or role; four of them are featured only so the grid has something
-to show. Their categories follow the old services (VFX and motion → `film`, CGI → `viz`).
-Replace them outright; nothing else refers to those ids.
 
 ### Edit a service's text
 Edit its `.panel` in index.html. Keep `data-split` and a matching `aria-label` on the `h2`
@@ -465,7 +465,9 @@ the top of the file. What matters:
 ### Split text (split-text.js)
 - **Which headings:** any element with `data-split` gets its letters wrapped in spans. Each
   letter has red and cyan `::before` / `::after` copies, which only exist while needed (to
-  keep blended layers down).
+  keep blended layers down). On the portfolio page that is only the "Selected work" title: the
+  detail dialog's title is built later, after split-text has collected its headings, so it
+  never gets the effect.
 - **When:** the service headings are split at load (their transition needs the letters).
   Every other heading, the hero's included, stays plain text until a mouse first moves, so
   touch screens never split them. Rebuilding the hero heading at load made it the page's
@@ -586,9 +588,9 @@ These came out of the 2026-09-29 audit (`_notes/performance-review.md`). Don't r
 ## 11. Known gaps and open decisions
 
 - **Reels:** stand-in exports, too heavy for go-live (see recipe "Swap a service's reel").
-- **Placeholders:** all projects have placeholder titles, stand-in images and no year,
-  client or role (26 validation warnings, by design). Which projects to feature and which
-  clients to highlight are still to decide. Some contact details and social links are
+- **Portfolio content:** the owner is filling in real projects (2026-10-04); the stand-in
+  images are gone, so featured projects show "featured without media.thumb" warnings until
+  their media lands in `assets/content/`. Some contact details and social links are
   placeholders; see recipe "Contact details".
 - **Stand-ins awaiting assets:** the three service icons, the `web` reel, the OG image, the
   social links and the three draft concept projects.

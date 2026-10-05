@@ -5,6 +5,10 @@
 export var DISPLAY_MODES = ['name', 'anonymised', 'hidden'];
 export var DETAIL_MODES = ['page', 'lightbox', 'none'];
 export var FEATURED_LAYOUTS = ['wide', 'standard', 'tall'];
+// Where project media lives (assets/images/ is for site branding only). reels-draft/ holds the
+// unoptimised stand-in reels until they're re-exported into content/videos/.
+export var MEDIA_ROOTS = ['assets/content/', 'assets/reels-draft/'];
+var MEDIA_FIELDS = ['thumb', 'poster', 'hoverLoop', 'video'];
 
 // Returns a list of human-readable problems; an empty list means the data is fine. Problems
 // are warnings, not errors: the site still renders what it can. Drafts are only checked for
@@ -51,8 +55,22 @@ export function validateProjects(data){
     if (!project.title) problems.push(name + ': missing title.');
     if (typeof project.year !== 'number') problems.push(name + ': missing year.');
     if (display === 'name' && !client.name) problems.push(name + ': missing client.');
+    mediaPaths(project.media).forEach(function(path){
+      if (!isUnderMediaRoot(path)) problems.push(name + ': media "' + path + '" should be under assets/content/ (relative, no leading /).');
+    });
   });
   return problems;
+}
+
+// The media's paths on this site; YouTube or Vimeo links aren't paths and are left out.
+function mediaPaths(media){
+  if (!media) return [];
+  var paths = MEDIA_FIELDS.map(function(field){ return media[field]; }).concat(media.breakdown || []);
+  return paths.filter(function(path){ return path && !/^https?:\/\//i.test(path); });
+}
+
+function isUnderMediaRoot(path){
+  return MEDIA_ROOTS.some(function(root){ return path.indexOf(root) === 0; });
 }
 
 // True when an anonymised or hidden project still carries a client name: the one problem

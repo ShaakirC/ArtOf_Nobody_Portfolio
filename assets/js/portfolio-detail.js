@@ -79,15 +79,21 @@ function buildPage(data, project){
   var media = project.media || {};
   var player = buildVideo(media, project.title);
   if (player) body.content.appendChild(player);
-  (media.breakdown || []).forEach(function(src){
-    var image = document.createElement('img');
-    image.className = 'pf-detail-image';
-    image.src = src;
-    image.alt = '';
-    image.loading = 'lazy';
-    image.decoding = 'async';
-    body.content.appendChild(image);
-  });
+  var breakdown = media.breakdown || [];
+  if (breakdown.length){
+    // Two to a row (one on phones); see .pf-detail-gallery in the stylesheet.
+    var gallery = element('div', 'pf-detail-gallery');
+    breakdown.forEach(function(src){
+      var image = document.createElement('img');
+      image.className = 'pf-detail-image';
+      image.src = src;
+      image.alt = '';
+      image.loading = 'lazy';
+      image.decoding = 'async';
+      gallery.appendChild(image);
+    });
+    body.content.appendChild(gallery);
+  }
   return body.root;
 }
 

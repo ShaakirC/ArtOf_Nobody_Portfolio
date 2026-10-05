@@ -1,5 +1,5 @@
 # Unoptimised stand-in reels: kept out of git until they are re-exported, then moved to
-# assets/reels/ (and the paths in assets/js/projects.js updated).
+# assets/content/videos/ (and their paths updated in the spreadsheet).
 assets/reels-draft/
 # The master project spreadsheet holds confidential client names and must never be committed:
 # keep it outside the repo, or under one of these names (see assets/data/README.md).

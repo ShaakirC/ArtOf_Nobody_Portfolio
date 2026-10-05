@@ -89,5 +89,7 @@ The top level holds `version` (currently `1`), `categories` and `projects`.
 | `draft` | `true` keeps the project off the site entirely, for work that isn't ready. |
 
 Every media path is optional except a featured project's `thumb`, and anything missing is
-simply left out. Paths are relative (`assets/images/...`, never `/assets/...`) and
+simply left out. Media lives in `assets/content/`: stills in `assets/content/images/<id>/`,
+videos in `assets/content/videos/<id>/` (`assets/images/` is for site branding only, and the
+site warns about media paths elsewhere). Paths are relative (`assets/content/...`, never `/assets/...`) and
 case-sensitive on GitHub Pages, so `Thumb.webp` and `thumb.webp` are different files.

@@ -3,9 +3,10 @@
 Static portfolio site (plain HTML, one CSS file, native ES modules, three.js from a CDN). There
 is no build step, and a push to `main` updates its GitHub Pages build.
 
-**THE SITE IS NOT LIVE YET.** `www.artofnobody.com` still serves the owner's old Wix site, and
-this site isn't public until the owner says so. A push to `main` only updates the work-in-progress
-Pages build; never describe a push as publishing, deploying live or making changes public.
+**THE SITE IS LIVE** at https://artofnobody.com (since 2026-10-06; `www` and `http` redirect
+there). A push to `main` goes straight to visitors within a minute or two, so test locally first
+and ask the owner before pushing. The domain lives in `CNAME`: never delete or overwrite it, and
+fetch before pushing, since GitHub can commit to `main` too.
 
 **Read `_notes/site-guide.md` before making changes.** It maps every file, the content
 pipeline, recipes for common edits (projects, services, 3D models, theme), how each
@@ -24,4 +25,5 @@ Quick facts:
   explain why. No frameworks or build tooling without asking.
 - **Timings:** the services transition timings in `styles.css` and `services.js` mirror each
   other. The owner tuned them by hand, so ask before changing them.
-- **Going live:** don't add a `CNAME` or suggest DNS changes until the owner says it's time.
+- **Deploying:** see `_notes/site-guide.md` section 10 for the workflow and for unsticking a
+  Pages build that sits queued.

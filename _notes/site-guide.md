@@ -20,10 +20,9 @@ pipeline or any timing that's mirrored between files, update this guide in the s
   in each HTML page's `<head>`. Fonts (self-hosted in `assets/fonts/`): Archivo 600 (display), Roboto 400 (body), IBM Plex Mono 400
   (labels).
 - **Hosting:** GitHub Pages from `main` of `github.com/ShaakirC/ArtOf_Nobody_Portfolio`. A
-  push to `main` rebuilds it, but **the site is not live yet**: pushing doesn't make anything
-  public, so don't describe it that way.
-- **Domain:** it will replace the current Wix site at `www.artofnobody.com`. It isn't live on
-  that domain yet; see [section 10](#10-deploying-and-going-live).
+  push to `main` rebuilds it and **goes live** within a minute or two.
+- **Domain:** live at `https://artofnobody.com` since 2026-10-06 (it replaced the old Wix
+  site; `www` redirects to the apex). See [section 10](#10-deploying-and-going-live).
 
 **Run it locally** from the repo root (modules don't load over `file://`):
 
@@ -567,21 +566,43 @@ These came out of the 2026-09-29 audit (`_notes/performance-review.md`). Don't r
 
 ## 10. Deploying and going live
 
-- **Deploy:** `git push` to `main` rebuilds the GitHub Pages copy. **The site is not live
-  yet**: the domain still points at Wix, and until the owner says it's time to go live, a push
-  is a work-in-progress update, not a release.
+- **Deploy:** `git push` to `main` rebuilds GitHub Pages, and **the site is live**: every push
+  reaches visitors at `https://artofnobody.com` within a minute or two.
 - **Not published:** `_notes/` (underscore folder), and `CLAUDE.md`, `README.md`, `tools/`
   and `assets/data/README.md` (excluded in `_config.yml`). **Don't add a `.nojekyll` file:**
   without Jekyll all of these would be published. Jekyll only skips names starting with `_`
   or `.`, and the site has none, so it leaves the site's own files alone.
 - **Paths:** keep every asset path relative (`assets/...`, never `/assets/...`) so the site
   works both on github.io/<repo>/ and the custom domain, and match file-name case exactly.
-- **Going live on `www.artofnobody.com`** (when the owner says so, not before):
-  1. Add a `CNAME` file containing `www.artofnobody.com`.
-  2. At the DNS provider, point `www` (CNAME) at `shaakirc.github.io`, and the apex domain
-     at GitHub Pages' A records.
-  3. In the repo's Pages settings, set the custom domain and enable **Enforce HTTPS**.
-  4. Retire the Wix site.
+- **Custom domain (live since 2026-10-06):** setting the domain in Pages settings committed
+  `CNAME` containing `artofnobody.com` (the apex; `www` redirects to it). DNS: `www` is a CNAME
+  to `shaakirc.github.io`, and the apex has GitHub Pages' A records (185.199.108–111.153).
+  **Never delete `CNAME` or force-push over it:** GitHub forgets the domain. The first build
+  sat queued through a GitHub Actions incident; an empty commit unstuck it (see below).
+- **Making changes once the site is live:** the workflow stays edit → commit → push to `main`,
+  and the site updates in 1–2 minutes (watch the **Actions** tab). Because a push now goes
+  straight to visitors:
+  1. Test locally first (`python -m http.server`, then `http://localhost:8000`).
+  2. Project changes start in the spreadsheet: edit the CSV, run `tools/update-projects.cmd`,
+     then commit `projects.json` with any new media.
+  3. `git pull` (or fetch) before pushing, in case something was committed on GitHub (that's
+     how `CNAME` arrived). Never delete `CNAME`, and never force-push without fetching first.
+  4. A change that doesn't show yet is usually caching: GitHub Pages caches for up to about
+     10 minutes, and browsers cache too. Try Ctrl+F5 or a private window.
+  5. Bigger reworks can go on a branch and be merged into `main` when ready; small edits can
+     go straight to `main`.
+- **Checking a deploy, and retrying a stuck one:** a normal build takes 1–2 minutes.
+  1. Open the repo's **Actions** tab. A green tick on the latest "pages build and deployment"
+     means it's deployed; a yellow dot means queued or running.
+  2. Queued for more than about 10 minutes, or failed/cancelled with "16s" or no runner:
+     check githubstatus.com for an Actions incident. That's GitHub's problem, not the site's.
+  3. Once Actions is healthy: a run that failed or was cancelled can be retried with
+     **Re-run all jobs**. A run stuck on "Queued" that never started can't be cancelled or
+     re-run ("Cannot cancel a workflow run that is not in progress"), so push a new commit
+     instead (`git commit --allow-empty -m "Trigger Pages rebuild"`): the newer build
+     supersedes the stuck one, which may linger as "Queued" in the list but is harmless.
+  4. When it's up, check **Settings → Pages** says the site is live and **Enforce HTTPS** is
+     ticked.
 
 ---
 

@@ -6,7 +6,7 @@ export var DISPLAY_MODES = ['name', 'anonymised', 'hidden'];
 export var DETAIL_MODES = ['page', 'lightbox', 'none'];
 export var FEATURED_LAYOUTS = ['wide', 'standard', 'tall'];
 // Where project media lives (assets/images/ is for site branding only). reels-draft/ holds the
-// unoptimised stand-in reels until they're re-exported into content/videos/.
+// full-length showreels, which stay local (git-ignored) and draft.
 export var MEDIA_ROOTS = ['assets/content/', 'assets/reels-draft/'];
 var MEDIA_FIELDS = ['thumb', 'poster', 'hoverLoop', 'video'];
 
@@ -57,6 +57,13 @@ export function validateProjects(data){
     if (display === 'name' && !client.name) problems.push(name + ': missing client.');
     mediaPaths(project.media).forEach(function(path){
       if (!isUnderMediaRoot(path)) problems.push(name + ': media "' + path + '" should be under assets/content/ (relative, no leading /).');
+    });
+  });
+
+  // A category's reel names the projects it plays, by id.
+  (data.categories || []).forEach(function(category){
+    (category.reel || []).forEach(function(id){
+      if (!seen[id]) problems.push('Category "' + category.id + '": reel names unknown project "' + id + '".');
     });
   });
   return problems;

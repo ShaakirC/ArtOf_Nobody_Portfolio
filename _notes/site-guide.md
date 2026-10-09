@@ -54,8 +54,8 @@ assets/content/         ★ Portfolio media, referenced from projects.json (the 
 assets/data/
   projects.json         ★ THE CONTENT: categories and every project, for both pages
   README.md             Every field, and the client-crediting rules (not published)
-assets/reels-draft/     Stand-in service reels (WebM), referenced from projects.json. Ignored by
-                        git (.gitignore) until optimised; then they move to assets/content/videos/
+assets/reels-draft/     Full-length showreels (WebM), local only: ignored by git (.gitignore), and
+                        their showreel-* entries are drafts, so the live site never asks for them
 tools/                  Not published
   csv-to-projects.mjs   Node script: master spreadsheet (CSV) → assets/data/projects.json
   update-projects.cmd   Double-click wrapper for it (default input tools/data/projects.private.csv)
@@ -197,7 +197,7 @@ the JSON fails to load, a `.pf-error` message replaces the content.
                  ▼                            ▼
             services.js                  portfolio.js
   each .panel[data-service=id] gets   clients line, featured grid, index,
-  reelProjects(data, id)[0]'s loop,   detail view (portfolio-detail.js),
+  reelProjects(data, id)'s clips,     detail view (portfolio-detail.js),
   or the category's reelPlaceholder
 ```
 
@@ -216,18 +216,25 @@ external URL), `featured`, `detail` (`page` / `lightbox` / `none`), `media` (`th
   module, so it works on any base URL), runs `validateProjects()` and logs one grouped
   `console.warn` for missing or inconsistent data. Helpers: `visibleProjects` (no drafts, no
   hidden clients), `featuredProjects`, `indexProjects(data, { category, sort })`,
-  `highlightedClients`, `reelProjects(data, category)`, `clientLabel(project)` ("Brand (via
+  `highlightedClients`, `reelProjects(data, category)`, `reelClip(project)`, `clientLabel(project)` ("Brand (via
   Agency)" / anonymised label), `findCategory`, `primaryCategory`, `isLocalVideo`. The URL
   builders `projectUrl(id)` (`portfolio.html#project-<id>`) and `serviceUrl(id)`
   (`portfolio.html?category=<id>`) need no data, so the home page uses them straight away.
 - **Categories:** `film`, `viz`, `web`, in the order of the service panels; that order is
-  also the filter order. A category's `reelPlaceholder` (`{ title, note }`) fills its reel
+  also the filter order. A category's optional `reel` lists the projects its home page reel
+  plays (see below). Its `reelPlaceholder` (`{ title, note }`) fills its reel
   frame while no project supplies a reel (`web`: "You're looking at it.").
-- **Home page reels:** a project with `serviceReel: true` lends its `hoverLoop` (or a local
-  `video`) to the reel of its primary category. The current reels come from two hidden-client
-  entries, `showreel-film` and `showreel-viz`, which never show in the index. services.js
-  builds the reel frames straight away and fills them when the data arrives; without data
-  they stay empty frames that still link to the portfolio.
+- **Home page reels:** a category's `reel` (project ids, in playing order) picks exactly
+  which projects its home page reel plays, one after another, whatever their categories. It
+  lives in the categories list, which the spreadsheet import keeps. Without one, the reel
+  plays the projects whose primary category it is (`reelProjects`): any flagged `serviceReel: true` first
+  (hidden-client ones included), then the featured ones in featured order, then the rest in
+  data order; drafts never. A project's clip (`reelClip`) is its `video` when that's on the
+  site (landscape, like the frame), otherwise its `hoverLoop` (everyday-impossible's is
+  portrait, cut for its tall featured card). The full-length showreels, `showreel-film` and
+  `showreel-viz`, are drafts: their files in `assets/reels-draft/` are too big for the repo.
+  services.js builds the reel frames straight away and fills them when the data arrives;
+  without data they stay empty frames that still link to the portfolio.
 - **Spreadsheet import:** `node tools/csv-to-projects.mjs <file.csv> [out.json]` (Node 22+, no
   dependencies) rewrites projects.json from the master spreadsheet, keeping the existing
   `categories`. It strips client names from anonymised/hidden rows, never writes `private_*`
@@ -275,18 +282,17 @@ Each `.panel` is one service step, in order:
    set `draft: true`; three concept drafts (site model, gin hero, table configurator) wait
    for media this way.
 
-### Swap a service's reel
-Point the `hoverLoop` of the project flagged `serviceReel` for that category (currently
-`showreel-film` and `showreel-viz`) at the new file, or flag a different project. `web` has
-none yet, so its frame shows its `reelPlaceholder`. The current stand-ins live in
-`assets/reels-draft/`, which `.gitignore` keeps out of the repo, so the deployed site has no
-reels yet (the frame shows the panel colour). When they're re-exported, move them to
-`assets/content/videos/`, update the paths, then remove the `.gitignore` entry and
-`assets/reels-draft/` from `MEDIA_ROOTS` in project-rules.js. Use a muted 16:9 WebM
-that loops cleanly. The current reels (9–31 MB) are unoptimised stand-ins: re-export them at
-around 3–6 MB each (720p–1080p, VP9) before going live, and consider an MP4 alongside for
-older Safari. Loading is lazy: nothing is fetched until the first scroll (never on ≤ 860px
-screens), then each reel loads its metadata and buffers in full once it plays.
+### Change what a service's reel plays
+List the project ids in that category's `reel` in projects.json, in playing order (the
+loader warns about a misspelt id; drafts and projects without a video are skipped). Without a
+list, a reel plays every project whose primary category is that service and that has a video
+on the site, led by any flagged `serviceReel`. Set `draft` to keep a project out. `web` has no clips yet, so its frame
+shows its `reelPlaceholder`. Clips play for up to `CLIP_MAX_TIME` (5s) in services.js, then
+crossfade (`CLIP_FADE_TIME` / `--reel-fade`, 0.6s, mirrored) to the next. To put a showreel
+first, host its file in `assets/content/videos/` (under GitHub's 50 MB limit; it's only fetched
+while that reel is on screen), point the showreel entry at it and clear its `draft`. Loading
+is lazy: nothing is fetched until the first scroll (never on ≤ 860px screens), and only the
+reel on screen loads its next clip.
 
 ### Edit a service's text
 Edit its `.panel` in index.html. Keep `data-split` and a matching `aria-label` on the `h2`
@@ -434,10 +440,15 @@ the top of the file. What matters:
     (1 / −1), which `showService` sets on `#serviceReels`. `--tile-slide` (0.5s, the same push
     each of the old preview tiles had) and `--tile-ease` are set on `.reel-frame`. Unlike the
     text, the push starts at 0s, with no 0.32s offset.
-  - **Playback:** only the shown reel plays. An incoming reel restarts from 0 (unless it was
-    still playing on its way out); the outgoing one plays on through its slide, then pauses
-    `LEAVE_TIME` later. All pause once the frame scrolls out of view (an
+  - **Playback:** only the shown reel plays. An incoming reel restarts its current clip from 0
+    (unless it was still playing on its way out); the outgoing one plays on through its slide,
+    then pauses `LEAVE_TIME` later. All pause once the frame scrolls out of view (an
     IntersectionObserver).
+  - **Playlist:** each reel stacks two videos that take turns. While one plays, the other
+    loads the next clip; after `CLIP_MAX_TIME` (or the clip's end) they crossfade
+    (`.is-current`, `--reel-fade`), waiting for the next clip to be playable first. After the
+    last clip it starts over; a single clip just loops. A clip that fails to load is dropped
+    with a console warning.
   - **Hover** (devices that can hover, and keyboard focus): the "View <label> projects →"
     label is hidden at rest and slides in from the frame's left edge while the video zooms
     slightly and a gradient in the panel colour fades up from the bottom behind it. It's tuned

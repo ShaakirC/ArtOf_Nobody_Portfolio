@@ -3,11 +3,28 @@
   "categories": [
     {
       "id": "film",
-      "label": "Film & Motion"
+      "label": "Film & Motion",
+      "reel": [
+        "music-video-VFX",
+        "everyday-impossible",
+        "samsung-galaxy-ai-vooh",
+        "assupol-sanlam-headquarters-reveal",
+        "betway-ugc",
+        "takealot-diski-legends",
+        "galxboy-campaign"
+      ]
     },
     {
       "id": "viz",
-      "label": "Visualisation"
+      "label": "Visualisation",
+      "reel": [
+        "tt-lifestyle-event",
+        "structure-generator",
+        "casper-toyota-activation",
+        "friends-like-me-loftus",
+        "spar-live-performance",
+        "rt7-intro-outro-graphics"
+      ]
     },
     {
       "id": "web",
@@ -49,7 +66,7 @@
       },
       "serviceReel": true,
       "concept": false,
-      "draft": false
+      "draft": true
     },
     {
       "id": "showreel-viz",
@@ -81,7 +98,7 @@
       },
       "serviceReel": true,
       "concept": false,
-      "draft": false
+      "draft": true
     },
     {
       "id": "samsung-anamorphic-billboards",

@@ -543,6 +543,8 @@ a:active{ opacity:0.72; }
   --tile-hover-zoom:1.06;
   --tile-shade-height:40%;
   --tile-shade-strength:85%;
+  /* The crossfade from one clip to the next. */
+  --reel-fade:0.6s;
 }
 .reel{
   position:absolute;
@@ -581,12 +583,19 @@ a:active{ opacity:0.72; }
   font-size:12px;
   color:var(--ink-faint);
 }
+/* Each reel stacks two videos that take turns playing its clips (services.js); the current one
+   fades in over the other. --reel-fade mirrors CLIP_FADE_TIME in services.js. */
 .reel video{
+  position:absolute;
+  inset:0;
   display:block;
   width:100%; height:100%;
   object-fit:cover;
-  transition:transform var(--tile-hover-time) cubic-bezier(0.2,0.7,0.2,1);
+  opacity:0;
+  transition:transform var(--tile-hover-time) cubic-bezier(0.2,0.7,0.2,1),
+    opacity var(--reel-fade) linear;
 }
+.reel video.is-current{ opacity:1; }
 /* Switching services works like a carousel: the frame stays put while the outgoing and
    incoming reels slide through it together, edge to edge, so the next one pushes the current
    one out. Scrolling down pushes left to right, scrolling back up right to left: services.js

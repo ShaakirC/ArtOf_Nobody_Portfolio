@@ -22,7 +22,7 @@ export function loadProjects(){
 }
 
 // On the site at all: drafts never are, and hidden-client projects stay out of the index and
-// the clients line (they can still feed a home page reel; see reelProjects).
+// the clients line (flagged serviceReel, they can still feed a home page reel; see reelProjects).
 export function visibleProjects(data){
   return data.projects.filter(function(project){
     return !project.draft && clientDisplay(project) !== 'hidden';
@@ -77,13 +77,37 @@ export function highlightedClients(data){
   return names;
 }
 
-// The projects whose loop plays in a category's reel on the home page (by primary category).
-// Hidden-client projects count here; drafts don't.
+// The projects whose clips play one after another in a category's reel on the home page. When
+// the category lists them (its "reel": project ids, in playing order), exactly those, whatever
+// their categories or client display. Otherwise the projects of that primary category: any
+// flagged serviceReel first (hidden-client ones included), then the featured ones in featured
+// order, then the rest in the order of the data. Drafts never play.
 export function reelProjects(data, category){
-  return data.projects.filter(function(project){
-    return !project.draft && project.serviceReel && project.categories[0] === category &&
-      project.media && (project.media.hoverLoop || isLocalVideo(project.media.video));
+  var chosen = (findCategory(data, category) || {}).reel;
+  if (chosen && chosen.length){
+    return chosen.map(function(id){
+      return data.projects.find(function(project){ return project.id === id; });
+    }).filter(function(project){ return project && !project.draft && !!reelClip(project); });
+  }
+  function playable(project){
+    return !project.draft && project.categories[0] === category && !!reelClip(project);
+  }
+  var flagged = data.projects.filter(function(project){ return playable(project) && project.serviceReel; });
+  var featured = featuredProjects(data).filter(playable);
+  var rest = visibleProjects(data).filter(playable);
+  var list = [];
+  flagged.concat(featured, rest).forEach(function(project){
+    if (list.indexOf(project) === -1) list.push(project);
   });
+  return list;
+}
+
+// The file a project plays in a reel: its main video when that's on this site (landscape, like
+// the reel frame; a hoverLoop may be cut for a tall featured card), otherwise its hoverLoop.
+export function reelClip(project){
+  var media = project.media || {};
+  if (isLocalVideo(media.video)) return media.video;
+  return media.hoverLoop || null;
 }
 
 // How the client is credited everywhere: "Brand (via Agency)", the anonymised label for NDA

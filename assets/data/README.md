@@ -60,6 +60,11 @@ The top level holds `version` (currently `1`), `categories` and `projects`.
 **`categories`** is the three services, in the order the site lists them:
 - `id`: `film`, `viz` or `web`. Projects refer to these ids.
 - `label`: the name shown in filters, tags and the reel's hover text.
+- `reel` (optional): the ids of the projects whose videos the home page reel plays, in order,
+  such as `["everyday-impossible", "music-video-VFX"]`. Any project can be listed, whatever its
+  categories; drafts and projects without a video on the site are skipped. Without a list, the
+  reel plays every project whose main category this is. Edit it here: the spreadsheet import
+  keeps the categories as they are.
 - `reelPlaceholder` (optional): `{ title, note }`, shown in the home page reel frame while no
   project supplies a reel for that category.
 
@@ -81,10 +86,10 @@ The top level holds `version` (currently `1`), `categories` and `projects`.
 | `media.thumb` | Still image for the featured card, and the lightbox when there's no video or poster. Required for featured projects. |
 | `media.thumbAlt` | What the thumbnail shows, for screen readers. |
 | `media.poster` | A still shown before the video plays (falls back to `thumb`). |
-| `media.hoverLoop` | A short silent loop that plays while hovering a featured card. Keep it a small WebM, under 2 MB. Only featured cards (and home page reels, see `serviceReel`) use it: the project index is text only and shows no media on hover. |
+| `media.hoverLoop` | A short silent loop that plays while hovering a featured card. Keep it a small WebM, under 2 MB. Only featured cards (and home page reels, when there's no local `video`) use it: the project index is text only and shows no media on hover. |
 | `media.video` | The main video: a file on the site, or a YouTube or Vimeo link (embedded in the detail view, YouTube through youtube-nocookie.com). Long films belong on YouTube or Vimeo: GitHub rejects files over 50 MB. |
 | `media.breakdown` | Images shown one after another under the video on a `"page"` detail. |
-| `serviceReel` | `true` makes this project's `hoverLoop` (or a local `video`) the home page reel for its first category. |
+| `serviceReel` | `true` puts this project first in the home page reel for its first category (even with a hidden client). Every other project with a local `video` or a `hoverLoop` plays in that reel too, featured ones first. |
 | `concept` | `true` for self-initiated work. Adds a **Concept** tag everywhere. |
 | `draft` | `true` keeps the project off the site entirely, for work that isn't ready. |
 

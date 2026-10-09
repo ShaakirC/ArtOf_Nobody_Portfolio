@@ -1,5 +1,5 @@
 import * as ModelStage from './model-stage.js';
-import { loadProjects, findCategory, reelProjects, isLocalVideo, serviceUrl } from './projects.js';
+import { loadProjects, findCategory, reelProjects, reelClip, serviceUrl } from './projects.js';
 import { zipText } from './zip-text.js';
 
 // options.modelsAfter: a promise to wait for before loading the service models (the hero
@@ -66,11 +66,11 @@ export function initServices(options){
   }
 
   // ---------- reels ----------
-  // One looping 16:9 reel per service, all in one frame. Each is a link to the portfolio
-  // filtered to that service, labelled on hover. The frames are built straight away (so the
-  // step transitions have them from the start) and filled in once the project data arrives
-  // (fillReels, below): the loop of the project flagged serviceReel for that category, or the
-  // category's reelPlaceholder text when it has none.
+  // One 16:9 reel per service, all in one frame. Each is a link to the portfolio filtered to
+  // that service, labelled on hover. The frames are built straight away (so the step
+  // transitions have them from the start) and filled in once the project data arrives
+  // (fillReels, below): the clips of that category's projects one after another (see
+  // reelProjects in projects.js), or the category's reelPlaceholder text when it has none.
   var reelFrame = document.getElementById('serviceReels');
   panels.forEach(function(panel){
     var serviceId = panel.dataset.service;
@@ -154,6 +154,12 @@ export function initServices(options){
   // The videos are heavy, so none is fetched until the visitor starts scrolling, and on small
   // screens (where the reels are hidden) not at all. Only the reel on screen plays; the
   // others pause, as does everything once the section has scrolled away.
+  // A reel plays its clips one after another, each to its end or for CLIP_MAX_TIME, whichever
+  // comes first, then starts over after the last (a single clip just loops). Two stacked videos
+  // take turns: while one plays, the other loads the next clip, and the switch waits until that
+  // clip can play, so it never fades to an empty frame. Clips that fail to load are skipped.
+  var CLIP_MAX_TIME = 5; // s, the longest a clip plays before the next takes over
+  var CLIP_FADE_TIME = 600; // ms, the crossfade; mirrors --reel-fade in styles.css
   var smallScreen = window.matchMedia(MOBILE_QUERY);
   var reelsLoaded = false;
   var reelsOnScreen = true;
@@ -163,13 +169,15 @@ export function initServices(options){
     if (reelsLoaded || smallScreen.matches || window.scrollY <= 0) return;
     reelsLoaded = true;
     window.removeEventListener('scroll', loadReels);
-    reels.forEach(function(reel){
-      if (!reel.video) return;
-      // Just enough to show the first frame; a reel buffers in full once it plays.
-      reel.video.preload = 'metadata';
-      reel.video.src = reel.video.dataset.src;
-    });
+    reels.forEach(startReel);
     syncReels();
+  }
+
+  // Just enough to show the first clip's first frame; it buffers in full once it plays.
+  function startReel(reel){
+    if (!reel.video) return;
+    reel.video.preload = 'metadata';
+    reel.video.src = reel.clips[reel.clipIndex];
   }
 
   function syncReels(){
@@ -187,31 +195,138 @@ export function initServices(options){
       } else if (!play && !video.paused){
         video.pause();
       }
+      // Only the playing reel fetches its next clip, and not while the standby video is still
+      // fading out or is already loading one.
+      if (play && reel.clips.length > 1 && !reel.pending && !reel.fading){
+        loadStandby(reel, (reel.clipIndex + 1) % reel.clips.length);
+      }
     });
+  }
+
+  function createReelVideo(reel){
+    var video = document.createElement('video');
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = 'none';
+    video.setAttribute('aria-hidden', 'true');
+    function onClipDone(){
+      if (video === reel.video && reel.clips.length > 1 && !reel.pending && !reel.fading){
+        switchClip(reel, (reel.clipIndex + 1) % reel.clips.length);
+      }
+    }
+    video.addEventListener('ended', onClipDone);
+    video.addEventListener('timeupdate', function(){
+      if (video.currentTime >= CLIP_MAX_TIME) onClipDone();
+    });
+    video.addEventListener('error', function(){ dropClip(reel, video); });
+    reel.inner.insertBefore(video, reel.label);
+    return video;
+  }
+
+  function standbyVideo(reel){
+    return reel.videos[0] === reel.video ? reel.videos[1] : reel.videos[0];
+  }
+
+  // Points the standby video at clip `index`, rewound, ready to take over.
+  function loadStandby(reel, index){
+    var video = standbyVideo(reel);
+    var src = reel.clips[index];
+    video.preload = 'auto';
+    if (video.getAttribute('src') !== src) video.src = src;
+    else if (video.currentTime) video.currentTime = 0;
+    return video;
+  }
+
+  // Crossfades to clip `index` as soon as it can play. Until then the current clip plays on,
+  // or rests on its last frame if it has ended.
+  function switchClip(reel, index){
+    clearPending(reel);
+    var incoming = loadStandby(reel, index);
+    var outgoing = reel.video;
+    function swap(){
+      clearPending(reel);
+      reel.video = incoming;
+      reel.clipIndex = index;
+      incoming.classList.add('is-current');
+      outgoing.classList.remove('is-current');
+      reel.fading = true;
+      syncReels();
+      setTimeout(function(){
+        reel.fading = false;
+        if (outgoing !== reel.video) outgoing.pause();
+        syncReels();
+      }, CLIP_FADE_TIME);
+    }
+    if (incoming.readyState >= 3){
+      swap();
+    } else {
+      reel.pending = { video: incoming, swap: swap };
+      incoming.addEventListener('canplay', swap);
+    }
+  }
+
+  function clearPending(reel){
+    if (!reel.pending) return;
+    reel.pending.video.removeEventListener('canplay', reel.pending.swap);
+    reel.pending = null;
+  }
+
+  // A clip that can't load (a missing file, say) leaves the playlist, and the reel moves on to
+  // the clip after it.
+  function dropClip(reel, video){
+    var index = reel.clips.indexOf(video.getAttribute('src'));
+    if (index === -1) return;
+    console.warn('Skipping a reel clip that failed to load: ' + reel.clips[index]);
+    reel.clips.splice(index, 1);
+    video.removeAttribute('src');
+    video.load();
+    setReelLoop(reel);
+    var wasPending = !!reel.pending;
+    clearPending(reel);
+    if (!reel.clips.length){
+      reel.inner.classList.add('is-placeholder');
+      return;
+    }
+    if (video === reel.video){
+      switchClip(reel, index % reel.clips.length);
+      return;
+    }
+    if (index < reel.clipIndex) reel.clipIndex--;
+    if (reel.clips.length === 1){
+      // Only the current clip is left: it loops from here.
+      if (reel.video.ended){
+        reel.video.currentTime = 0;
+        syncReels();
+      }
+    } else if (wasPending){
+      switchClip(reel, index % reel.clips.length);
+    }
+  }
+
+  function setReelLoop(reel){
+    reel.videos.forEach(function(video){ video.loop = reel.clips.length === 1; });
   }
 
   function fillReels(data){
     reels.forEach(function(reel){
       var category = findCategory(data, reel.serviceId);
-      var project = reelProjects(data, reel.serviceId)[0];
+      var clips = [];
+      reelProjects(data, reel.serviceId).forEach(function(project){
+        var clip = reelClip(project);
+        if (clips.indexOf(clip) === -1) clips.push(clip);
+      });
       var inner = reel.inner;
       if (category) reel.label.textContent = 'View ' + category.label + ' projects';
-      if (project){
-        var video = document.createElement('video');
-        video.muted = true;
-        video.loop = true;
-        video.playsInline = true;
-        video.preload = 'none';
-        video.setAttribute('aria-hidden', 'true');
-        video.dataset.src = project.media.hoverLoop || project.media.video;
+      if (clips.length){
+        reel.clips = clips;
+        reel.clipIndex = 0;
+        reel.videos = [createReelVideo(reel), createReelVideo(reel)];
+        reel.video = reel.videos[0];
+        reel.video.classList.add('is-current');
+        setReelLoop(reel);
         inner.classList.remove('is-placeholder');
-        inner.insertBefore(video, reel.label);
-        reel.video = video;
         // The page may already have started loading the reels.
-        if (reelsLoaded){
-          video.preload = 'metadata';
-          video.src = video.dataset.src;
-        }
+        if (reelsLoaded) startReel(reel);
       } else if (category && category.reelPlaceholder){
         // No reel yet: a line of text in the frame instead.
         inner.classList.add('has-text');

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Temporary, unlinked page for collecting birthday messages. Delete after the deadline.
+     Kept out of search engines and kept neutral in link previews (no names in the title). -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Psst...</title>
+<link rel="icon" type="image/png" href="/assets/images/logo_wh_96.png">
+<style>
+  /* Same fonts and dark palette as the main site, inlined so this page loads nothing else. */
+  @font-face{ font-family:'Archivo'; font-weight:600; font-display:swap; src:url(/assets/fonts/archivo-600-latin.woff2) format('woff2'); }
+  @font-face{ font-family:'Roboto'; font-weight:400; font-display:swap; src:url(/assets/fonts/roboto-400-latin.woff2) format('woff2'); }
+  @font-face{ font-family:'IBM Plex Mono'; font-weight:400; font-display:swap; src:url(/assets/fonts/ibm-plex-mono-400-latin.woff2) format('woff2'); }
+
+  :root{
+    --bg: #0e0f11;
+    --panel: #15171a;
+    --ink: #e9ebee;
+    --ink-dim: #9aa5b1;
+    --line: rgba(255,255,255,0.09);
+    --accent: #FC1B39;
+    --accent-2: #22B7FC;
+  }
+  *{ box-sizing:border-box; }
+  html, body{ margin:0; }
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font:400 17px/1.65 'Roboto', sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:48px 16px;
+  }
+  main{
+    width:100%;
+    max-width:640px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:clamp(24px, 6vw, 44px);
+  }
+  .tag{
+    font:400 12px/1 'IBM Plex Mono', monospace;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--ink-dim);
+    margin:0 0 18px;
+  }
+  h1{
+    font:600 clamp(26px, 6vw, 36px)/1.15 'Archivo', sans-serif;
+    margin:0 0 28px;
+    text-wrap:balance;
+  }
+  h1 span{ display:block; color:var(--accent); }
+  p{ margin:0 0 16px; }
+  .sign{ color:var(--ink-dim); }
+  .cta{
+    margin:36px 0 0;
+    padding-top:28px;
+    border-top:1px solid var(--line);
+    text-align:center;
+  }
+  .deadline{
+    font:400 13px/1.5 'IBM Plex Mono', monospace;
+    color:var(--ink-dim);
+    margin:0 0 18px;
+  }
+  .deadline strong{ color:var(--ink); font-weight:400; }
+  .button{
+    display:inline-block;
+    background:var(--ink);
+    color:var(--bg);
+    font:600 17px/1 'Archivo', sans-serif;
+    text-decoration:none;
+    padding:17px 30px;
+    border-radius:999px;
+    transition:transform .15s ease, background-color .15s ease;
+  }
+  .button:hover{ background:#fff; transform:translateY(-2px); }
+  .button:focus-visible{ outline:2px solid var(--accent-2); outline-offset:3px; }
+</style>
+</head>
+<body>
+<main>
+  <p class="tag">Top secret &middot; eyes only</p>
+  <h1>SUPER SUPER DUPER SECRET <span>(don't f*** this up for me T_T)</span></h1>
+
+  <p>Hey! Shaakir here.</p>
+  <p>I'm doing a surprise for Zahra's 30th birthday! And I want YOU to help me make it extra special for her :)</p>
+  <p>We all love Zahra, she's such a special person and I want to show that to her.</p>
+  <p>Below is a link to a google form where I'd like for you to add a short personal birthday message for her. Keep it roughly 50-80 words and add your name. I'll be collecting all the messages and adding them to the project. Please only submit once. If you really made a mistake or something, its fine, you can just submit again and I'll go in and clean them up and remove the duplicates. But please try to get it right the first time so I don't have to do extra work lol (please don't spam T_T).</p>
+  <p>This page and the link below will be removed forever after the deadline so please do it ASAP :)</p>
+  <p>I'm not saying what the project is because I don't want to give you any more reason to potentially spill the beans hahaha. SO, please add your message and then COMPLETELY FORGET THIS EVER HAPPENED!!! :D</p>
+  <p>I love to surprise my wife and I'll be super sad if anyone ruins it, but I would absolutely LOVE for all of you to be a part of this special gift to her.</p>
+  <p class="sign">Thanks again, and you didn't see anything..............</p>
+
+  <div class="cta">
+    <p class="deadline">Deadline: <strong>Friday 6th November 2026</strong></p>
+    <a class="button" href="https://docs.google.com/forms/d/e/1FAIpQLSdrEp8yIREK7HOj438VUEsrPg9m6ApAkC_hiNE2eq4N24pA4g/viewform" rel="noreferrer">Add your message &rarr;</a>
+  </div>
+</main>
+</body>
+</html>

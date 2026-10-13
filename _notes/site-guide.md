@@ -135,7 +135,7 @@ gets longer.
 1. `.pf-intro`: label, `h1`, lede, and `#pfClients` ("Clients include A, B and C.", up to
    `MAX_CLIENTS` brands; stays `hidden` with none).
 2. `#pfFeaturedSection > #pfFeatured`: the featured cards, in a 3-column grid of fixed-height
-   rows (`wide` spans two columns, `tall` two rows, dense packing); 2 columns below 1024px,
+   rows (`wide` spans two columns, `tall` two rows, `extra-tall` three (two on tablets), dense packing); 2 columns below 1024px,
    one full-width 16:10 card each below 720px. Hidden when nothing is featured. Hover loops
    play only on a fine pointer without reduced motion, and their video isn't created (so
    nothing downloads) until the first hover.
@@ -160,7 +160,11 @@ each project. `"page"` shows credits, tags, summary, the `link` (a "Link" row in
 http(s) only, opening in a new tab), the video and breakdown images (`.pf-detail-gallery`: two per row, one below 720px, an odd last one full width); `"lightbox"` just the
 video (or poster/thumb). `media.video` can be a local file (`<video
 controls>`) or a YouTube/Vimeo URL (a lazy iframe: youtube-nocookie.com, Vimeo with
-`dnt=1`). Escape, the close button and a backdrop click close it; closing empties it (stopping
+`dnt=1`). An interactive project's `media.embed` (an https page, e.g. an orbyt scene on
+`orbyt-engine.netlify.app`) goes in a frame right under the summary (`buildInteractive`; 16:9,
+4:5 on phones), with a **Full screen** button that calls `requestFullscreen` on the frame, so
+the scene keeps running. Where that isn't available (iPhone Safari), the button is a link that
+opens the embed page in a new tab. A lightbox shows the embed instead of the video. Escape, the close button and a backdrop click close it; closing empties it (stopping
 playback), returns focus to the opener and clears the hash. The page scroll is locked
 meanwhile (`html.is-scroll-locked`), with the scrollbar's width (`--scrollbar-comp`) given
 back to the body, header and grid canvas so nothing shifts. The close event arrives
@@ -206,7 +210,7 @@ that file up to date with any schema change. In short: each project has `id`, `t
 `client` (`name`, `via`, `display`: `name` / `anonymised` / `hidden`, `anonymisedLabel`,
 `highlight`), `role`, `categories` (first = primary), `summary`, `tools`, `link` (optional
 external URL), `featured`, `detail` (`page` / `lightbox` / `none`), `media` (`thumb`,
-`thumbAlt`, `poster`, `hoverLoop`, `video`, `breakdown`), `serviceReel`, `concept` and
+`thumbAlt`, `poster`, `hoverLoop`, `video`, `embed`, `breakdown`), `serviceReel`, `concept` and
 `draft`. `hoverLoop` is used by featured cards and home page reels only, never the index.
 
 - **The JSON is public** (anyone can open it on GitHub Pages). Anonymised and hidden projects
@@ -281,6 +285,17 @@ Each `.panel` is one service step, in order:
 3. Reload the portfolio and check the console for validation warnings. To stage a project,
    set `draft: true`; three concept drafts (site model, gin hero, table configurator) wait
    for media this way.
+
+### Add an interactive 3D project
+Deploy the scene with orbyt (it's hosted on `orbyt-engine.netlify.app`, not in this repo), then
+add a row with its embed page's address in the `embed` column (`media.embed`), `web` as the
+first category and `detail` `page`. Leave `thumb` empty: the import fills it with the
+scene's `poster.webp` on the CDN (`orbytPoster` in project-rules.js), so the card image is
+deployed with the scene. Deploying: `orbyt deploy` writes to `F:\CODING\orbyt-cdn`, then
+`netlify deploy --prod --no-build --dir . --site orbyt-engine` from that folder uploads the whole
+site (Netlify replaces everything, so every client's files must be in the folder). The orbyt docs (`F:\CODING\Interactive 3D Web Embed`,
+`_notes/Hosting & Delivery`) describe the iframe route this uses. The first one is
+`virtual-warehouse-tour` (2026-10-13).
 
 ### Change what a service's reel plays
 List the project ids in that category's `reel` in projects.json, in playing order (the

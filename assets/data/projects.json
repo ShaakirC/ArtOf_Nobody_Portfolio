@@ -62,6 +62,7 @@
         "poster": null,
         "hoverLoop": "assets/reels-draft/REEL_VFX.webm",
         "video": null,
+        "embed": null,
         "breakdown": []
       },
       "serviceReel": true,
@@ -94,6 +95,7 @@
         "poster": null,
         "hoverLoop": "assets/reels-draft/REEL_CGI.webm",
         "video": null,
+        "embed": null,
         "breakdown": []
       },
       "serviceReel": true,
@@ -134,6 +136,7 @@
         "poster": null,
         "hoverLoop": "assets/content/videos/samsung-anamorphic-billboards/samsung_anamorphics_VP9.webm",
         "video": "assets/content/videos/samsung-anamorphic-billboards/samsung_anamorphics_VP9.webm",
+        "embed": null,
         "breakdown": []
       },
       "serviceReel": false,
@@ -171,6 +174,7 @@
         "poster": null,
         "hoverLoop": null,
         "video": "assets/content/videos/savannah-emojis/savannah_emojis_VP9.webm",
+        "embed": null,
         "breakdown": []
       },
       "serviceReel": false,
@@ -209,6 +213,7 @@
         "poster": null,
         "hoverLoop": null,
         "video": "assets/content/videos/betway-ugc/betway_comps_VP9.webm",
+        "embed": null,
         "breakdown": []
       },
       "serviceReel": false,
@@ -246,6 +251,7 @@
         "poster": null,
         "hoverLoop": null,
         "video": "assets/content/videos/cell-c-brand-reveal/cellC_VP9.webm",
+        "embed": null,
         "breakdown": []
       },
       "serviceReel": false,
@@ -278,7 +284,7 @@
       ],
       "link": null,
       "featured": {
-        "order": 3,
+        "order": 6,
         "layout": "standard"
       },
       "detail": "page",
@@ -288,6 +294,7 @@
         "poster": null,
         "hoverLoop": "assets/content/videos/assupol-sanlam-headquarters-reveal/assupol_sanlam_VP9.webm",
         "video": "assets/content/videos/assupol-sanlam-headquarters-reveal/assupol_sanlam_VP9.webm",
+        "embed": null,
         "breakdown": []
       },
       "serviceReel": false,
@@ -326,6 +333,7 @@
         "poster": null,
         "hoverLoop": null,
         "video": "assets/content/videos/takealot-diski-legends/takealot_VP9.webm",
+        "embed": null,
         "breakdown": []
       },
       "serviceReel": false,
@@ -365,6 +373,7 @@
         "poster": null,
         "hoverLoop": null,
         "video": "assets/content/videos/yfm-2025-lineup-reveal/YFM_VP9.webm",
+        "embed": null,
         "breakdown": []
       },
       "serviceReel": false,
@@ -403,6 +412,7 @@
         "poster": null,
         "hoverLoop": null,
         "video": "assets/content/videos/galxboy-campaign/galXboy_VP9.webm",
+        "embed": null,
         "breakdown": []
       },
       "serviceReel": false,
@@ -442,6 +452,7 @@
         "poster": null,
         "hoverLoop": null,
         "video": "assets/content/videos/casper-toyota-activation/casper_toyota_VP9.webm",
+        "embed": null,
         "breakdown": []
       },
       "serviceReel": false,
@@ -480,6 +491,7 @@
         "poster": null,
         "hoverLoop": null,
         "video": "assets/content/videos/friends-like-me-loftus/FLM_VP9.webm",
+        "embed": null,
         "breakdown": []
       },
       "serviceReel": false,
@@ -518,6 +530,7 @@
         "poster": null,
         "hoverLoop": null,
         "video": null,
+        "embed": null,
         "breakdown": [
           "assets/content/images/dr-oetker-mobile-kiosk/top1.webp",
           "assets/content/images/dr-oetker-mobile-kiosk/Revised.webp",
@@ -553,7 +566,7 @@
       ],
       "link": "https://superhivemarket.com/products/utility-structure-generator?search_id=49906032",
       "featured": {
-        "order": 4,
+        "order": 5,
         "layout": "standard"
       },
       "detail": "page",
@@ -563,6 +576,7 @@
         "poster": null,
         "hoverLoop": null,
         "video": "assets/content/videos/structure-generator/struc_gen_VP9.webm",
+        "embed": null,
         "breakdown": [
           "assets/content/images/structure-generator/StrucGen-6.webp",
           "assets/content/images/structure-generator/StrucGen-5.webp"
@@ -605,6 +619,7 @@
         "poster": null,
         "hoverLoop": null,
         "video": "assets/content/videos/samsung-galaxy-ai-vooh/samsung_stars_VP9.webm",
+        "embed": null,
         "breakdown": []
       },
       "serviceReel": false,
@@ -642,6 +657,7 @@
         "poster": null,
         "hoverLoop": null,
         "video": "assets/content/videos/rt7-intro-outro-graphics/rt7_VP9.webm",
+        "embed": null,
         "breakdown": []
       },
       "serviceReel": false,
@@ -674,7 +690,7 @@
       ],
       "link": null,
       "featured": {
-        "order": 5,
+        "order": 2,
         "layout": "standard"
       },
       "detail": "page",
@@ -684,6 +700,7 @@
         "poster": null,
         "hoverLoop": "assets/content/videos/music-video-VFX/musicVideos_VP9.webm",
         "video": "assets/content/videos/music-video-VFX/musicVideos_VP9.webm",
+        "embed": null,
         "breakdown": []
       },
       "serviceReel": false,
@@ -723,6 +740,7 @@
         "poster": null,
         "hoverLoop": null,
         "video": "assets/content/videos/tt-lifestyle-event/TT_VP9.webm",
+        "embed": null,
         "breakdown": []
       },
       "serviceReel": false,
@@ -755,8 +773,8 @@
       ],
       "link": null,
       "featured": {
-        "order": 2,
-        "layout": "tall"
+        "order": 3,
+        "layout": "extra-tall"
       },
       "detail": "page",
       "media": {
@@ -765,6 +783,7 @@
         "poster": null,
         "hoverLoop": "assets/content/videos/everyday-impossible/everydayVFX_hover_VP9.webm",
         "video": "assets/content/videos/everyday-impossible/everydayVFX_ALL_VP9.webm",
+        "embed": null,
         "breakdown": []
       },
       "serviceReel": false,
@@ -803,10 +822,55 @@
         "poster": null,
         "hoverLoop": null,
         "video": "assets/content/videos/spar-live-performance/spar_tulu_VP9.webm",
+        "embed": null,
         "breakdown": []
       },
       "serviceReel": false,
       "concept": false,
+      "draft": false
+    },
+    {
+      "id": "virtual-warehouse-tour",
+      "title": "Virtual Warehouse Tour",
+      "year": 2026,
+      "client": {
+        "name": "Self-initiated",
+        "via": null,
+        "display": "name",
+        "anonymisedLabel": null,
+        "highlight": false
+      },
+      "role": [
+        "3D modelling",
+        "Lighting & baking",
+        "Interactive development"
+      ],
+      "categories": [
+        "web",
+        "viz"
+      ],
+      "summary": "A working warehouse you can explore in the browser. Circle the building, step inside, open the door for the delivery truck and send the forklift to unload it. Modelled, lit and baked in Blender, then delivered with orbyt, my own engine for interactive 3D on the web: under 2 MB, with no plugins or app, on desktop or phone.",
+      "tools": [
+        "Blender",
+        "orbyt"
+      ],
+      "link": null,
+      "featured": {
+        "order": 4,
+        "layout": "wide"
+      },
+      "detail": "page",
+      "media": {
+        "thumb": "https://orbyt-engine.netlify.app/clients/warehouse-3d/poster.webp",
+        "thumbAlt": "Inside the 3D warehouse: a truck parked by the loading door, a forklift beside the shelving and pallets on the concrete floor",
+        "poster": null,
+        "hoverLoop": null,
+        "video": null,
+        "embed": "https://orbyt-engine.netlify.app/clients/warehouse-3d/embed",
+        "breakdown": []
+      },
+      "serviceReel": false,
+      "concept": true,
       "draft": false
     }
   ]

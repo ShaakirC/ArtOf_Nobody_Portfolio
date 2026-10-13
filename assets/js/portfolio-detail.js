@@ -2,7 +2,9 @@
 // detail "page" shows the full write-up (credits, link, summary, video, breakdown images);
 // "lightbox" just the video, or the poster/thumb when there's no video. A video can be a file
 // on the site or a YouTube/Vimeo URL (embedded, privacy-enhanced), so full-length films don't
-// have to live in the repository.
+// have to live in the repository. An interactive project's media.embed (an orbyt scene's
+// embed page, or any https page) is shown in an iframe under the summary, with a button that
+// takes it full screen.
 //
 // Escape, the close button and a click on the backdrop all close it. Closing empties it (which
 // stops any video or embed), unlocks the page scroll and returns focus to whatever opened it.
@@ -61,6 +63,9 @@ function buildPage(data, project){
   if (tags.childNodes.length) body.header.appendChild(tags);
 
   if (project.summary) body.content.appendChild(element('p', 'pf-detail-summary', project.summary));
+  var media = project.media || {};
+  var interactive = buildInteractive(media, project.title);
+  if (interactive) body.content.appendChild(interactive);
   var credits = element('dl', 'pf-detail-credits');
   [['Role', project.role], ['Tools', project.tools]].forEach(function(pair){
     if (!pair[1] || !pair[1].length) return;
@@ -76,7 +81,6 @@ function buildPage(data, project){
   }
   if (credits.childNodes.length) body.content.appendChild(credits);
 
-  var media = project.media || {};
   var player = buildVideo(media, project.title);
   if (player) body.content.appendChild(player);
   var breakdown = media.breakdown || [];
@@ -100,7 +104,7 @@ function buildPage(data, project){
 function buildLightbox(project){
   var body = shell(project);
   var media = project.media || {};
-  var player = buildVideo(media, project.title);
+  var player = buildInteractive(media, project.title) || buildVideo(media, project.title);
   if (!player){
     var still = media.poster || media.thumb;
     if (still){
@@ -160,12 +164,58 @@ function buildVideo(media, title){
   return frame;
 }
 
-// An external link (live site, case study, ...) labelled by its host and path, opening in a
-// new tab. Anything that isn't http(s) is left out, so a bad cell can't become a script URL.
-function buildLink(href){
+// An interactive scene (media.embed) in a frame, with a bar under it holding the full screen
+// control. The frame itself goes full screen, so the scene keeps running without reloading.
+// iPhones can't take anything but a video full screen, so there the control opens the embed
+// page in a new tab instead, where it fills the screen.
+function buildInteractive(media, title){
+  var src = httpUrl(media.embed);
+  if (!src) return null;
+  var root = element('div', 'pf-detail-interactive');
+  var frame = element('div', 'pf-detail-embed pf-detail-embed--interactive');
+  var iframe = document.createElement('iframe');
+  iframe.src = src;
+  iframe.title = title ? title + ' (interactive 3D)' : 'Interactive 3D';
+  iframe.loading = 'lazy';
+  iframe.allow = 'fullscreen; xr-spatial-tracking';
+  frame.appendChild(iframe);
+  root.appendChild(frame);
+
+  var bar = element('div', 'pf-detail-interactive-bar');
+  bar.appendChild(element('span', '', 'Interactive · drag to explore'));
+  var request = frame.requestFullscreen || frame.webkitRequestFullscreen;
+  var full;
+  if (request){
+    full = element('button', 'pf-detail-full', 'Full screen');
+    full.type = 'button';
+    full.addEventListener('click', function(){
+      var result = request.call(frame);
+      // Refused (e.g. a permissions policy): fall back to the page on its own.
+      if (result && result.catch) result.catch(function(){ window.open(src, '_blank', 'noopener'); });
+    });
+  } else {
+    full = element('a', 'pf-detail-full pf-detail-full--tab', 'Full screen');
+    full.href = src;
+    full.target = '_blank';
+    full.rel = 'noopener';
+  }
+  bar.appendChild(full);
+  root.appendChild(bar);
+  return root;
+}
+
+// The URL if it's http(s), otherwise null, so a bad cell can't become a script URL.
+function httpUrl(href){
   var url;
   try { url = new URL(href); } catch (error) { return null; }
-  if (url.protocol !== 'https:' && url.protocol !== 'http:') return null;
+  return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : null;
+}
+
+// An external link (live site, case study, ...) labelled by its host and path, opening in a
+// new tab. Anything that isn't http(s) is left out.
+function buildLink(href){
+  if (!httpUrl(href)) return null;
+  var url = new URL(href);
   var anchor = element('a', 'pf-detail-link', url.hostname.replace(/^www\./, '') + url.pathname.replace(/\/$/, ''));
   anchor.href = url.href;
   anchor.target = '_blank';

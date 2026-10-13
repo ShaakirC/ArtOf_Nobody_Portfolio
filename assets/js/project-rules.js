@@ -4,7 +4,7 @@
 
 export var DISPLAY_MODES = ['name', 'anonymised', 'hidden'];
 export var DETAIL_MODES = ['page', 'lightbox', 'none'];
-export var FEATURED_LAYOUTS = ['wide', 'standard', 'tall'];
+export var FEATURED_LAYOUTS = ['wide', 'standard', 'tall', 'extra-tall'];
 // Where project media lives (assets/images/ is for site branding only). reels-draft/ holds the
 // full-length showreels, which stay local (git-ignored) and draft.
 export var MEDIA_ROOTS = ['assets/content/', 'assets/reels-draft/'];
@@ -45,6 +45,9 @@ export function validateProjects(data){
 
     // A link without its scheme would be treated as a path on this site.
     if (project.link && !/^https?:\/\//i.test(project.link)) problems.push(name + ': link "' + project.link + '" should start with https://.');
+    // An interactive embed is always hosted elsewhere (the orbyt CDN), never in this repo.
+    var embed = project.media && project.media.embed;
+    if (embed && !/^https:\/\//i.test(embed)) problems.push(name + ': media.embed "' + embed + '" should be a full https:// address.');
     if (project.detail && DETAIL_MODES.indexOf(project.detail) === -1) problems.push(name + ': unknown detail "' + project.detail + '".');
     if (project.featured){
       if (!(project.media && project.media.thumb)) problems.push(name + ': featured without media.thumb.');
@@ -78,6 +81,16 @@ function mediaPaths(media){
 
 function isUnderMediaRoot(path){
   return MEDIA_ROOTS.some(function(root){ return path.indexOf(root) === 0; });
+}
+
+// The poster that orbyt deploys beside every scene's embed page
+// (<cdn>/clients/<name>/embed[.html] → <cdn>/clients/<name>/poster.webp), or null when the
+// address isn't laid out that way. The spreadsheet import uses it as the thumb of an
+// interactive project whose thumb cell is empty, so a scene and its card image come from the
+// same deploy.
+export function orbytPoster(embed){
+  var match = /^(https:\/\/[^?#]+\/clients\/[^/?#]+\/)embed(\.html)?\/?([?#].*)?$/i.exec(embed || '');
+  return match ? match[1] + 'poster.webp' : null;
 }
 
 // True when an anonymised or hidden project still carries a client name: the one problem

@@ -9,7 +9,10 @@
 //
 // The repository is public, so confidential client names must never reach the JSON: rows whose
 // client_display is "anonymised" or "hidden" have client_name and client_via removed, and any
-// column named private_* (private_notes, ...) is never written. Keep the spreadsheet itself
+// column named private_* (private_notes, ...) is never written.
+//
+// An interactive project (embed column) deployed with orbyt gets its thumb from the CDN when the
+// thumb cell is empty: the poster.webp beside the scene's embed page. Keep the spreadsheet itself
 // outside the repo, or name it *.private.csv or put it in tools/data/ (both git-ignored).
 //
 // The same checks as the site's loader run on the result (assets/js/project-rules.js) and are
@@ -18,7 +21,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { validateProjects, leaksClientName } from '../assets/js/project-rules.js';
+import { validateProjects, leaksClientName, orbytPoster } from '../assets/js/project-rules.js';
 
 var ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 var DEFAULT_OUTPUT = resolve(ROOT, 'assets/data/projects.json');
@@ -31,6 +34,8 @@ var COLUMNS = ['id', 'title', 'year', 'client_name', 'client_via', 'client_displ
   'client_anonymised_label', 'client_highlight', 'role', 'categories', 'summary', 'tools',
   'link', 'featured_order', 'featured_layout', 'detail', 'thumb', 'thumb_alt', 'poster',
   'hover_loop', 'video', 'breakdown', 'service_reel', 'concept', 'draft'];
+// Columns added later: read when present, so an older spreadsheet still converts.
+var OPTIONAL_COLUMNS = ['embed'];
 
 var args = process.argv.slice(2);
 if (!args.length || args[0] === '--help' || args[0] === '-h'){
@@ -45,7 +50,8 @@ var header = (rows.shift() || []).map(function(name){ return name.trim(); });
 var missing = COLUMNS.filter(function(name){ return header.indexOf(name) === -1; });
 if (missing.length) fail('The CSV is missing these columns: ' + missing.join(', '));
 var unknown = header.filter(function(name){
-  return name && COLUMNS.indexOf(name) === -1 && name.indexOf('private_') !== 0;
+  return name && COLUMNS.indexOf(name) === -1 && OPTIONAL_COLUMNS.indexOf(name) === -1 &&
+    name.indexOf('private_') !== 0;
 });
 if (unknown.length) console.warn('Ignoring unknown columns: ' + unknown.join(', '));
 
@@ -109,11 +115,13 @@ function toProject(cell, line){
     featured: order === null || Number.isNaN(order) ? null : { order: order, layout: cell.featured_layout || 'standard' },
     detail: cell.detail || 'none',
     media: {
-      thumb: cell.thumb || null,
+      // An orbyt scene brings its own poster; a thumb in the sheet still wins.
+      thumb: cell.thumb || orbytPoster(cell.embed) || null,
       thumbAlt: cell.thumb_alt || null,
       poster: cell.poster || null,
       hoverLoop: cell.hover_loop || null,
       video: cell.video || null,
+      embed: cell.embed || null,
       breakdown: list(cell.breakdown)
     },
     serviceReel: bool(cell.service_reel, line, 'service_reel'),

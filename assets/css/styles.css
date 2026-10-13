@@ -793,8 +793,9 @@ a:active{ opacity:0.72; }
 .pf-tag--quiet{ color:var(--ink-dim); background:transparent; }
 
 /* ---------- portfolio: featured ---------- */
-/* Three columns of fixed-height rows: a wide card spans two columns, a tall one two rows, and
-   dense packing fills the gaps they leave. Each card is its image with a caption under it. */
+/* Three columns of fixed-height rows: a wide card spans two columns, a tall one two rows, an
+   extra-tall one three (the full height of a grid of three rows), and dense packing fills the
+   gaps they leave. Each card is its image with a caption under it. */
 .pf-featured{ margin:0 0 clamp(64px,10vh,110px); }
 .pf-featured-grid{
   display:grid;
@@ -811,6 +812,7 @@ a:active{ opacity:0.72; }
 }
 .pf-card--wide{ grid-column:span 2; }
 .pf-card--tall{ grid-row:span 2; }
+.pf-card--extra-tall{ grid-row:span 3; }
 .pf-card-media{
   position:relative;
   flex:1;
@@ -1018,6 +1020,22 @@ a.pf-row-inner:focus-visible .pf-col-action{ color:var(--ink-dim); }
 .pf-detail-video,
 .pf-detail-embed{ aspect-ratio:16/9; }
 .pf-detail-embed iframe{ display:block; width:100%; height:100%; border:0; }
+/* An interactive scene (media.embed): the frame, then a bar with the full screen control. In
+   full screen the frame fills the screen whatever its aspect ratio. */
+.pf-detail-interactive{ display:grid; gap:10px; }
+.pf-detail-embed--interactive:fullscreen{ aspect-ratio:auto; width:100%; height:100%; max-height:none; }
+.pf-detail-interactive-bar{
+  display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:8px 20px;
+  font-family:var(--mono); font-size:12.5px; color:var(--ink-faint);
+}
+.pf-detail-full{
+  padding:0; background:none; border:0; border-bottom:1px solid var(--line-bright);
+  font:inherit; color:var(--ink-dim); cursor:pointer;
+  text-decoration:none;
+  transition:color 0.2s ease, border-color 0.2s ease;
+}
+.pf-detail-full--tab::after{ content:" ↗"; }
+.pf-detail-full:hover{ color:var(--ink); border-bottom-color:var(--ink); }
 .is-lightbox .pf-detail-video,
 .is-lightbox .pf-detail-image{ max-height:calc(100vh - 200px); object-fit:contain; }
 /* Breakdown images two to a row. Each keeps its own shape (rows line up at the top), and an
@@ -1048,16 +1066,21 @@ html.is-scroll-locked #grid-canvas{ width:calc(100% - var(--scrollbar-comp, 0px)
 /* Two columns on tablets; a wide card then fills a row. */
 @media (max-width: 1023px){
   .pf-featured-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); grid-auto-rows:clamp(200px,30vw,300px); }
+  /* With two columns the grid gets taller, so three rows would leave a gap beside it. */
+  .pf-card--extra-tall{ grid-row:span 2; }
 }
 @media (max-width: 719px){
   /* One full-width card after another, all the same shape. */
   .pf-featured-grid{ grid-template-columns:minmax(0,1fr); grid-auto-rows:auto; }
   .pf-card--wide,
-  .pf-card--tall{ grid-column:auto; grid-row:auto; }
+  .pf-card--tall,
+  .pf-card--extra-tall{ grid-column:auto; grid-row:auto; }
   .pf-card-media{ flex:none; aspect-ratio:16/10; }
   .pf-count{ margin-left:0; width:100%; }
   /* Breakdown images go back to one per row. */
   .pf-detail-gallery{ grid-template-columns:minmax(0,1fr); }
+  /* Taller on phones, so there's room to look around in portrait. */
+  .pf-detail-embed--interactive{ aspect-ratio:4/5; max-height:calc(100svh - 160px); }
 
   /* Rows fold into two lines: "Client — Project", then "Year · Role · Pillar". */
   .pf-index-cols{ display:none; }
